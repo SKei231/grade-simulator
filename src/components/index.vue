@@ -155,19 +155,20 @@
                                                     v-bind:disabled="priorityDisable(pIndex)">{{ priorityLists.priority }}
                                                 </option>
                                             </select>
-                                            <div v-for="(LSeffect, lsIndex) in fesIdols[index].LiveSkill[lindex].Effect"
+                                            <div v-for="(LSeffect, aIndex) in fesIdols[index].LiveSkill[lindex].Appeal"
                                                 style="padding: 2px;">
-                                                <select v-model="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID"
+                                                アピール: 
+                                                <select v-model="fesIdols[index].LiveSkill[lindex].Appeal[aIndex].aID"
                                                     @change="displayUpdate()">
-                                                    <option v-for="liveSkillEffects in skill_effect.liveSkillEffect"
-                                                        v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
+                                                    <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal"
+                                                        v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
                                                     </option>
                                                 </select>
                                                 <span
-                                                    v-if="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID > 2 && fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID <= skill_effect.appealLast">
-                                                    属性:
+                                                    v-if="fesIdols[index].LiveSkill[lindex].Appeal[aIndex].aID != 1">
+                                                    <br v-if="mobileView">属性:
                                                     <select
-                                                        v-model="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eNote">
+                                                        v-model="fesIdols[index].LiveSkill[lindex].Appeal[aIndex].aAttribute">
                                                         <option value="Vo">Vo</option>
                                                         <option value="Da">Da</option>
                                                         <option value="Vi">Vi</option>
@@ -175,7 +176,25 @@
                                                     </select>
                                                 </span>
                                                 <span
-                                                    v-if="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID <= 24 && fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID >= 22">
+                                                    v-if="fesIdols[index].LiveSkill[lindex].Appeal[aIndex].aID != 1"
+                                                    style="padding-left: 10px;"> N:
+                                                    <input type="number" style="width: 30px;"
+                                                        v-model="fesIdols[index].LiveSkill[lindex].Effect[aIndex].eValue">
+                                                </span>
+                                            </div>
+                                            <div @click="plusLiveSkillAppeal(index, lindex)" class="btn"
+                                                style="font-size: 11px;">アピールを追加</div>
+                                            <div v-for="(LSeffect, lsIndex) in fesIdols[index].LiveSkill[lindex].Effect"
+                                                style="padding: 2px;">
+                                                効果: 
+                                                <select v-model="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID"
+                                                    @change="displayUpdate()">
+                                                    <option v-for="liveSkillEffects in skill_effect.liveSkillEffect"
+                                                        v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
+                                                    </option>
+                                                </select>
+                                                <span
+                                                    v-if="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID <= 19 && fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID >= 16">
                                                     <br v-if="mobileView">属性:
                                                     <select
                                                         v-model="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eNote">
@@ -440,6 +459,11 @@ const setData = (data: {
             LiveSkill: [
                 {
                     Priority: data.fesIdol[i].LiveSkill[0].Priority ?? ref().value,
+                    Appeal: data.fesIdol[i].LiveSkill[0].Appeal ?? [{
+                        aID: ref(1).value,
+                        aValue: ref().value,
+                        aAttribute: ref().value
+                    }],
                     Effect: data.fesIdol[i].LiveSkill[0].Effect ?? [{
                         eID: ref(1).value,
                         eValue: ref().value,
@@ -457,6 +481,11 @@ const setData = (data: {
                 },
                 {
                     Priority: data.fesIdol[i].LiveSkill[1].Priority ?? ref().value,
+                    Appeal: data.fesIdol[i].LiveSkill[1].Appeal ?? [{
+                        aID: ref(1).value,
+                        aValue: ref().value,
+                        aAttribute: ref().value
+                    }],
                     Effect: data.fesIdol[i].LiveSkill[1].Effect ?? [{
                         eID: ref(1).value,
                         eValue: ref().value,
@@ -474,6 +503,17 @@ const setData = (data: {
                 }
             ],
             PassiveIndex: data.fesIdol[i].PassiveIndex ?? []
+        }
+        for (let j = 0; j < newFesIdol.LiveSkill[0].Appeal.length; j++) {
+            if (typeof newFesIdol.LiveSkill[0].Appeal[j].aID !== "number") {
+                newFesIdol.LiveSkill[0].Appeal[j].aID = ref(1).value
+            }
+            if (typeof newFesIdol.LiveSkill[0].Appeal[j].aValue !== "number") {
+                newFesIdol.LiveSkill[0].Appeal[j].aValue = ref().value
+            }
+            if (typeof newFesIdol.LiveSkill[0].Appeal[j].aAttribute !== "string") {
+                newFesIdol.LiveSkill[0].Appeal[j].aAttribute = ref().value
+            }
         }
         for (let j = 0; j < newFesIdol.LiveSkill[0].Effect.length; j++) {
             if (typeof newFesIdol.LiveSkill[0].Effect[j].eID !== "number") {
@@ -507,6 +547,17 @@ const setData = (data: {
             }
             if (typeof newFesIdol.LiveSkill[0].Link[j].lNote !== "number" || typeof newFesIdol.LiveSkill[0].Link[j].lNote !== "string") {
                 newFesIdol.LiveSkill[0].Link[j].lNote = ref(1).value
+            }
+        }
+        for (let j = 0; j < newFesIdol.LiveSkill[1].Appeal.length; j++) {
+            if (typeof newFesIdol.LiveSkill[1].Appeal[j].aID !== "number") {
+                newFesIdol.LiveSkill[1].Appeal[j].aID = ref(1).value
+            }
+            if (typeof newFesIdol.LiveSkill[1].Appeal[j].aValue !== "number") {
+                newFesIdol.LiveSkill[1].Appeal[j].aValue = ref().value
+            }
+            if (typeof newFesIdol.LiveSkill[1].Appeal[j].aAttribute !== "string") {
+                newFesIdol.LiveSkill[1].Appeal[j].aAttribute = ref().value
             }
         }
         for (let j = 0; j < newFesIdol.LiveSkill[1].Effect.length; j++) {
@@ -556,6 +607,7 @@ const setData = (data: {
         omonoukakin: data.detail.omonoukakin ?? ref(0).value,
         liveSkillRandom: data.detail.liveSkillRandom ?? ref(false).value
     }
+    console.log(fesIdols)
 }
 
 // localStorage へ保存
@@ -751,6 +803,11 @@ const setIdolList = () => {
             LiveSkill: [
                 {
                     Priority: ref().value,
+                    Appeal: [{
+                        aID: ref(1).value,
+                        aValue: ref().value,
+                        aAttribute: ref().value
+                    }],
                     Effect: [{
                         eID: ref(1).value,
                         eValue: ref().value,
@@ -768,6 +825,11 @@ const setIdolList = () => {
                 },
                 {
                     Priority: ref().value,
+                    Appeal: [{
+                        aID: ref(1).value,
+                        aValue: ref().value,
+                        aAttribute: ref().value
+                    }],
                     Effect: [{
                         eID: ref(1).value,
                         eValue: ref().value,
@@ -791,7 +853,6 @@ const setIdolList = () => {
 setIdolList();
 
 // ライブスキル優先度
-
 const priorityList: [{
     priority: number,
     selectedClass: "" | "selected" // @ts-ignore
@@ -823,6 +884,17 @@ const prioritySelected = () => {
 const priorityDisable = (index: number) => {
     return priorityList[index].selectedClass == "selected"
 }
+
+// アピール追加ボタン
+const plusLiveSkillAppeal = (index: number, appealIndex: number) => {
+    fesIdols[index].LiveSkill[appealIndex].Appeal.push({
+        aID: ref(1).value,
+        aValue: ref().value,
+        aAttribute: ref().value
+    })
+    displayUpdate()
+}
+
 
 // ライブスキル効果追加ボタン
 const plusLiveSkillEffect = (index: number, effectIndex: number) => {

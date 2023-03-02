@@ -39,6 +39,11 @@ export type fesIdol = {
     },
     LiveSkill: [{
         Priority: number,
+        Appeal: [{
+            aID: number,
+            aValue: number,
+            aAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+        }],
         Effect: [{
             eID: number,
             eValue: number,
@@ -55,6 +60,11 @@ export type fesIdol = {
         }]
     }, {
         Priority: number,
+        Appeal: [{
+            aID: number,
+            aValue: number,
+            aAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+        }],
         Effect: [{
             eID: number,
             eValue: number,
@@ -106,6 +116,14 @@ export type pEffect = {
     label: string,
     ID: number,
     existN: boolean,
+    value: Function
+}
+
+// ライブスキルアピール
+export type sAppeal = {
+    label:string,
+    ID: number,
+    variable: boolean,
     value: Function
 }
 

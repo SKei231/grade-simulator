@@ -165,7 +165,7 @@ const visibleBuffActivate = (effectType: number) => {
 const passiveSkillActivate = () => {
     let passiveActTime = 0
     const passiveAct = (index:number) => {
-
+// 
     }
 
 }

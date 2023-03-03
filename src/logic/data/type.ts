@@ -47,14 +47,14 @@ export type fesIdol = {
         Effect: [{
             eID: number,
             eValue: number,
-            eTurn: number,
+            eTurn: number[],
             eTime: number,
             eNote: number | string
         }],
         Link: [{
             lID: number,
             lValue: number,
-            lTurn: number,
+            lTurn: number[],
             lTime: number,
             lNote: number | string
         }]
@@ -68,19 +68,22 @@ export type fesIdol = {
         Effect: [{
             eID: number,
             eValue: number,
-            eTurn: number,
+            eTurn: number[],
             eTime: number,
             eNote: number | string
         }],
         Link: [{
             lID: number,
             lValue: number,
-            lTurn: number,
+            lTurn: number[],
             lTime: number,
             lNote: number | string
         }]
     }],
-    PassiveIndex: number[]
+    PassiveIndex: [{
+        index: number,
+        times: number
+    }]
 }
 
 // 詳細設定
@@ -156,11 +159,13 @@ export type status = {
     MemoryRize: number, // 思い出加速
     TriggerRateIncreases: number, // パッシブ発動率上昇
     AppealLog: number[], // 履歴
+    PassiveActTimes: number[][], // パッシブ発動回数
     VisibleBuffs: [{
         BuffID: number, // 可視バフID
         BuffTurn: number, // 可視バフターン
         BuffValue: number, // 可視バフ倍率
-        BuffTimes: number // 可視バフ回数
+        BuffTimes: number, // 可視バフ回数
+        BuffNote: number // 二次バフの要素
     }],
     Buff: {
         Visible: {

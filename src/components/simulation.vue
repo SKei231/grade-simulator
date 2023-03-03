@@ -47,7 +47,7 @@ const progressPer = ref(0)
 // ボタン
 const noSet = ref(false)
 const play = () => {
-  if (noSet.value == true) {
+  if (noSet.value != true) {
     setLocalStorage();
   }
   correctData.value = false
@@ -60,7 +60,6 @@ const simulationRunning = ref(false)
 const setLocalStorage = () => {
   const setData = makeJson();
   localStorage.setItem('GradeFes', setData)
-  window.alert("保存しました。")
 }
 // JSONへ変換
 const makeJson = () => {
@@ -93,7 +92,7 @@ const simulateStart = () => {
   //     }
   //     // progressPer.value++
   // }
-  simulate.run()
+  // simulate.run()
   simulate.run()
   console.log('end')
   console.log(vault.log)

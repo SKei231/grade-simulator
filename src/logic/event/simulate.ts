@@ -3,6 +3,7 @@ import * as vault from './vault'
 import * as types from '../data/type'
 import { findByBuffID, buffList } from '../data/visibleBuff'
 import { findByTriggerID, triggerList } from '../data/passiveTrigger'
+import { findBySkillID, findByPassiveID, passiveEffect, liveSkillEffect } from '../data/skillEffect'
 
 export const run = () => {
     statusUpdate()
@@ -15,18 +16,18 @@ export const run = () => {
         passiveSkillActivate(Turn);
 
         // 自由ーーーーーーーーーーーーーーーーーーーーーーーーーーー
-        if(Turn == 0) {
-            pushVisibleBuff(4, 3, 50, 0)
-            pushVisibleBuff(2, 3, 50, 0)
-        }
-        pushVisibleBuff(3, 3, 50, 0)
-        // visibleBuffActivate(DamageAvoidance)
-        status.Mental -= 100
+        // if(Turn == 0) {
+        //     pushVisibleBuff(11, 3, 100, 0)
+        //     pushVisibleBuff(15, 3, 50, 1)
+        // }
+        // visibleBuffActivate(Damaged)
+        status.Mental -= Math.floor(Math.random() * 1000)
 
 
         // 自由ここまでーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
         vault.logPush(status, Turn);
+        console.log(status.Buff.Passive)
     }
 }
 
@@ -49,12 +50,14 @@ export let status: types.status = {
     MemoryRatio: 1, // 思い出増加量
     MemoryRize: 0, // 思い出加速
     TriggerRateIncreases: 0, // パッシブ発動率上昇 20% -> 20
-    AppealLog: [], // 履歴
+    AppealLog: [], // 履歴 
+    PassiveActTimes: [], // パッシブ発動回数
     VisibleBuffs: [{
         BuffID: 1, // 可視バフID
         BuffTurn: 0, // 可視バフターン
         BuffValue: 0, // 可視バフ倍率
         BuffTimes: 0, // 可視バフ回数
+        BuffNote: 0 // 二次バフの要素
     }],
     Buff: {
         Visible: {
@@ -68,6 +71,18 @@ export let status: types.status = {
             pVi: 0
         }
     }
+}
+const createPassiveActTimes = () => {
+    status.PassiveActTimes.length = 0
+    for(let i = 0; i < 5; i++) {
+        status.PassiveActTimes[i] = []
+        for(let j = 0; j < vault.fesIdols[i].PassiveIndex.length; j++) {
+            status.PassiveActTimes[i].push(
+                vault.fesIdols[i].PassiveIndex[j].times
+            )
+        }
+    }
+    console.log(status.PassiveActTimes)
 }
 
 const statusUpdate = () => {
@@ -83,6 +98,7 @@ const statusUpdate = () => {
         BuffTurn: 0, // 可視バフターン
         BuffValue: 0, // 可視バフ倍率
         BuffTimes: 0, // 可視バフ回数
+        BuffNote: 0 // 二次バフの要素
     }];
     if (vault.detailSetting.damageStrong > 0) {
         defaultStatus.DamageRatio = Math.pow(0.95, vault.detailSetting.damageStrong);
@@ -99,6 +115,7 @@ const statusUpdate = () => {
     if (vault.detailSetting.omonoukakin > 0) {
         defaultStatus.MemoryRatio *= 0.02 * vault.detailSetting.omonoukakin + 1;
     }
+    createPassiveActTimes()
 }
 
 const turnStart = () => {
@@ -192,7 +209,7 @@ const visibleBuffActivate = (effectType: number) => {
         for (let i = 0; i < status.VisibleBuffs.length; i++) {
             if (buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].EffectType == effectType) {
                 if (status.VisibleBuffs[i].BuffTimes > 0) {
-                    buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].Value(status.VisibleBuffs[i].BuffValue, 3)
+                    buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].Value(status.VisibleBuffs[i].BuffValue, status.VisibleBuffs[i].BuffTurn)
                     status.VisibleBuffs[i].BuffTimes--
                 }
             }
@@ -201,7 +218,7 @@ const visibleBuffActivate = (effectType: number) => {
         for (let i = 0; i < status.VisibleBuffs.length; i++) {
             if (buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].EffectType == effectType) {
                 if (status.VisibleBuffs[i].BuffTimes > 0) {
-                    buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].Value(status.VisibleBuffs[i].BuffValue, 3)
+                    buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].Value(status.VisibleBuffs[i].BuffValue, status.VisibleBuffs[i].BuffNote)
                     status.VisibleBuffs[i].BuffTimes--
                 }
             }
@@ -213,12 +230,62 @@ const visibleBuffActivate = (effectType: number) => {
  * パッシブスキルの発動
  */
 const passiveSkillActivate = (turn:number) => {
-    let passiveActTime = 0
-    const passiveAct = (index:number) => {
-        console.log(triggerList[findByTriggerID(vault.passiveSkills[index].Trigger.tID)].value(turn, index))
+    let passiveActTime = 0 // max -> 6
+    let order = [1, 2, 3]
+    // パッシブ発動
+    const passiveAct = (index:number):boolean => {
+        if(triggerList[findByTriggerID(vault.passiveSkills[index].Trigger.tID)].value(turn, index)) { // 発動可能かどうか
+            // 発動するかどうか
+            return Math.floor(Math.random() * 100) < vault.passiveSkills[index].Probability
+        }
+        return false
     }
-    passiveAct(0)
-
+    // パッシブ発動順番の作成
+    const createPassiveOrder = () => {
+        for(let i = (order.length - 1); 0 < i; i--) {
+            let r = Math.floor(Math.random() * (i + 1));
+            let tmp = order[i];
+            order[i] = order[r];
+            order[r] = tmp;
+        }
+        order.unshift(0)
+        order.push(4)
+    }
+    createPassiveOrder()
+    // パッシブの発動
+    for(let i = 0; i < 5; i++) {
+        for(let j = 0; j < vault.fesIdols[order[i]].PassiveIndex.length; j++) {
+            if(status.PassiveActTimes[order[i]][j] > 0) {
+                if(passiveAct(vault.fesIdols[order[i]].PassiveIndex[j].index)) {
+                    if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Vo") {
+                        status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Da") {
+                        status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Vi") {
+                        status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "VoDa") {
+                        status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                        status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "DaVi") {
+                        status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                        status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "ViVo") {
+                        status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                        status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "All") {
+                        status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                        status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                        status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+                    }
+                    for(let n = 0; n < vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect.length; n++ ) {
+                        passiveEffect[findByPassiveID(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eID)].value()
+                    }
+                    vault.countPassiveAct(turn, vault.fesIdols[order[i]].PassiveIndex[j].index)
+                    status.PassiveActTimes[order[i]][j]--
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -227,12 +294,14 @@ const passiveSkillActivate = (turn:number) => {
  * @param turn 効果ターン
  * @param value 効果量
  * @param times 被弾時、回避時バフ等の回数
+ * @param note 二次バフ(回避時バフのターン数等)の要素
  */
-export const pushVisibleBuff = (id: number, turn: number, value: number, times: number) => {
+export const pushVisibleBuff = (id: number, turn: number, value: number, times: number, note: number) => {
     status.VisibleBuffs.push({
         BuffID: id, // 可視バフID
         BuffTurn: turn, // 可視バフターン
         BuffValue: value, // 可視バフ倍率
-        BuffTimes: times // 可視バフ回数
+        BuffTimes: times, // 可視バフ回数
+        BuffNote: note // 二次バフの要素
     })
 }

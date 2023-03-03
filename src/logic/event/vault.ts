@@ -13,7 +13,7 @@ export let staticStatus = {
 }
 
 // シュミレートログ
-export const log: types.log[] = []
+export let log: types.log[] = []
 
 // ログの初期化
 export const createLog = () => {
@@ -41,6 +41,16 @@ export const createLog = () => {
             },
             PassiveActTime: createPassiveCount() // パッシブ発動回数
         }
+        defaultLog.Mental.length = 0;
+        defaultLog.Attention.length = 0;
+        defaultLog.RecoveryTimes.length = 0;
+        defaultLog.MemoryGauge.length = 0;
+        defaultLog.Buff.Total.tVo.length = 0;
+        defaultLog.Buff.Total.tDa.length = 0;
+        defaultLog.Buff.Total.tVi.length = 0;
+        defaultLog.Buff.Passive.pVo.length = 0;
+        defaultLog.Buff.Passive.pDa.length = 0;
+        defaultLog.Buff.Passive.pVi.length = 0;
         log.push(defaultLog)
     }
 }
@@ -55,7 +65,7 @@ const createPassiveCount = ():number[] => {
 
 // パッシブ発動回数の挿入
 export const countPassiveAct = (turn:number ,index:number) => {
-    // 未実装
+    log[turn].PassiveActTime[index]++
 }
 
 // シュミレート結果の挿入
@@ -132,7 +142,7 @@ export const logPush = (status:types.status, turn:number) => {
         // Viバフ倍率
         (function() {
             const tVi = status.Buff.Visible.vVi + status.Buff.Passive.pVi
-            const tViIndex = indexSeaech(tVi, log[turn].Buff.Total.tDa)
+            const tViIndex = indexSeaech(tVi, log[turn].Buff.Total.tVi)
             if(tViIndex == "push") {
                 log[turn].Buff.Total.tVi.push(tVi)
             }else if(typeof tViIndex === "number"){
@@ -166,7 +176,7 @@ export const logPush = (status:types.status, turn:number) => {
         }());
         // Viバフ倍率
         (function() {
-            const tViIndex = indexSeaech(status.Buff.Passive.pVi, log[turn].Buff.Passive.pDa)
+            const tViIndex = indexSeaech(status.Buff.Passive.pVi, log[turn].Buff.Passive.pVi)
             if(tViIndex == "push") {
                 log[turn].Buff.Passive.pVi.push(status.Buff.Passive.pVi)
             }else if(typeof tViIndex === "number"){

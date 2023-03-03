@@ -134,12 +134,23 @@ export const buffList: visibleBuff[] = [
         }
     },
     {
+        Name: 'リアクション回避(パッシブ)',
+        ID: 20,
+        EffectType: 2,
+        Value: function (value: number): boolean {
+            if (Math.floor(Math.random() * 100) < value) {
+                return true
+            } else {
+                return false
+            }
+        }
+    },
+    {
         Name: '回避時Voバフ',
         ID: 12,
         EffectType: 3,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(1,turn,value, 0)
-            // status.Buff.Visible.vVo += value;
+            pushVisibleBuff(1,turn,value, 0, 0)
         }
     },
     {
@@ -147,8 +158,7 @@ export const buffList: visibleBuff[] = [
         ID: 13,
         EffectType: 3,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(2,turn,value, 0)
-            // status.Buff.Visible.vDa += value;
+            pushVisibleBuff(2,turn,value, 0, 0)
         }
     },
     {
@@ -156,8 +166,7 @@ export const buffList: visibleBuff[] = [
         ID: 14,
         EffectType: 3,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(3,turn,value, 0)
-            // status.Buff.Visible.vVi += value;
+            pushVisibleBuff(3,turn,value, 0, 0)
         }
     },
     {
@@ -165,7 +174,7 @@ export const buffList: visibleBuff[] = [
         ID: 15,
         EffectType: 4,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(1,turn,value, 0)
+            pushVisibleBuff(1,turn,value, 0, 0)
         }
     },
     {
@@ -173,7 +182,7 @@ export const buffList: visibleBuff[] = [
         ID: 16,
         EffectType: 4,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(2,turn,value, 0)
+            pushVisibleBuff(2,turn,value, 0, 0)
         }
     },
     {
@@ -181,7 +190,7 @@ export const buffList: visibleBuff[] = [
         ID: 17,
         EffectType: 4,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(3,turn,value, 0)
+            pushVisibleBuff(3,turn,value, 0, 0)
         }
     },
 

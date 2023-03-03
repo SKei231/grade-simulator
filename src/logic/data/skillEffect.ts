@@ -261,19 +261,19 @@ export const liveSkillEffect: sEffect[] = [
         value: function () { }
     },
     {
-        label: "回避時【N】％UP",
+        label: "【M】ターンの間 回避時【N】％UP",
         ID: 17,
         existN: true,
         existTurn: true,
         value: function () { }
     },
     {
-        label: "ダメージ時【N】％UP",
+        label: "【M】ターンの間 ダメージ時【N】％UP",
         ID: 18,
         existN: true,
         existTurn: true,
         value: function () { }
-    }
+    },
 ]
 
 // IDの重複、未登録のチェック

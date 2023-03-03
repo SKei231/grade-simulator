@@ -8,7 +8,7 @@ export const findByBuffID = (ID: number): number => {
         if (buffList[seaechIndex].ID == ID) {
             return seaechIndex;
         } else if (seaechIndex == buffList.length) {
-            return 99
+            return 999 // errer
         }
         seaechIndex++;
     }

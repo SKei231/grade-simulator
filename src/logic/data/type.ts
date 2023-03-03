@@ -153,6 +153,7 @@ export type status = {
     RecoveryTimes: number, // 回復回数
     MemoryGauge: number, // 思い出ゲージ
     MemoryRatio: number, // 思い出増加量
+    MemoryRize: number, // 思い出加速
     TriggerRateIncreases: number, // パッシブ発動率上昇
     AppealLog: number[], // 履歴
     VisibleBuffs: [{

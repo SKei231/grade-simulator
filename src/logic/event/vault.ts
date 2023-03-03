@@ -55,7 +55,7 @@ const createPassiveCount = ():number[] => {
 
 // パッシブ発動回数の挿入
 export const countPassiveAct = (turn:number ,index:number) => {
-    log
+    // 未実装
 }
 
 // シュミレート結果の挿入

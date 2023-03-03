@@ -96,6 +96,7 @@ const simulateStart = () => {
   simulate.run()
   simulate.run()
   console.log('end')
+  console.log(vault.log)
   // router.push('/Result')
 }
 </script>

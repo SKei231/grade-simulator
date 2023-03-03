@@ -607,7 +607,6 @@ const setData = (data: {
         omonoukakin: data.detail.omonoukakin ?? ref(0).value,
         liveSkillRandom: data.detail.liveSkillRandom ?? ref(false).value
     }
-    console.log(fesIdols)
 }
 
 // localStorage へ保存

@@ -220,13 +220,13 @@
                                                     </select>
                                                 </span>
                                                 <span
-                                                    v-if="skill_effect.liveSkillEffect[skill_effect.findBySkillID(fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID)].existN"
+                                                    v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID)].existN"
                                                     style="padding-left: 10px;"> N:
                                                     <input type="number" style="width: 30px;"
                                                         v-model="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eValue">
                                                 </span><br v-if="mobileView">
                                                 <span
-                                                    v-if="skill_effect.liveSkillEffect[skill_effect.findBySkillID(fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID)].existTurn"
+                                                    v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eID)].existTurn"
                                                     style="padding-left: 10px;">
                                                     <input type="number" style="width: 30px;"
                                                         v-model="fesIdols[index].LiveSkill[lindex].Effect[lsIndex].eTurn[1]">
@@ -278,13 +278,13 @@
                                                         </select><br v-if="mobileView">
                                                     </span>
                                                     <span
-                                                        v-if="skill_effect.liveSkillEffect[skill_effect.findBySkillID(fesIdols[index].LiveSkill[lindex].Link[lsIndex].lID)].existN"
+                                                        v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].LiveSkill[lindex].Link[lsIndex].lID)].existN"
                                                         style="padding-left: 10px;"> N:
                                                         <input type="number" style="width: 30px;"
                                                             v-model="fesIdols[index].LiveSkill[lindex].Link[lsIndex].lValue"><br v-if="mobileView">
                                                     </span>
                                                     <span
-                                                        v-if="skill_effect.liveSkillEffect[skill_effect.findBySkillID(fesIdols[index].LiveSkill[lindex].Link[lsIndex].lID)].existTurn"
+                                                        v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].LiveSkill[lindex].Link[lsIndex].lID)].existTurn"
                                                         style="padding-left: 10px;">
                                                         <input type="number" style="width: 30px;"
                                                             v-model="fesIdols[index].LiveSkill[lindex].Link[lsIndex].lTurn[1]">
@@ -412,8 +412,6 @@ import * as vault from '../logic/event/vault'
 import * as types from '../logic/data/type'
 import Help from './help.vue'
 import Simulation from './simulation.vue'
-import * as visivleBuff from '../logic/data/visibleBuff'
-visivleBuff.buffListCheck()
 
 // localStorage から読み込み
 const loadLocalStorage = () => {
@@ -667,6 +665,35 @@ const setLocalStorage = () => {
 
 // JSONへ変換
 const makeJson = () => {
+    // パッシブ不要部の削除
+    for(let i = 0; i < passiveSkills.length; i ++) {
+        for(let j = 0; j < passiveSkills[i].Effect.length; j++) {
+            if(passiveSkills[i].Effect[j].eID == 1) {
+                passiveSkills[i].Effect.splice(j,1)
+            }
+        }
+    }
+    // 編成不要部の削除
+    for(let i = 0; i < 5; i ++) {
+        for(let j = 0; j < fesIdols[i].LiveSkill.length; j++) {
+            for(let n = 0; n < fesIdols[i].LiveSkill[j].Appeal.length; n++) {
+                if(fesIdols[i].LiveSkill[j].Appeal[n].aID == 1) {
+                    fesIdols[i].LiveSkill[j].Appeal.splice(n,1)
+                }
+            }
+            for(let n = 0; n < fesIdols[i].LiveSkill[j].Effect.length; n++) {
+                if(fesIdols[i].LiveSkill[j].Effect[n].eID == 1) {
+                    fesIdols[i].LiveSkill[j].Effect.splice(n,1)
+                }
+            }
+            for(let n = 0; n < fesIdols[i].LiveSkill[j].Link.length; n++) {
+                if(fesIdols[i].LiveSkill[j].Link[n].lID == 1) {
+                    fesIdols[i].LiveSkill[j].Link.splice(n,1)
+                }
+            }
+
+        }
+    }
     const data = {
         passive: passiveSkills,
         fesIdol: fesIdols,

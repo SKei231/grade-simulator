@@ -3,7 +3,9 @@
 
 import { pEffect, sEffect, sAppeal } from "./type";
 import { status, defaultStatus, pushVisibleBuff } from "../event/simulate";
+import * as visivleBuff from './visibleBuff'
 
+visivleBuff.buffListCheck()
 
 export const findByPassiveID = (id: number): number => {
     let seaechIndex = 0;
@@ -17,12 +19,24 @@ export const findByPassiveID = (id: number): number => {
     }
 }
 
-export const findBySkillID = (id: number): number => {
+export const findByLiveEffectID = (id: number): number => {
     let seaechIndex = 0;
     while (true) {
         if (liveSkillEffect[seaechIndex].ID == id) {
             return seaechIndex;
         } else if (seaechIndex == liveSkillEffect.length) {
+            return 99
+        }
+        seaechIndex++;
+    }
+}
+
+export const findByAppealID = (id: number): number => {
+    let seaechIndex = 0;
+    while (true) {
+        if (liveSkillAppeal[seaechIndex].ID == id) {
+            return seaechIndex;
+        } else if (seaechIndex == liveSkillAppeal.length) {
             return 99
         }
         seaechIndex++;
@@ -35,55 +49,71 @@ export const passiveEffect: pEffect[] = [
         label: "なし",
         ID: 1,
         existN: false,
-        value: function () {}
+        value: function (value:number) {}
     },
     {
         label: "メンタル【N】％回復",
         ID: 2,
         existN: true,
-        value: function () {}
+        value: function (value:number) {
+            status.MentalEffect += Math.floor(defaultStatus.Mental * value * 0.01);
+        }
     },
     {
         label: "メンタルダメージ【N】％UP",
         ID: 3,
         existN: true,
-        value: function () { }
+        value: function (value:number) {
+            status.DamageRatio *= (value * 0.01) + 1;
+        }
     },
     {
         label: "メンタルダメージ【N】％CUT",
         ID: 4,
         existN: true,
-        value: function () { }
+        value: function (value:number) {
+            status.DamageRatio *= 1 - (value * 0.01);
+        }
     },
     {
         label: "思い出ゲージ【N】％UP",
         ID: 5,
         existN: true,
-        value: function () { }
+        value: function (value:number) {
+            status.MemoryRize += value * 10;
+        }
     },
     {
         label: "発動時に思い出ゲージ【N】％UP",
         ID: 8,
         existN: true,
-        value: function () { }
+        value: function (value:number) {
+            status.MemoryGauge += Math.floor(value * 10 * status.MemoryRatio);
+        }
     },
     {
         label: "注目度【N】％UP",
         ID: 6,
         existN: true,
-        value: function () { }
+        value: function (value:number) {
+            status.Attention += value;
+        }
     },
     {
         label: "注目度【N】％DOWN",
         ID: 7,
         existN: true,
-        value: function () { }
+        value: function (value:number) {
+            status.Attention -= value;
+        }
     },
     {
         label: "リアクション回避【N】％UP",
         ID: 9,
         existN: true,
-        value: function () { }
+        value: function (value:number) {
+            pushVisibleBuff(20, 1, value, 0, 0);
+        }
     }
 ]
 
@@ -464,3 +494,4 @@ const liveSkillEffectListCheck = () => {
     }
 }
 liveSkillEffectListCheck();
+

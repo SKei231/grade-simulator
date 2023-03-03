@@ -44,9 +44,7 @@ export const buffList: visibleBuff[] = [
         ID: 4,
         EffectType: 1,
         Value: function (value: number) {
-            let ratio = value * 0.01
-            ratio = 1 - ratio
-            status.DamageRatio *= ratio;
+            status.DamageRatio *= 1 - (value * 0.01);
         }
     },
     {
@@ -54,9 +52,7 @@ export const buffList: visibleBuff[] = [
         ID: 5,
         EffectType: 1,
         Value: function (value: number) {
-            let ratio = value * 0.01
-            ratio += 1
-            status.DamageRatio *= ratio;
+            status.DamageRatio *= 1 + (value * 0.01);
         }
     },
     {
@@ -88,8 +84,7 @@ export const buffList: visibleBuff[] = [
         ID: 9,
         EffectType: 1,
         Value: function (value: number) {
-            let ratio = value * 0.01;
-            status.MentalEffect += - Math.floor(status.Mental * ratio);
+            status.MentalEffect += - Math.floor(status.Mental * value * 0.01);
         }
     },
     {
@@ -97,9 +92,7 @@ export const buffList: visibleBuff[] = [
         ID: 18,
         EffectType: 4,
         Value: function (value: number) {
-            let ratio = value * 0.01;
-            ratio += 1;
-            status.Damage *= Math.floor(status.Damage * ratio);
+            status.Damage *= Math.floor(status.Damage * (1 + (value * 0.01)));
         }
     },
     {
@@ -117,8 +110,7 @@ export const buffList: visibleBuff[] = [
         ID: 10,
         EffectType: 1,
         Value: function (value: number) {
-            let ratio = value * 0.01;
-            status.MentalEffect += Math.floor(defaultStatus.Mental * ratio);
+            status.MentalEffect += Math.floor(defaultStatus.Mental * value * 0.01);
         }
     },
     {

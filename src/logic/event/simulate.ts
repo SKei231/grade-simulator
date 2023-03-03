@@ -3,7 +3,7 @@ import * as vault from './vault'
 import * as types from '../data/type'
 import { findByBuffID, buffList } from '../data/visibleBuff'
 import { findByTriggerID, triggerList } from '../data/passiveTrigger'
-import { findBySkillID, findByPassiveID, passiveEffect, liveSkillEffect } from '../data/skillEffect'
+import { findByLiveEffectID, findByPassiveID, passiveEffect, liveSkillEffect } from '../data/skillEffect'
 
 export const run = () => {
     statusUpdate()
@@ -16,18 +16,18 @@ export const run = () => {
         passiveSkillActivate(Turn);
 
         // 自由ーーーーーーーーーーーーーーーーーーーーーーーーーーー
-        // if(Turn == 0) {
-        //     pushVisibleBuff(11, 3, 100, 0)
-        //     pushVisibleBuff(15, 3, 50, 1)
-        // }
-        // visibleBuffActivate(Damaged)
+        if(Turn == 0) {
+            pushVisibleBuff(13, 3, 50, 3, 3)
+        }
         status.Mental -= Math.floor(Math.random() * 1000)
+        visibleBuffActivate(DamageAvoidance)
 
 
         // 自由ここまでーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
+        memoryMaxSave()
         vault.logPush(status, Turn);
-        console.log(status.Buff.Passive)
+        console.log(status.MemoryGauge)
     }
 }
 
@@ -82,7 +82,6 @@ const createPassiveActTimes = () => {
             )
         }
     }
-    console.log(status.PassiveActTimes)
 }
 
 const statusUpdate = () => {
@@ -147,35 +146,31 @@ const turnStart = () => {
 const memoryGaugeIncrease = () => {
     // メンタルによる増加
     const mentalRatio = Math.floor((status.Mental / defaultStatus.Mental) * 100)
-    const gaugeLimitMonitor = () => {
-        if(status.MemoryGauge > 1000) {
-            status.MemoryGauge = 1000
-        }
-    }
     if(mentalRatio == 100) {
         status.MemoryGauge += Math.floor(100 * status.MemoryRatio)
-        gaugeLimitMonitor()
     }else if(mentalRatio >= 75) {
         status.MemoryGauge += Math.floor(150 * status.MemoryRatio)
-        gaugeLimitMonitor()
     }else if(mentalRatio >= 50) {
         status.MemoryGauge += Math.floor(175 * status.MemoryRatio)
-        gaugeLimitMonitor()
     }else if(mentalRatio >= 25) {
         status.MemoryGauge += Math.floor(200 * status.MemoryRatio)
-        gaugeLimitMonitor()
     }else if(mentalRatio >= 5) {
         status.MemoryGauge += Math.floor(225 * status.MemoryRatio)
-        gaugeLimitMonitor()
     }else if(status.Mental > 0) {
         status.MemoryGauge += Math.floor(10000 * status.MemoryRatio)
-        gaugeLimitMonitor()
     }else {
         console.log("mental 0")
     }
+
     // スキルによる増加
-    status.MemoryGauge += status.MemoryRize * status.MemoryRatio;
+    status.MemoryGauge += Math.floor(status.MemoryRize * status.MemoryRatio);
     status.MemoryRize = 0;
+}
+// 最大値の調整
+const memoryMaxSave = () => {
+    if(status.MemoryGauge > 1000) {
+        status.MemoryGauge = 1000
+    }
 }
 
 const beforePassive = 1;
@@ -232,60 +227,81 @@ const visibleBuffActivate = (effectType: number) => {
 const passiveSkillActivate = (turn:number) => {
     let passiveActTime = 0 // max -> 6
     let order = [1, 2, 3]
-    // パッシブ発動
-    const passiveAct = (index:number):boolean => {
+
+    // パッシブ発動順番の作成
+    order = arrayShuffle(order)
+    order.unshift(0)
+    order.push(4)
+
+    /**
+     * パッシブの発動
+     * @param index パッシブのindex
+     * @param position Leaderかどうか Le:0
+     * @returns true: 発動
+     */
+    const passiveAct = (index:number, position:number):boolean => {
         if(triggerList[findByTriggerID(vault.passiveSkills[index].Trigger.tID)].value(turn, index)) { // 発動可能かどうか
             // 発動するかどうか
-            return Math.floor(Math.random() * 100) < vault.passiveSkills[index].Probability
+            if(position == 0) { // Le
+                return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability * 1.9)
+            }else {
+                return Math.floor(Math.random() * 100) < vault.passiveSkills[index].Probability
+            }
         }
         return false
     }
-    // パッシブ発動順番の作成
-    const createPassiveOrder = () => {
-        for(let i = (order.length - 1); 0 < i; i--) {
-            let r = Math.floor(Math.random() * (i + 1));
-            let tmp = order[i];
-            order[i] = order[r];
-            order[r] = tmp;
-        }
-        order.unshift(0)
-        order.push(4)
-    }
-    createPassiveOrder()
-    // パッシブの発動
-    for(let i = 0; i < 5; i++) {
-        for(let j = 0; j < vault.fesIdols[order[i]].PassiveIndex.length; j++) {
-            if(status.PassiveActTimes[order[i]][j] > 0) {
-                if(passiveAct(vault.fesIdols[order[i]].PassiveIndex[j].index)) {
-                    if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Vo") {
-                        status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Da") {
-                        status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Vi") {
-                        status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "VoDa") {
-                        status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                        status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "DaVi") {
-                        status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                        status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "ViVo") {
-                        status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                        status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                    }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "All") {
-                        status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                        status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
-                        status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value
+
+    /**
+     * パッシブの発動
+     * @param rainbowMode true: 虹パッシブ false: 虹以外
+     */
+    const passiveActivate = (rainbowMode:boolean) => {
+        for(let i = 0; i < 5; i++) {
+            for(let j = 0; j < vault.fesIdols[order[i]].PassiveIndex.length; j++) {
+                const passiveClass = (vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Color == "rainbow")
+                if(rainbowMode == passiveClass){
+                    if(status.PassiveActTimes[order[i]][j] > 0 && passiveActTime < 6) {
+                        if(passiveAct(vault.fesIdols[order[i]].PassiveIndex[j].index, i)) {
+                            if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Vo") {
+                                status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                            }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Da") {
+                                status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                            }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Vi") {
+                                status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                            }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "VoDa") {
+                                status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                                status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                            }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "DaVi") {
+                                status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                                status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                            }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "ViVo") {
+                                status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                                status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                            }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "All") {
+                                status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                                status.Buff.Passive.pDa += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                                status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
+                            }
+                            for(let n = 0; n < vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect.length; n++ ) {
+                                passiveEffect[findByPassiveID(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eID)].value(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eValue);
+                            }
+                            vault.countPassiveAct(turn, vault.fesIdols[order[i]].PassiveIndex[j].index);
+                            status.PassiveActTimes[order[i]][j]--;
+                            passiveActTime++;
+                            if(rainbowMode) {
+                                passiveActTime = 6;
+                            }
+                        }
                     }
-                    for(let n = 0; n < vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect.length; n++ ) {
-                        passiveEffect[findByPassiveID(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eID)].value()
-                    }
-                    vault.countPassiveAct(turn, vault.fesIdols[order[i]].PassiveIndex[j].index)
-                    status.PassiveActTimes[order[i]][j]--
                 }
             }
         }
+        if(rainbowMode) {
+            passiveActTime = 1;
+        }
     }
+    passiveActivate(true)  // 虹パッシブの発動
+    passiveActivate(false) // その他パッシブの発動
 }
 
 /**
@@ -304,4 +320,14 @@ export const pushVisibleBuff = (id: number, turn: number, value: number, times: 
         BuffTimes: times, // 可視バフ回数
         BuffNote: note // 二次バフの要素
     })
+}
+
+const arrayShuffle = (array:number[]) => {
+    for(let i = (array.length - 1); 0 < i; i--) {
+        let r = Math.floor(Math.random() * (i + 1));
+        let tmp = array[i];
+        array[i] = array[r];
+        array[r] = tmp;
+    }
+    return array
 }

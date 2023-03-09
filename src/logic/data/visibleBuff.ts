@@ -14,6 +14,7 @@ export const findByBuffID = (ID: number): number => {
     }
 }
 
+// EffectType = 2 || 4 の場合、return boolean
 export const buffList: visibleBuff[] = [
     {
         Name: 'Voバフ',
@@ -88,9 +89,23 @@ export const buffList: visibleBuff[] = [
         }
     },
     {
+        Name: 'リザレクション',
+        ID: 21,
+        EffectType: 4,
+        Value: function (value: number):boolean {
+            if(status.Mental <= 0) {
+                console.log("rez");
+                status.Mental = Math.floor(defaultStatus.Mental * value * 0.01);
+                return true;
+            }else {
+                return false;
+            }
+        }
+    },
+    {
         Name: '影響力アップ',
         ID: 18,
-        EffectType: 4,
+        EffectType: 1,
         Value: function (value: number) {
             status.Damage *= Math.floor(status.Damage * (1 + (value * 0.01)));
         }
@@ -98,11 +113,9 @@ export const buffList: visibleBuff[] = [
     {
         Name: '影響力ダウン',
         ID: 19,
-        EffectType: 4,
+        EffectType: 1,
         Value: function (value: number) {
-            let ratio = value * 0.01;
-            ratio = 1 - ratio;
-            status.Damage *= Math.floor(status.Damage * ratio);
+            status.Damage *= Math.floor(status.Damage * (1 - (value * 0.01)));
         }
     },
     {
@@ -142,7 +155,7 @@ export const buffList: visibleBuff[] = [
         ID: 12,
         EffectType: 3,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(1,turn,value, 0, 0)
+            pushVisibleBuff(1,turn,value, 0, 0);
         }
     },
     {
@@ -150,7 +163,7 @@ export const buffList: visibleBuff[] = [
         ID: 13,
         EffectType: 3,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(2,turn,value, 0, 0)
+            pushVisibleBuff(2,turn,value, 0, 0);
         }
     },
     {
@@ -158,7 +171,7 @@ export const buffList: visibleBuff[] = [
         ID: 14,
         EffectType: 3,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(3,turn,value, 0, 0)
+            pushVisibleBuff(3,turn,value, 0, 0);
         }
     },
     {
@@ -166,7 +179,8 @@ export const buffList: visibleBuff[] = [
         ID: 15,
         EffectType: 4,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(1,turn,value, 0, 0)
+            pushVisibleBuff(1,turn,value, 0, 0);
+            return true;
         }
     },
     {
@@ -174,7 +188,8 @@ export const buffList: visibleBuff[] = [
         ID: 16,
         EffectType: 4,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(2,turn,value, 0, 0)
+            pushVisibleBuff(2,turn,value, 0, 0);
+            return true;
         }
     },
     {
@@ -182,7 +197,8 @@ export const buffList: visibleBuff[] = [
         ID: 17,
         EffectType: 4,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(3,turn,value, 0, 0)
+            pushVisibleBuff(3,turn,value, 0, 0);
+            return true;
         }
     },
 
@@ -239,7 +255,7 @@ export const buffListCheck = () => {
                 }
             }
             if (checkNumber > buffList.length) {
-                console.log("buffListID is all correct")
+                console.log("buffListID complete")
                 buffCheck = false;
             } else {
                 console.log('errer [buffListID]')

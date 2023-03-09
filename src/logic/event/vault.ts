@@ -1,5 +1,6 @@
 // 設定、ログの保管
 import * as types from '../data/type'
+import { defaultStatus } from './simulate';
 
 // 最大ターン
 export let maxTurn = 10;
@@ -72,13 +73,18 @@ export const countPassiveAct = (turn:number ,index:number) => {
 export const logPush = (status:types.status, turn:number) => {
     // メンタル
     (function() {
-        const mentalIndex = indexSeaech(status.Mental, log[turn].Mental)
-        if(mentalIndex == "push") {
-            log[turn].Mental.push(status.Mental)
-        }else if(typeof mentalIndex === "number"){
-            log[turn].Mental.splice(mentalIndex, 0, status.Mental)
-        }else {
-            console.log("mental insert errer")
+        if(turn == 0) {
+            log[0].Mental.push(defaultStatus.Mental)
+        }
+        if(turn != 9) {
+            const mentalIndex = indexSeaech(status.Mental, log[turn + 1].Mental)
+            if(mentalIndex == "push") {
+                log[turn + 1].Mental.push(status.Mental)
+            }else if(typeof mentalIndex === "number"){
+                log[turn + 1].Mental.splice(mentalIndex, 0, status.Mental)
+            }else {
+                console.log("mental insert errer")
+            }
         }
     }());
     // 注目度 100％→100

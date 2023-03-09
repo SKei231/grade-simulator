@@ -4,34 +4,45 @@ import * as types from '../data/type'
 import { findByBuffID, buffList } from '../data/visibleBuff'
 import { findByTriggerID, triggerList } from '../data/passiveTrigger'
 import { findByLiveEffectID, findByPassiveID, passiveEffect, liveSkillEffect } from '../data/skillEffect'
+import { findByDuetID } from '../data/idolList'
 
 export const run = () => {
     statusUpdate()
+    let appealOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    if(vault.detailSetting.liveSkillRandom) { // ライブスキルのランダム選択
+        appealOrder = arrayShuffle(appealOrder)
+    }
     for(let Turn = 0; Turn < vault.maxTurn; Turn++) {
+        // ターン開始時
         turnStart(); // ステータス初期化、可視バフの消去
         if(Turn > 0) {
             memoryGaugeIncrease(); // 思い出ゲージ増加
         }
-        visibleBuffActivate(beforePassive);
-        passiveSkillActivate(Turn);
+        visibleBuffActivate(beforePassive); // 可視バフの反映（ターン開始時発動）
+        passiveSkillActivate(Turn); // パッシブの発動
 
+        // ライブスキル発動時
+        // ライブスキルの発動
+        applyMentalDamageEffect(); // メンタル変動値の反映
+        
+        // 審査員攻撃時
+        judgeDamage(3, 3); // 審査員ダメージ、回避、ダメージバフ
+        
         // 自由ーーーーーーーーーーーーーーーーーーーーーーーーーーー
-        if(Turn == 0) {
-            pushVisibleBuff(13, 3, 50, 3, 3)
-        }
-        status.Mental -= Math.floor(Math.random() * 1000)
-        visibleBuffActivate(DamageAvoidance)
-
+        // liveSkillEffect[findByLiveEffectID(vault.fesIdols[0].LiveSkill[0].Effect[0].eID)].value(vault.fesIdols[0].LiveSkill[0].Effect[0].eValue, vault.fesIdols[0].LiveSkill[0].Effect[0].eTurn[0], vault.fesIdols[0].LiveSkill[0].Effect[0].eNote[0]);
+        // status.Mental = 100;
+        liveSkillEffect[findByLiveEffectID(vault.fesIdols[0].LiveSkill[0].Effect[0].eID)].value(vault.fesIdols[0].LiveSkill[0].Effect[0].eValue, vault.fesIdols[0].LiveSkill[0].Effect[0].eTurn[0], vault.fesIdols[0].LiveSkill[0].Effect[0].eTime);
 
         // 自由ここまでーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
+        // ターン終了時
         memoryMaxSave()
+        // console.log(status.MemoryGauge);
         vault.logPush(status, Turn);
-        console.log(status.MemoryGauge)
     }
 }
 
-// 打たれ強い、弱い、影響力などを反映　最大Meの保存
+// 打たれ強い、弱い、影響力などを反映 最大Meの保存
 export let defaultStatus = {
     Mental: 0,
     Damage: 0,
@@ -142,7 +153,11 @@ const turnStart = () => {
     }
 }
 
-// 思い出ゲージ増加
+/**
+ * メンタルの増加
+ * ターン開始時の増加、status.MemoryRize を参照した増加
+ * ここで status.MemoryRatio を適用する
+ */
 const memoryGaugeIncrease = () => {
     // メンタルによる増加
     const mentalRatio = Math.floor((status.Mental / defaultStatus.Mental) * 100)
@@ -166,7 +181,7 @@ const memoryGaugeIncrease = () => {
     status.MemoryGauge += Math.floor(status.MemoryRize * status.MemoryRatio);
     status.MemoryRize = 0;
 }
-// 最大値の調整
+// 最大、最小値の調整
 const memoryMaxSave = () => {
     if(status.MemoryGauge > 1000) {
         status.MemoryGauge = 1000
@@ -200,6 +215,7 @@ const visibleBuffActivate = (effectType: number) => {
         if (AvoidSuccses) {
             visibleBuffActivate(AvoidanceSuccess)
         }
+        return AvoidSuccses
     } else if(effectType == AvoidanceSuccess) {
         for (let i = 0; i < status.VisibleBuffs.length; i++) {
             if (buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].EffectType == effectType) {
@@ -213,8 +229,9 @@ const visibleBuffActivate = (effectType: number) => {
         for (let i = 0; i < status.VisibleBuffs.length; i++) {
             if (buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].EffectType == effectType) {
                 if (status.VisibleBuffs[i].BuffTimes > 0) {
-                    buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].Value(status.VisibleBuffs[i].BuffValue, status.VisibleBuffs[i].BuffNote)
-                    status.VisibleBuffs[i].BuffTimes--
+                    if(buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].Value(status.VisibleBuffs[i].BuffValue, status.VisibleBuffs[i].BuffNote)) {
+                        status.VisibleBuffs[i].BuffTimes--
+                    }
                 }
             }
         }
@@ -243,9 +260,9 @@ const passiveSkillActivate = (turn:number) => {
         if(triggerList[findByTriggerID(vault.passiveSkills[index].Trigger.tID)].value(turn, index)) { // 発動可能かどうか
             // 発動するかどうか
             if(position == 0) { // Le
-                return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability * 1.9)
+                return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability * 1.9 + status.TriggerRateIncreases)
             }else {
-                return Math.floor(Math.random() * 100) < vault.passiveSkills[index].Probability
+                return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability + status.TriggerRateIncreases)
             }
         }
         return false
@@ -302,6 +319,58 @@ const passiveSkillActivate = (turn:number) => {
     }
     passiveActivate(true)  // 虹パッシブの発動
     passiveActivate(false) // その他パッシブの発動
+}
+
+/**
+ * 可視バフ、パッシブ、ライブスキルの効果によるメンタル変動の適用
+ */
+const applyMentalDamageEffect = () => {
+    if(status.Mental + status.MentalEffect > defaultStatus.Mental) {
+        status.Mental = defaultStatus.Mental;
+    }else {
+        status.Mental += status.MentalEffect;
+    }
+    if(status.Mental < 0) {
+        status.Mental = 0;
+    }
+    status.MentalEffect = 0;
+}
+
+/**
+ * 審査員ダメージ（メンタルダメージ）の算出
+ * @param member 審査員の数
+ * @param target 攻撃対象の数
+ */
+const judgeDamage = (member:number, target:number) => {
+    let attention = status.Attention
+    if(attention < 0) {
+        attention = 0
+    }
+    const x = attention / (500 + attention)
+    const damageCheck = (target:number) => {
+        if(target == 2) {
+            const twoWay = 1-4*(1-x)**2/(4+x)
+            return Math.random() < twoWay
+        }
+        if(target == 3) {
+            const threeWay = 1-12*(1-x)**3/((4+x)*(3+2*x))
+            return Math.random() < threeWay
+        }
+        if(target == 4) {
+            const fourWay = 1-24*(1-x)**4/((4+x)*(3+2*x)*(2+3*x))
+            return Math.random() < fourWay
+        }
+    }
+
+    // 審査員ダメージチェク
+    for(let i = 0; i < member; i++) {
+        if(damageCheck(target)) {
+            if(!visibleBuffActivate(DamageAvoidance)) {
+                status.Mental -= Math.floor(status.Damage * status.DamageRatio);
+                visibleBuffActivate(Damaged);
+            }
+        }
+    }
 }
 
 /**

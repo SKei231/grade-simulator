@@ -49,14 +49,14 @@ export type fesIdol = {
             eValue: number,
             eTurn: number[],
             eTime: number,
-            eNote: number | string
+            eNote: string
         }],
         Link: [{
             lID: number,
             lValue: number,
             lTurn: number[],
             lTime: number,
-            lNote: number | string
+            lNote: string
         }]
     }, {
         Priority: number,
@@ -68,16 +68,16 @@ export type fesIdol = {
         Effect: [{
             eID: number,
             eValue: number,
-            eTurn: number[],
+            eTurn: number[], // 0:通常 ,1:ターンの間(回避,被弾)
             eTime: number,
-            eNote: number | string
+            eNote: string
         }],
         Link: [{
             lID: number,
             lValue: number,
             lTurn: number[],
             lTime: number,
-            lNote: number | string
+            lNote: string
         }]
     }],
     PassiveIndex: [{
@@ -135,15 +135,19 @@ export type sEffect = {
     label: string,
     ID: number,
     existN: boolean,
+    existM: boolean,
     existTurn: boolean,
+    existTime: boolean,
+    existNote: boolean,
+    existAttribute: boolean,
     value: Function
 }
 
 // アイドル
 export type idol = {
     Name: String,
-    Number: number,
-    Unit: number
+    ID: number,
+    Unit: number[]
 }
 
 // シュミレーション実行中ステータス

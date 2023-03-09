@@ -2,8 +2,10 @@
 // 注目度、メンタルダメージ、回避など（予定）
 
 import { pEffect, sEffect, sAppeal } from "./type";
-import { status, defaultStatus, pushVisibleBuff } from "../event/simulate";
+import { status, defaultStatus, pushVisibleBuff, run } from "../event/simulate";
 import * as visivleBuff from './visibleBuff'
+import { duetList, idolList } from './idolList'
+import { fesIdols } from "../event/vault";
 
 visivleBuff.buffListCheck()
 
@@ -13,6 +15,7 @@ export const findByPassiveID = (id: number): number => {
         if (passiveEffect[seaechIndex].ID == id) {
             return seaechIndex;
         } else if (seaechIndex == passiveEffect.length) {
+            console.log("No such passiveEffect ID:" + id)
             return 99
         }
         seaechIndex++;
@@ -25,6 +28,7 @@ export const findByLiveEffectID = (id: number): number => {
         if (liveSkillEffect[seaechIndex].ID == id) {
             return seaechIndex;
         } else if (seaechIndex == liveSkillEffect.length) {
+            console.log("No such liveEffect ID:" + id)
             return 99
         }
         seaechIndex++;
@@ -37,6 +41,7 @@ export const findByAppealID = (id: number): number => {
         if (liveSkillAppeal[seaechIndex].ID == id) {
             return seaechIndex;
         } else if (seaechIndex == liveSkillAppeal.length) {
+            console.log("No such liveAppeal ID:" + id)
             return 99
         }
         seaechIndex++;
@@ -169,139 +174,269 @@ export const liveSkillAppeal: sAppeal[] = [
     },
 ]
 
+export const buffLastID = 19;
 // ライブスキルの効果一覧
 export const liveSkillEffect: sEffect[] = [
     {
         label: "なし",
         ID: 1,
         existN: false,
+        existM: false,
         existTurn: false,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {}
     },
     {
         label: "デュエット",
         ID: 2,
         existN: false,
+        existM: false,
         existTurn: false,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            if(value > idolList.length - 1) {
+                status.AppealLog.push(duetList[value].Unit[Math.floor(Math.random() * duetList[value].Unit.length)]);
+            }else {
+                status.AppealLog.push(value);
+            }
+        }
     },
     {
         label: "【N】%UP",
+        ID: 18,
+        existN: true,
+        existM: false,
+        existTurn: true,
+        existTime: false,
+        existNote: false,
+        existAttribute: true,
+        value: function (value:number, turn:number, note:string, ) {
+            let attribute = 0;
+            if(note == "Vo") {
+                attribute = 1;
+            }else if(note == "Da") {
+                attribute = 2;
+            }else if(note == "Vi") {
+                attribute = 3;
+            }
+            if(attribute != 0) {
+                pushVisibleBuff(attribute, turn, value, 0 ,0);
+            }
+        }
+    },
+    {
+        label: "メンタル【M】%減らし最大【N】%UP",
         ID: 19,
         existN: true,
+        existM: true,
         existTurn: true,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: true,
+        value: function (value:number, turn:number, note:string, deleteMental:number) {
+            // 未実装
+            let attribute = 0;
+            if(note == "Vo") {
+                attribute = 1;
+            }else if(note == "Da") {
+                attribute = 2;
+            }else if(note == "Vi") {
+                attribute = 3;
+            }
+            if(attribute != 0) {
+                pushVisibleBuff(attribute, turn, value, 0 ,0);
+            }
+        }
     },
     {
         label: "メンタル【N】％回復",
         ID: 3,
         existN: true,
+        existM: false,
         existTurn: false,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            status.MentalEffect += Math.floor(defaultStatus.Mental * (value * 0.01));
+        }
     },
     {
         label: "メンタル【N】％回復[超過思い出変換]",
         ID: 4,
         existN: true,
+        existM: false,
         existTurn: false,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            status.MentalEffect += Math.floor(defaultStatus.Mental * (value * 0.01));
+            if(status.Mental + status.MentalEffect - defaultStatus.Mental > 0) {
+                console.log(Math.floor(((status.Mental + status.MentalEffect - defaultStatus.Mental)/defaultStatus.Mental) * 1000));
+                status.MemoryRize += Math.floor(((status.Mental + status.MentalEffect - defaultStatus.Mental)/defaultStatus.Mental) * 1000);
+            }
+        }
     },
     {
         label: "メンタルダメージ【N】％UP",
         ID: 5,
         existN: true,
+        existM: false,
         existTurn: true,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(5, turn, value, 0, 0);
+        }
     },
     {
         label: "メンタルダメージ【N】％CUT",
         ID: 6,
         existN: true,
+        existM: false,
         existTurn: true,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(4, turn, value, 0, 0);
+        }
     },
     {
         label: "思い出ゲージ【N】％UP",
         ID: 7,
         existN: true,
+        existM: false,
         existTurn: false,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            status.MemoryRize += value * 10;
+        }
     },
     {
         label: "注目度【N】％UP",
         ID: 8,
         existN: true,
+        existM: false,
         existTurn: true,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(6, turn, value, 0, 0);
+        }
     },
     {
         label: "注目度【N】％DOWN",
         ID: 9,
         existN: true,
+        existM: false,
         existTurn: true,
-        value: function () { }
-    },
-    {
-        label: "注目度【N】％DOWN",
-        ID: 10,
-        existN: true,
-        existTurn: true,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(7, turn, value, 0, 0);
+        }
     },
     {
         label: "パッシブ発動率【N】％",
-        ID: 11,
+        ID: 10,
         existN: true,
+        existM: false,
         existTurn: true,
-        value: function () { }
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(8, turn, value, 0, 0);
+        }
     },
     {
         label: "リザレクション効果【N】％付与",
-        ID: 12,
+        ID: 11,
         existN: true,
+        existM: false,
         existTurn: true,
-        value: function () { }
+        existTime: true,
+        existNote: false,
+        existAttribute: false,
+        value: function (value:number, turn:number, time:number) {
+            pushVisibleBuff(21, turn, value, time, 0);
+        }
     },
     {
         label: "影響力【N】％UP",
-        ID: 13,
+        ID: 12,
         existN: true,
+        existM: false,
         existTurn: true,
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
         value: function () { }
     },
     {
         label: "影響力【N】％DOWN",
-        ID: 14,
+        ID: 13,
         existN: true,
+        existM: false,
         existTurn: true,
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
         value: function () { }
     },
     {
         label: "リラックス効果【N】％付与",
-        ID: 15,
+        ID: 14,
         existN: true,
+        existM: false,
         existTurn: true,
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
         value: function () { }
     },
     {
         label: "リアクション回避【N】％UP",
-        ID: 16,
+        ID: 15,
         existN: true,
+        existM: false,
         existTurn: true,
+        existTime: false,
+        existNote: false,
+        existAttribute: false,
         value: function () { }
     },
     {
         label: "【M】ターンの間 回避時【N】％UP",
-        ID: 17,
+        ID: 16,
         existN: true,
+        existM: true,
         existTurn: true,
+        existTime: true,
+        existNote: true,
+        existAttribute: true,
         value: function () { }
     },
     {
         label: "【M】ターンの間 ダメージ時【N】％UP",
-        ID: 18,
+        ID: 17,
         existN: true,
+        existM: true,
         existTurn: true,
+        existTime: true,
+        existNote: true,
+        existAttribute: true,
         value: function () { }
     },
 ]
@@ -356,7 +491,7 @@ const pasEffectListCheck = () => {
                 }
             }
             if (checkNumber > passiveEffect.length) {
-                console.log("passiveEffectListID is all correct")
+                console.log("passiveEffectListID complete")
                 pasEffectCheck = false;
             } else {
                 console.log('errer [pasiveEffectListID]')
@@ -419,7 +554,7 @@ const liveSkillAppealListCheck = () => {
                 }
             }
             if (checkNumber > liveSkillAppeal.length) {
-                console.log("liveSkillAppealListID is all correct")
+                console.log("liveSkillAppealListID complete")
                 liveSkillAppealCheck = false;
             } else {
                 console.log('errer [liveSkillAppealListID]')
@@ -482,7 +617,7 @@ const liveSkillEffectListCheck = () => {
                 }
             }
             if (checkNumber > liveSkillEffect.length) {
-                console.log("liveSkillEffectListID is all correct")
+                console.log("liveSkillEffectListID complete")
                 liveSkillEffectCheck = false;
             } else {
                 console.log('errer [liveSkillEffectListID]')

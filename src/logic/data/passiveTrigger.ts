@@ -7,12 +7,13 @@ export const triggerCheck = (ID: number) => {
     return triggerList[findByTriggerID(ID)].value()
 }
 
-export const findByTriggerID = (ID: number): number => {
+export const findByTriggerID = (id: number): number => {
     let seaechIndex = 0;
     while (true) {
-        if (triggerList[seaechIndex].ID == ID) {
+        if (triggerList[seaechIndex].ID == id) {
             return seaechIndex;
         } else if (seaechIndex == triggerList.length) {
+            console.log("No such passiveTrigger ID:" + id)
             return 0
         }
         seaechIndex++;
@@ -328,7 +329,7 @@ const triggerListCheck = () => {
                 }
             }
             if (checkNumber > triggerList.length) {
-                console.log("triggerListID is all correct")
+                console.log("triggerListID complete")
                 triggerCheck = false;
             } else {
                 console.log("Next:" + checkNumber)

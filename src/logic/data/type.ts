@@ -102,6 +102,10 @@ export type detail = {
     omonouPlus: number,
     // 思い出増加+2%
     omonoukakin: number,
+    // 注目の的
+    centerOfAttention: number,
+    // ひかえめ
+    noAttention: number,
     // ライブスキルのランダム選択
     liveSkillRandom: boolean
 }
@@ -163,6 +167,8 @@ export type status = {
     MemoryRize: number, // 思い出加速
     TriggerRateIncreases: number, // パッシブ発動率上昇
     AppealLog: number[], // 履歴
+    AppealOrder: number[], // ライブスキルの入手順
+    AppealLIst: number[], // 選択可能なライブスキル
     PassiveActTimes: number[][], // パッシブ発動回数
     VisibleBuffs: [{
         BuffID: number, // 可視バフID

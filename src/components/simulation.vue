@@ -1,5 +1,10 @@
 <template>
   <div id="simArea" v-if="displayBool">
+    <div class="finalCheck" id="errerCheck" v-if="!correctData && !simulationRunning">
+      <h2 style="padding-bottom: 10px;">入力データに不備があります</h2>
+      <p v-for="eMessage in errerMessage">{{ eMessage }}</p>
+      <div class="bigBtn" id="backBtn" @click="close()">戻る</div>
+    </div>
     <div class="finalCheck" v-if="correctData">
       <h2>シュミレート準備完了</h2>
       <div style="text-align: center; padding-top: 20px;"><label style="user-select: none;"><input type="checkbox"
@@ -24,6 +29,9 @@ import * as types from '../logic/data/type'
 import * as vault from '../logic/event/vault'
 import * as simulate from '../logic/event/simulate'
 import router from '../router/router';
+import { dataVerification } from '../logic/event/dataCheck';
+
+const emit = defineEmits(["displayUpdate"])
 
 // データのセット
 let passiveSkills: types.passive[] = [];
@@ -34,13 +42,22 @@ const setData = (data: {
   fesIdol: types.fesIdol[],
   detail: any
 }) => {
-  passiveSkills = data.passive;
-  fesIdols = data.fesIdol;
-  detailSetting = data.detail;
+  correctData = false;
+  errerMessage.length = 0;
+  errerMessage = dataVerification(data.passive, data.fesIdol, data.detail);
+  if(errerMessage.length == 0) {
+    passiveSkills = data.passive;
+    fesIdols = data.fesIdol;
+    detailSetting = data.detail;
+    correctData = true;
+  }
+  emit('displayUpdate');
 }
 
 // データチェック（未実装）
-const correctData = ref(true)
+let correctData = false
+let errerMessage:string[] = []
+
 // プログレスバー
 const progressPer = ref(0)
 
@@ -50,8 +67,8 @@ const play = () => {
   if (noSet.value != true) {
     setLocalStorage();
   }
-  correctData.value = false
-  simulationRunning.value = true
+  correctData = false;
+  simulationRunning.value = true;
   vault.setData(passiveSkills, fesIdols, detailSetting);
   setTimeout(() => { simulateStart(); }, 100)
 }
@@ -125,6 +142,14 @@ const simulateStart = () => {
 
 .finalCheck h2 {
   margin-top: 0;
+  text-align: center;
+}
+
+#errerCheck {
+  margin: 5% auto;
+  height: auto;
+}
+#errerCheck>p {
   text-align: center;
 }
 
@@ -262,6 +287,10 @@ const simulateStart = () => {
   .finalCheck h2 {
     font-size: 18px;
     padding-bottom: 20px;
+  }
+
+  #errerCheck {
+    width: 90%;
   }
 
   .bigBtn {

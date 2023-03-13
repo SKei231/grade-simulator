@@ -4,17 +4,12 @@ import * as types from '../data/type'
 import { findByBuffID, buffList } from '../data/visibleBuff'
 import { findByTriggerID, triggerList } from '../data/passiveTrigger'
 import { findByLiveEffectID, findByPassiveID, passiveEffect, liveSkillEffect } from '../data/skillEffect'
-import { findByDuetID } from '../data/idolList'
 
 export const run = () => {
     statusUpdate()
-    let appealOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    if(vault.detailSetting.liveSkillRandom) { // ライブスキルのランダム選択
-        appealOrder = arrayShuffle(appealOrder)
-    }
     for(let Turn = 0; Turn < vault.maxTurn; Turn++) {
         // ターン開始時
-        turnStart(); // ステータス初期化、可視バフの消去
+        turnStart(Turn); // ステータス初期化、可視バフの消去
         if(Turn > 0) {
             memoryGaugeIncrease(); // 思い出ゲージ増加
         }
@@ -22,18 +17,14 @@ export const run = () => {
         passiveSkillActivate(Turn); // パッシブの発動
 
         // ライブスキル発動時
-        // ライブスキルの発動
+        liveSkillAppeal(Turn); // ライブスキルの発動
         applyMentalDamageEffect(); // メンタル変動値の反映
         
         // 審査員攻撃時
         judgeDamage(3, 3); // 審査員ダメージ、回避、ダメージバフ
         
-        // 自由ーーーーーーーーーーーーーーーーーーーーーーーーーーー
-        // liveSkillEffect[findByLiveEffectID(vault.fesIdols[0].LiveSkill[0].Effect[0].eID)].value(vault.fesIdols[0].LiveSkill[0].Effect[0].eValue, vault.fesIdols[0].LiveSkill[0].Effect[0].eTurn[0], vault.fesIdols[0].LiveSkill[0].Effect[0].eNote[0]);
-        // status.Mental = 100;
-        liveSkillEffect[findByLiveEffectID(vault.fesIdols[0].LiveSkill[0].Effect[0].eID)].value(vault.fesIdols[0].LiveSkill[0].Effect[0].eValue, vault.fesIdols[0].LiveSkill[0].Effect[0].eTurn[0], vault.fesIdols[0].LiveSkill[0].Effect[0].eTime);
-
-        // 自由ここまでーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+        // デバッグエリアーーーーーーーーーーーーーーーーーーーーーーーーーーー
+        // デバッグエリアここまでーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
         // ターン終了時
         memoryMaxSave()
@@ -47,7 +38,8 @@ export let defaultStatus = {
     Mental: 0,
     Damage: 0,
     DamageRatio: 1,
-    MemoryRatio: 1
+    MemoryRatio: 1,
+    Attention: 100
 }
 
 export let status: types.status = {
@@ -62,6 +54,8 @@ export let status: types.status = {
     MemoryRize: 0, // 思い出加速
     TriggerRateIncreases: 0, // パッシブ発動率上昇 20% -> 20
     AppealLog: [], // 履歴 
+    AppealOrder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // 選択可能なライブスキル
+    AppealLIst: [], // 選択可能なライブスキル
     PassiveActTimes: [], // パッシブ発動回数
     VisibleBuffs: [{
         BuffID: 1, // 可視バフID
@@ -99,6 +93,7 @@ const statusUpdate = () => {
     defaultStatus.Mental = vault.staticStatus.Me;
     defaultStatus.Damage = vault.detailSetting.damage;
     defaultStatus.MemoryRatio = 1;
+    defaultStatus.Attention = 100;
     status.Mental = vault.staticStatus.Me;
     status.RecoveryTimes = 0;
     status.MemoryGauge = 0;
@@ -125,16 +120,30 @@ const statusUpdate = () => {
     if (vault.detailSetting.omonoukakin > 0) {
         defaultStatus.MemoryRatio *= 0.02 * vault.detailSetting.omonoukakin + 1;
     }
+    if (vault.detailSetting.centerOfAttention > 0) {
+        defaultStatus.Attention += 10 * vault.detailSetting.centerOfAttention;
+    }
+    if (vault.detailSetting.noAttention > 0) {
+        defaultStatus.Attention -= 3 * vault.detailSetting.noAttention + 1;
+    }
     createPassiveActTimes()
+
+    // ライブスキルのランダム選択
+    if(vault.detailSetting.liveSkillRandom) {
+        status.AppealOrder = arrayShuffle(status.AppealOrder)
+    }
+
+    // 選択可能なライブスキルの入手
+    status.AppealLIst = [status.AppealOrder[0], status.AppealOrder[1], status.AppealOrder[2]]
 }
 
-const turnStart = () => {
+const turnStart = (turn:number) => {
     // ステータス初期化
     status.Damage = defaultStatus.Damage;
     status.DamageRatio = defaultStatus.DamageRatio;
     status.MemoryRatio = defaultStatus.MemoryRatio;
     status.MentalEffect = 0;
-    status.Attention = 100;
+    status.Attention = defaultStatus.Attention;
     status.TriggerRateIncreases = 0;
     status.Buff.Visible.vVo = 0;
     status.Buff.Visible.vDa = 0;
@@ -151,10 +160,15 @@ const turnStart = () => {
             i--;
         }
     }
+
+    // 選択可能なライブスキルの追加
+    if(turn + 2 < vault.maxTurn && turn != 0) {
+        status.AppealLIst.push(status.AppealOrder[turn + 2])
+    }
 }
 
 /**
- * メンタルの増加
+ * メンタルを参照した思い出ゲージの増加
  * ターン開始時の増加、status.MemoryRize を参照した増加
  * ここで status.MemoryRatio を適用する
  */
@@ -212,15 +226,12 @@ const visibleBuffActivate = (effectType: number) => {
                 }
             }
         }
-        if (AvoidSuccses) {
-            visibleBuffActivate(AvoidanceSuccess)
-        }
-        return AvoidSuccses
+        return AvoidSuccses;
     } else if(effectType == AvoidanceSuccess) {
         for (let i = 0; i < status.VisibleBuffs.length; i++) {
             if (buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].EffectType == effectType) {
                 if (status.VisibleBuffs[i].BuffTimes > 0) {
-                    buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].Value(status.VisibleBuffs[i].BuffValue, status.VisibleBuffs[i].BuffTurn)
+                    buffList[findByBuffID(status.VisibleBuffs[i].BuffID)].Value(status.VisibleBuffs[i].BuffValue, status.VisibleBuffs[i].BuffNote)
                     status.VisibleBuffs[i].BuffTimes--
                 }
             }
@@ -321,6 +332,63 @@ const passiveSkillActivate = (turn:number) => {
     passiveActivate(false) // その他パッシブの発動
 }
 
+const liveSkillAppeal = (turn:number) => {
+    // 優先順位の検索
+    const searchLiveSkill = (priority:number) => {
+        for(let i = 0; i < 5; i++) {
+            for(let j = 0; j < 2; j++) {
+                if(priority == vault.fesIdols[i].LiveSkill[j].Priority) {
+                    return [i, j];
+                }
+            }
+        }
+        console.log("not found index searched by liveskill priority")
+    }
+    // 選択可能なライブスキルの中から指定、status.AppealList からの削除
+    const selectLiveSkill = () => {
+        let select = {
+            priority: status.AppealLIst[0],
+            index: 0
+        }
+        for(let i = 1; i < status.AppealLIst.length; i++) {
+            if(status.AppealLIst[i] < select.priority) {
+                select.priority = status.AppealLIst[i]
+                select.index = i
+            }
+        }
+        status.AppealLIst.splice(select.index,1)
+        return select.priority
+    }
+
+    const lin = searchLiveSkill(selectLiveSkill());
+
+    if(lin) {
+        for(let i = 0; i < vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect.length; i++) {
+            if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].existAttribute) {
+                if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].existM) {
+                    if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].existTime) {
+                        // value, turn, Mturn, time, note (回避時、ダメージ時バフ)
+                        liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[1], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTime, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eNote);
+                    }else {
+                        // value, turn, note, deleteMental (自傷バフ)
+                        liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eNote, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[1]);
+                    }
+                }else {
+                    // value, turn, note (通常 VoDaVi バフ)
+                    liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eNote);
+                }
+
+            }else if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].ID == 11) {
+                // value, turn, time (リザレクション)
+                liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTime);
+            }else {
+                // value, turn
+                liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[0]);
+            }
+        }
+    }
+} 
+
 /**
  * 可視バフ、パッシブ、ライブスキルの効果によるメンタル変動の適用
  */
@@ -362,10 +430,17 @@ const judgeDamage = (member:number, target:number) => {
         }
     }
 
+    // 回避の発動
+    let avoid = false;
+    if(visibleBuffActivate(DamageAvoidance)) {
+        avoid = true;
+    }
     // 審査員ダメージチェク
     for(let i = 0; i < member; i++) {
         if(damageCheck(target)) {
-            if(!visibleBuffActivate(DamageAvoidance)) {
+            if(avoid) {
+                visibleBuffActivate(AvoidanceSuccess)
+            }else {
                 status.Mental -= Math.floor(status.Damage * status.DamageRatio);
                 visibleBuffActivate(Damaged);
             }
@@ -381,13 +456,13 @@ const judgeDamage = (member:number, target:number) => {
  * @param times 被弾時、回避時バフ等の回数
  * @param note 二次バフ(回避時バフのターン数等)の要素
  */
-export const pushVisibleBuff = (id: number, turn: number, value: number, times: number, note: number) => {
+export const pushVisibleBuff = (id: number, turn: number, value: number, times: number, nextTurn: number) => {
     status.VisibleBuffs.push({
         BuffID: id, // 可視バフID
         BuffTurn: turn, // 可視バフターン
         BuffValue: value, // 可視バフ倍率
         BuffTimes: times, // 可視バフ回数
-        BuffNote: note // 二次バフの要素
+        BuffNote: nextTurn // 二次バフの要素
     })
 }
 

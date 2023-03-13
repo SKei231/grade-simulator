@@ -374,6 +374,18 @@
                             </li>
                             <li>
                                 <div>
+                                    <label for="">注目の的 を取得した人数</label>
+                                    <input type="number" id="centerOfAttention" v-model="detailSetting.centerOfAttention" max="5">
+                                </div>
+                            </li>
+                            <li>
+                                <div>
+                                    <label for="">ひかえめ を取得した人数</label>
+                                    <input type="number" id="noAttention" v-model="detailSetting.noAttention" max="5">
+                                </div>
+                            </li>
+                            <li>
+                                <div>
                                     <label for="count">試行回数</label>
                                     <input type="number" id="count" v-model="detailSetting.count" max="15">,000 回
                                 </div>
@@ -636,7 +648,7 @@ const setData = (data: {
             }
         }
         for(let j = 0; j < newFesIdol.PassiveIndex.length; j++) {
-            if (typeof newFesIdol.PassiveIndex[j].index !== "number" || typeof newFesIdol.PassiveIndex[j].index !== "number") {
+            if (typeof newFesIdol.PassiveIndex[j].index !== "number") {
                 newFesIdol.PassiveIndex[j] = {
                     index: ref(0).value,
                     times: ref().value
@@ -654,6 +666,8 @@ const setData = (data: {
         omonouDPlus: data.detail.omonouDPlus ?? ref(0).value,
         omonouPlus: data.detail.omonouPlus ?? ref(0).value,
         omonoukakin: data.detail.omonoukakin ?? ref(0).value,
+        centerOfAttention: data.detail.centerOfAttention ?? ref(0).value,
+        noAttention: data.detail.noAttention ?? ref(0).value,
         liveSkillRandom: data.detail.liveSkillRandom ?? ref(false).value
     }
 }
@@ -860,7 +874,6 @@ const plusEffect = (index: number) => {
     displayUpdate();
 }
 
-
 // 編成
 let fesIdols: types.fesIdol[] = [];
 
@@ -1040,6 +1053,10 @@ let detailSetting: types.detail = {
     omonouPlus: ref(0).value,
     // 思い出増加+2%
     omonoukakin: ref(0).value,
+    // 注目の的
+    centerOfAttention: ref(0).value,
+    // ひかえめ
+    noAttention: ref(0).value,
     // ライブスキルのランダム
     liveSkillRandom: ref(false).value
 }
@@ -1423,7 +1440,9 @@ input[type="number"] {
 #count,
 #omonouDPlus,
 #omonouPlus,
-#omonoukakin {
+#omonoukakin,
+#centerOfAttention,
+#noAttention {
     width: 100px;
     padding: 1px 5px;
     margin-left: 10px;

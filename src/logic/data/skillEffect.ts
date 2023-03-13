@@ -382,7 +382,9 @@ export const liveSkillEffect: sEffect[] = [
         existTime: false,
         existNote: false,
         existAttribute: false,
-        value: function () { }
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(18, turn, value, 0, 0);
+        }
     },
     {
         label: "影響力【N】％DOWN",
@@ -393,7 +395,9 @@ export const liveSkillEffect: sEffect[] = [
         existTime: false,
         existNote: false,
         existAttribute: false,
-        value: function () { }
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(19, turn, value, 0, 0);
+        }
     },
     {
         label: "リラックス効果【N】％付与",
@@ -404,7 +408,9 @@ export const liveSkillEffect: sEffect[] = [
         existTime: false,
         existNote: false,
         existAttribute: false,
-        value: function () { }
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(10, turn, value, 0, 0);
+        }
     },
     {
         label: "リアクション回避【N】％UP",
@@ -415,7 +421,9 @@ export const liveSkillEffect: sEffect[] = [
         existTime: false,
         existNote: false,
         existAttribute: false,
-        value: function () { }
+        value: function (value:number, turn:number) {
+            pushVisibleBuff(11, turn, value, 0, 0);
+        }
     },
     {
         label: "【M】ターンの間 回避時【N】％UP",
@@ -426,7 +434,19 @@ export const liveSkillEffect: sEffect[] = [
         existTime: true,
         existNote: true,
         existAttribute: true,
-        value: function () { }
+        value: function (value:number, turn:number, Mturn:number, time:number, note:string) {
+            let attribute = 0;
+            if(note == "Vo") {
+                attribute = 12;
+            }else if(note == "Da") {
+                attribute = 13;
+            }else if(note == "Vi") {
+                attribute = 14;
+            }
+            if(attribute != 0) {
+                pushVisibleBuff(attribute, Mturn, value, time, turn);
+            }
+        }
     },
     {
         label: "【M】ターンの間 ダメージ時【N】％UP",
@@ -437,7 +457,19 @@ export const liveSkillEffect: sEffect[] = [
         existTime: true,
         existNote: true,
         existAttribute: true,
-        value: function () { }
+        value: function (value:number, turn:number, Mturn:number, time:number, note:string) {
+            let attribute = 0;
+            if(note == "Vo") {
+                attribute = 15;
+            }else if(note == "Da") {
+                attribute = 16;
+            }else if(note == "Vi") {
+                attribute = 17;
+            }
+            if(attribute != 0) {
+                pushVisibleBuff(attribute, Mturn, value, time, turn);
+            }
+        }
     },
 ]
 

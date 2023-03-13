@@ -135,40 +135,53 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
                     }
                 }
             }
-            // link
-            for(let lIndex = 0; lIndex < fesIdol[i].LiveSkill[j].Link.length; lIndex++) {
+            // link appeal
+            for(let laIndex = 0; laIndex < fesIdol[i].LiveSkill[j].Link.lAppeal.length; laIndex++) {
+                if(fesIdol[i].LiveSkill[j].Link.lAppeal[laIndex].laID != 1) {
+                    // avalue
+                    if(!fesIdol[i].LiveSkill[j].Link.lAppeal[laIndex].laValue) {
+                        errerMessage.push(fesIdol[i].Position + ' のライブスキルの【N】を入力してください');
+                    }
+                    // aattribute
+                    if(!fesIdol[i].LiveSkill[j].Link.lAppeal[laIndex].laAttribute) {
+                        errerMessage.push(fesIdol[i].Position + ' のライブスキルの属性を入力してください');
+                    }
+                }
+            }
+            // link effect
+            for(let leIndex = 0; leIndex < fesIdol[i].LiveSkill[j].Link.lEffect.length; leIndex++) {
                 // lturn 1
-                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link[lIndex].lID)].existM) {
-                    if(!fesIdol[i].LiveSkill[j].Link[lIndex].lTurn[1]) {
+                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leID)].existM) {
+                    if(!fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leTurn[1]) {
                         errerMessage.push(fesIdol[i].Position + ' のLink効果の【M】を入力してください');
                     }
                 }
                 // lvalue
-                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link[lIndex].lID)].existN) {
-                    if(!fesIdol[i].LiveSkill[j].Link[lIndex].lValue) {
+                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leID)].existN) {
+                    if(!fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leValue) {
                         errerMessage.push(fesIdol[i].Position + ' のLink効果の【N】を入力してください');
                     }
                 }
-                if(fesIdol[i].LiveSkill[j].Link[lIndex].lID == 2) {
-                    if(!fesIdol[i].LiveSkill[j].Link[lIndex].lValue) {
+                if(fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leID == 2) {
+                    if(!fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leValue) {
                         errerMessage.push(fesIdol[i].Position + ' のLink効果のデュエットを選択してください');
                     }
                 }
                 // lturn 0
-                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link[lIndex].lID)].existTurn) {
-                    if(!fesIdol[i].LiveSkill[j].Link[lIndex].lTurn[0]) {
+                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leID)].existTurn) {
+                    if(!fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leTurn[0]) {
                         errerMessage.push(fesIdol[i].Position + ' のLink効果ターンを入力してください');
                     }
                 }
                 // ltime
-                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link[lIndex].lID)].existTime) {
-                    if(!fesIdol[i].LiveSkill[j].Link[lIndex].lTime) {
+                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leID)].existTime) {
+                    if(!fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leTime) {
                         errerMessage.push(fesIdol[i].Position + ' のLink効果の回数を入力してください');
                     }
                 }
                 // lnote
-                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link[lIndex].lID)].existAttribute) {
-                    if(!fesIdol[i].LiveSkill[j].Link[lIndex].lNote) {
+                if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leID)].existAttribute) {
+                    if(!fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leNote) {
                         errerMessage.push(fesIdol[i].Position + ' のLink効果の属性を入力してください');
                     }
                 }

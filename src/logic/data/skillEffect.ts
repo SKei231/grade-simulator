@@ -2,10 +2,9 @@
 // 注目度、メンタルダメージ、回避など（予定）
 
 import { pEffect, sEffect, sAppeal } from "./type";
-import { status, defaultStatus, pushVisibleBuff, run } from "../event/simulate";
+import { status, defaultStatus, pushVisibleBuff, appealLogPush } from "../event/simulate";
 import * as visivleBuff from './visibleBuff'
 import { duetList, idolList } from './idolList'
-import { fesIdols } from "../event/vault";
 
 visivleBuff.buffListCheck()
 
@@ -55,6 +54,23 @@ export const passiveEffect: pEffect[] = [
         ID: 1,
         existN: false,
         value: function (value:number) {}
+    },
+    {
+        label: "(他属性の追加バフ)【N】％UP",
+        ID: 10,
+        existN: true,
+        value: function (value:number, attribute:string) {
+            if(attribute == 'Vo') {
+                status.Buff.Passive.pDa += value;
+                status.Buff.Passive.pVi += value;
+            }else if(attribute == 'Da') {
+                status.Buff.Passive.pVo += value;
+                status.Buff.Passive.pVi += value;
+            }else if(attribute == 'Vi') {
+                status.Buff.Passive.pDa += value;
+                status.Buff.Passive.pVo += value;
+            }
+        }
     },
     {
         label: "メンタル【N】％回復",
@@ -198,11 +214,7 @@ export const liveSkillEffect: sEffect[] = [
         existNote: false,
         existAttribute: false,
         value: function (value:number, turn:number) {
-            if(value > idolList.length - 1) {
-                status.AppealLog.push(duetList[value].Unit[Math.floor(Math.random() * duetList[value].Unit.length)]);
-            }else {
-                status.AppealLog.push(value);
-            }
+            appealLogPush(value);
         }
     },
     {
@@ -238,7 +250,15 @@ export const liveSkillEffect: sEffect[] = [
         existNote: false,
         existAttribute: true,
         value: function (value:number, turn:number, note:string, deleteMental:number) {
-            // 未実装
+            let buffValue = 0;
+            const dMental = Math.floor(status.Mental * deleteMental * 0.01);
+            if(dMental <= 500) {
+                buffValue = Math.floor(value * 0.02);
+            }else if(dMental < 1000) {
+                buffValue = Math.floor(value * (0.00196 * dMental - 0.96));
+            }else {
+                buffValue = value;
+            }
             let attribute = 0;
             if(note == "Vo") {
                 attribute = 1;
@@ -248,7 +268,8 @@ export const liveSkillEffect: sEffect[] = [
                 attribute = 3;
             }
             if(attribute != 0) {
-                pushVisibleBuff(attribute, turn, value, 0 ,0);
+                console.log(buffValue)
+                pushVisibleBuff(attribute, turn, buffValue, 0 ,0);
             }
         }
     },
@@ -277,7 +298,6 @@ export const liveSkillEffect: sEffect[] = [
         value: function (value:number, turn:number) {
             status.MentalEffect += Math.floor(defaultStatus.Mental * (value * 0.01));
             if(status.Mental + status.MentalEffect - defaultStatus.Mental > 0) {
-                console.log(Math.floor(((status.Mental + status.MentalEffect - defaultStatus.Mental)/defaultStatus.Mental) * 1000));
                 status.MemoryRize += Math.floor(((status.Mental + status.MentalEffect - defaultStatus.Mental)/defaultStatus.Mental) * 1000);
             }
         }

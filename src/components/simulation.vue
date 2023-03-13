@@ -103,17 +103,13 @@ defineExpose({
 // シミュレーション
 const simulateStart = () => {
   vault.createLog()
-  // for(let i = 0; i < 100 ; i++){
-  //     for(let j = 0; j < detailSetting.count * 10; j++){
-  //         simulate.run()
-  //     }
-  //     // progressPer.value++
-  // }
-  simulate.run()
-  simulate.run()
-  console.log('end')
-  console.log(vault.log)
-  // router.push('/Result')
+  for(let i = 0; i < 100 ; i++){
+      for(let j = 0; j < detailSetting.count * 10; j++){
+          simulate.run();
+      }
+      // progressPer.value++;
+  }
+  setTimeout(() => { router.push('/Result'); }, 100)
 }
 </script>
 

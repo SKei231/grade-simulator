@@ -4,6 +4,7 @@ import * as types from '../data/type'
 import { findByBuffID, buffList } from '../data/visibleBuff'
 import { findByTriggerID, triggerList } from '../data/passiveTrigger'
 import { findByLiveEffectID, findByPassiveID, passiveEffect, liveSkillEffect } from '../data/skillEffect'
+import { findByIdolID, idolList } from '../data/idolList'
 
 export const run = () => {
     statusUpdate()
@@ -22,13 +23,9 @@ export const run = () => {
         
         // 審査員攻撃時
         judgeDamage(3, 3); // 審査員ダメージ、回避、ダメージバフ
-        
-        // デバッグエリアーーーーーーーーーーーーーーーーーーーーーーーーーーー
-        // デバッグエリアここまでーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
         // ターン終了時
         memoryMaxSave()
-        // console.log(status.MemoryGauge);
         vault.logPush(status, Turn);
     }
 }
@@ -311,7 +308,11 @@ const passiveSkillActivate = (turn:number) => {
                                 status.Buff.Passive.pVi += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
                             }
                             for(let n = 0; n < vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect.length; n++ ) {
-                                passiveEffect[findByPassiveID(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eID)].value(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eValue);
+                                if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eID == 10) {
+                                    passiveEffect[findByPassiveID(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eID)].value(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eValue, vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute);
+                                }else {
+                                    passiveEffect[findByPassiveID(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eID)].value(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Effect[n].eValue);
+                                }
                             }
                             vault.countPassiveAct(turn, vault.fesIdols[order[i]].PassiveIndex[j].index);
                             status.PassiveActTimes[order[i]][j]--;
@@ -332,6 +333,10 @@ const passiveSkillActivate = (turn:number) => {
     passiveActivate(false) // その他パッシブの発動
 }
 
+/**
+ * ライブスキルの発動/Linkの発動
+ * @param turn 現在のターン
+ */
 const liveSkillAppeal = (turn:number) => {
     // 優先順位の検索
     const searchLiveSkill = (priority:number) => {
@@ -359,10 +364,35 @@ const liveSkillAppeal = (turn:number) => {
         status.AppealLIst.splice(select.index,1)
         return select.priority
     }
+    // Linkの発動有無 
+    // @ts-ignore
+    const linkAct = (idolID:number):boolean => {
+        const linkList = idolList[findByIdolID(idolID)].Unit;
+        let checker = true;
+        let scanningIndex = 0;
+        while(checker) {
+            for(let i = 0; i < status.AppealLog.length; i++) {
+                if(status.AppealLog[i] == linkList[scanningIndex]) {
+                    scanningIndex++;
+                    checker = false;
+                }
+            }
+            if(checker) { // 履歴のヒットがなかった場合
+                return false;
+            }else if(scanningIndex == linkList.length){ // 履歴全てがヒットした場合
+                return true;
+            }else {
+                checker = true;
+            }
+        }
+    }
 
     const lin = searchLiveSkill(selectLiveSkill());
 
     if(lin) {
+        // 履歴への挿入
+        appealLogPush(vault.fesIdols[lin[0]].Idol)
+        // スキル効果の発動
         for(let i = 0; i < vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect.length; i++) {
             if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].existAttribute) {
                 if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].existM) {
@@ -386,8 +416,43 @@ const liveSkillAppeal = (turn:number) => {
                 liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[0]);
             }
         }
+        // Linkの発動
+        if(linkAct(vault.fesIdols[lin[0]].Idol)) {
+            for(let i = 0; i < vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect.length; i++) {
+                if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].existAttribute) {
+                    if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].existM) {
+                        if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].existTime) {
+                            // value, turn, Mturn, time, note (回避時、ダメージ時バフ)
+                            liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[1], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTime, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leNote);
+                        }else {
+                            // value, turn, note, deleteMental (自傷バフ)
+                            liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leNote, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[1]);
+                        }
+                    }else {
+                        // value, turn, note (通常 VoDaVi バフ)
+                        liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leNote);
+                    }
+    
+                }else if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].ID == 11) {
+                    // value, turn, time (リザレクション)
+                    liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTime);
+                }else {
+                    // value, turn
+                    liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[0]);
+                }
+            }
+        }
     }
 } 
+
+export const appealLogPush = (idolID:number) => {
+    if(status.AppealLog.length <= 6) {
+        status.AppealLog.push(idolID);
+    }else {
+        status.AppealLog.shift();
+        status.AppealLog.push(idolID);
+    }
+}
 
 /**
  * 可視バフ、パッシブ、ライブスキルの効果によるメンタル変動の適用

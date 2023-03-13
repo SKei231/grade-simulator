@@ -51,13 +51,20 @@ export type fesIdol = {
             eTime: number,
             eNote: string
         }],
-        Link: [{
-            lID: number,
-            lValue: number,
-            lTurn: number[],
-            lTime: number,
-            lNote: string
-        }]
+        Link: {
+            lAppeal: [{
+                laID: number,
+                laValue: number,
+                laAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+            }],
+            lEffect: [{
+                leID: number,
+                leValue: number,
+                leTurn: number[],
+                leTime: number,
+                leNote: string
+            }]
+        }
     }, {
         Priority: number,
         Appeal: [{
@@ -68,17 +75,24 @@ export type fesIdol = {
         Effect: [{
             eID: number,
             eValue: number,
-            eTurn: number[], // 0:通常 ,1:ターンの間(回避,被弾)
+            eTurn: number[],
             eTime: number,
             eNote: string
         }],
-        Link: [{
-            lID: number,
-            lValue: number,
-            lTurn: number[],
-            lTime: number,
-            lNote: string
-        }]
+        Link: {
+            lAppeal: [{
+                laID: number,
+                laValue: number,
+                laAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+            }],
+            lEffect: [{
+                leID: number,
+                leValue: number,
+                leTurn: number[],
+                leTime: number,
+                leNote: string
+            }]
+        }
     }],
     PassiveIndex: [{
         index: number,

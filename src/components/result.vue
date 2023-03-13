@@ -1,8 +1,10 @@
 <!--  -->
-<template></template>
+<template>
+    {{ vault.log }}
+</template>
 
 <script setup lang="ts">
-import Sim from './simulation.vue'
+import * as vault from '../logic/event/vault'
 
 </script>
 

@@ -1,4 +1,5 @@
 <template>
+    <Header></Header>
     <div id="contents">
         <div class="smallnavbtn-wrapper" v-if="mobileView">
             <div v-bind:class="smallnavbtn" @click="snavBtnActive()"><span></span><span></span><span></span>
@@ -367,6 +368,7 @@ import * as vault from '../logic/event/vault'
 import * as types from '../logic/data/type'
 import Help from './help.vue'
 import Simulation from './simulation.vue'
+import Header from './header.vue'
 
 // localStorage から読み込み
 const loadLocalStorage = () => {

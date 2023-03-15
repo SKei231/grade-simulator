@@ -50,12 +50,11 @@
     <div id="graphArea">
       <canvas ref="resultGraph">ブラウザがサポートしていないため、グラフを表示できません</canvas>
     </div>
-    <p>{{ labelDiscription }}</p>
+    <p id="labelDiscription">{{ labelDiscription }}</p>
     <div id="listArea" v-if="graphTurn != 0">
       list
     </div>
   </div>
-  <div v-if="display"></div>
   <div class="bigBtn" @click="(router.go(-1))">入力画面に戻る</div>
 </template>
 
@@ -109,7 +108,7 @@ const selectedDataMode = ref(1); // グラフの表示データ
 const selectedVo = ref(true); // Vo の選択
 const selectedDa = ref(true); // Ds の選択
 const selectedVi = ref(true); // Vi の選択
-const labelDiscription = ref("") // ラベルの説明文
+const labelDiscription = ref("aaa") // ラベルの説明文
 
 // グラフの描写
 const resultGraph = ref<HTMLCanvasElement | null>(null);
@@ -215,6 +214,7 @@ const createCharts = () => {
           }
           data.datasets.push(pushData)
         }
+        labelDiscription.value = "縦軸:バフの倍率、横軸:ターン数";
         drawChart(data, {})
       }else if(selectedGraphMode.value == 2) {
         if(selectedVo.value) {
@@ -250,6 +250,7 @@ const createCharts = () => {
           }
           data.datasets.push(pushData)
         }
+        labelDiscription.value = "縦軸:バフの倍率、横軸:ターン数";
         drawChart(data, {})
       }else if(selectedGraphMode.value == 3) {
         let pushData:psData = {
@@ -261,6 +262,7 @@ const createCharts = () => {
           pushData.data.push(searchData(vault.log[i].Mental))
         }
         data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:ターン開始メンタルの値、横軸:ターン数";
         drawChart(data, {
             scales: {
               y: {
@@ -279,6 +281,7 @@ const createCharts = () => {
           pushData.data.push(searchData(vault.log[i].Attention))
         }
         data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:変動した注目度の値、横軸:ターン数";
         drawChart(data, {})
       }else if(selectedGraphMode.value == 5) {
         let pushData:psData = {
@@ -290,6 +293,7 @@ const createCharts = () => {
           pushData.data.push(searchData(vault.log[i].RecoveryTimes))
         }
         data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:回復回数、横軸:ターン数";
         drawChart(data, {
             scales: {
               y: {
@@ -307,6 +311,7 @@ const createCharts = () => {
           pushData.data.push(searchData(vault.log[i].MemoryGauge) / 10)
         }
         data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:思い出ゲージ(%)、横軸:ターン数";
         drawChart(data, {
             scales: {
               y: {
@@ -337,6 +342,8 @@ const createCharts = () => {
         let returnArray = [];
         returnArray.length = 0;
         let labelValue = 0;
+            data.labels.push(String(labelValue));
+            returnArray.push(0);
         for(let i = array.length - 1; i >= 0; i--) {
           if(array[i] > labelValue) {
             labelValue += 10;
@@ -369,9 +376,7 @@ const createCharts = () => {
             pushData.data.push(0);
           }
           for(let i = 0; i < vault.log[Turn].Buff.Total.tVo.length; i++) {
-            if(vault.log[Turn].Buff.Total.tVo[i] != 0) {
-              pushData.data[Math.floor(vault.log[Turn].Buff.Total.tVo[i] / 10) - 1] += 1;
-            }
+            pushData.data[Math.floor(vault.log[Turn].Buff.Total.tVo[i] / 10)] += 1;
           }
           data.datasets.push(pushData)
         }
@@ -386,9 +391,7 @@ const createCharts = () => {
             pushData.data.push(0);
           }
           for(let i = 0; i < vault.log[Turn].Buff.Total.tDa.length; i++) {
-            if(vault.log[Turn].Buff.Total.tDa[i] != 0) {
-              pushData.data[Math.floor(vault.log[Turn].Buff.Total.tDa[i] / 10) - 1] += 1;
-            }
+            pushData.data[Math.floor(vault.log[Turn].Buff.Total.tDa[i] / 10)] += 1;
           }
           data.datasets.push(pushData)
         }
@@ -403,9 +406,7 @@ const createCharts = () => {
             pushData.data.push(0);
           }
           for(let i = 0; i < vault.log[Turn].Buff.Total.tVi.length; i++) {
-            if(vault.log[Turn].Buff.Total.tVi[i] != 0) {
-              pushData.data[Math.floor(vault.log[Turn].Buff.Total.tVi[i] / 10) - 1] += 1;
-            }
+            pushData.data[Math.floor(vault.log[Turn].Buff.Total.tVi[i] / 10)] += 1;
           }
           data.datasets.push(pushData)
         }
@@ -414,6 +415,7 @@ const createCharts = () => {
             data.datasets[i].data[j] = Math.floor((data.datasets[i].data[j] / (vault.detailSetting.count * 1000)) * 10000) / 100
           }
         }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:バフの値";
         drawChart(data, {})
       }else if(selectedGraphMode.value == 2) {
         let maxArray = [0];
@@ -438,9 +440,7 @@ const createCharts = () => {
             pushData.data.push(0);
           }
           for(let i = 0; i < vault.log[Turn].Buff.Passive.pVo.length; i++) {
-            if(vault.log[Turn].Buff.Passive.pVo[i] != 0) {
-              pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pVo[i] / 10) - 1] += 1;
-            }
+            pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pVo[i] / 10)] += 1;
           }
           data.datasets.push(pushData)
         }
@@ -455,9 +455,7 @@ const createCharts = () => {
             pushData.data.push(0);
           }
           for(let i = 0; i < vault.log[Turn].Buff.Passive.pDa.length; i++) {
-            if(vault.log[Turn].Buff.Passive.pDa[i] != 0) {
-              pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pDa[i] / 10) - 1] += 1;
-            }
+            pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pDa[i] / 10) - 1] += 1;
           }
           data.datasets.push(pushData)
         }
@@ -472,9 +470,7 @@ const createCharts = () => {
             pushData.data.push(0);
           }
           for(let i = 0; i < vault.log[Turn].Buff.Passive.pVi.length; i++) {
-            if(vault.log[Turn].Buff.Passive.pVi[i] != 0) {
-              pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pVi[i] / 10) - 1] += 1;
-            }
+            pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pVi[i] / 10) - 1] += 1;
           }
           data.datasets.push(pushData)
         }
@@ -483,6 +479,7 @@ const createCharts = () => {
             data.datasets[i].data[j] = Math.floor((data.datasets[i].data[j] / (vault.detailSetting.count * 1000)) * 10000) / 100
           }
         }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:バフの値";
         drawChart(data, {})
       }else if(selectedGraphMode.value == 3) {
         const createMentalLabel = ():number[] => {
@@ -506,6 +503,7 @@ const createCharts = () => {
         for(let i = 0; i < data.datasets[0].data.length; i++) {
           data.datasets[0].data[i] = Math.floor((data.datasets[0].data[i] / (vault.detailSetting.count * 1000)) * 10000) / 100;
         }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:メンタルの割合(%以上)";
         drawChart(data, {
             scales: {
               y: {
@@ -514,26 +512,67 @@ const createCharts = () => {
             }
           })
       }else if(selectedGraphMode.value == 4) {
-        let pushData:psData = {
-          label: '注目度',
-          data: [],
-          borderColor: chartColor.Attention,
+      const createAttentionLabel = ():number[] => {
+        let returnArray = [];
+        returnArray.length = 0;
+        let labelValue = -100;
+        for(let i = vault.log[Turn].Attention.length - 1; i >= 0; i--) {
+          if(vault.log[Turn].Attention[i] > labelValue) {
+            labelValue += 10;
+            data.labels.push(String(labelValue));
+            returnArray.push(0);
+          }
         }
-        for(let i = 0; i < vault.log.length; i++) {
-          pushData.data.push(searchData(vault.log[i].Attention))
+        return returnArray;
+      }
+        let pushData:psData = {
+            label: '注目度',
+            data: createAttentionLabel(),
+            borderColor: chartColor.Attention,
+        }
+        for(let i = 0; i < vault.log[Turn].Attention.length; i++) {
+          pushData.data[Math.floor(vault.log[Turn].Attention[i] / 10) + 9] += 1;
         }
         data.datasets.push(pushData)
+        for(let i = 0; i < data.datasets.length; i++) {
+          for(let j = 0; j < data.datasets[i].data.length; j++) {
+            data.datasets[i].data[j] = Math.floor((data.datasets[i].data[j] / (vault.detailSetting.count * 1000)) * 10000) / 100
+          }
+        }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:注目度の値";
         drawChart(data, {})
       }else if(selectedGraphMode.value == 5) {
-        let pushData:psData = {
-          label: '回復回数',
-          data: [],
-          borderColor: chartColor.RecTime,
+          const createRecTimeLabel = ():number[] => {
+            let returnArray = [];
+            returnArray.length = 0;
+            let labelValue = 0;
+            data.labels.push(String(labelValue));
+            returnArray.push(0);
+            for(let i = vault.log[Turn].RecoveryTimes.length - 1; i >= 0; i--) {
+              if(vault.log[Turn].RecoveryTimes[i] > labelValue) {
+                labelValue++;
+                data.labels.push(String(labelValue));
+                returnArray.push(0);
+              }
+            }
+            return returnArray;
+          }
+          let pushData:psData = {
+            label: '回復回数',
+            data: createRecTimeLabel(),
+            borderColor: chartColor.RecTime,
+          }
+          for(let i = 0; i < vault.log[Turn].Buff.Passive.pVi.length; i++) {
+            pushData.data[vault.log[Turn].RecoveryTimes[i]] += 1;
+          }
+          data.datasets.push(pushData)
+        for(let i = 0; i < data.datasets.length; i++) {
+          for(let j = 0; j < data.datasets[i].data.length; j++) {
+            data.datasets[i].data[j] = Math.floor((data.datasets[i].data[j] / (vault.detailSetting.count * 1000)) * 10000) / 100
+          }
         }
-        for(let i = 0; i < vault.log.length; i++) {
-          pushData.data.push(searchData(vault.log[i].RecoveryTimes))
-        }
-        data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:回復回数";
+        drawChart(data, {})
         drawChart(data, {
             scales: {
               y: {
@@ -542,26 +581,36 @@ const createCharts = () => {
             }
           })
       }else if(selectedGraphMode.value == 6) {
+        const createMemoryLabel = ():number[] => {
+          let returnArray = [];
+          returnArray.length = 0;
+          for(let i = 0; i <= 100; i++) {
+            data.labels.push(String(i));
+            returnArray.push(0);
+          }
+          return returnArray;
+        }
         let pushData:psData = {
           label: '思い出ゲージ',
-          data: [],
+          data: createMemoryLabel(),
           borderColor: chartColor.Memory,
         }
-        for(let i = 0; i < vault.log.length; i++) {
-          pushData.data.push(searchData(vault.log[i].MemoryGauge) / 10)
+        for(let i = 0; i < vault.log[Turn].Buff.Total.tVo.length; i++) {
+          pushData.data[Math.floor(vault.log[Turn].MemoryGauge[i] / 10)] += 1;
         }
         data.datasets.push(pushData)
+        for(let i = 0; i < data.datasets[0].data.length; i++) {
+          data.datasets[0].data[i] = Math.floor((data.datasets[0].data[i] / (vault.detailSetting.count * 1000)) * 10000) / 100;
+        }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:思い出ゲージ";
         drawChart(data, {
             scales: {
               y: {
-                min: 0,
-                max: 100
+                min: 0
               }
             }
           })
       }
-
-
     }
     
     if(graphTurn.value == 0) {
@@ -574,7 +623,6 @@ const createCharts = () => {
     console.log(error)
     logErrer.value = true;
     displayChart.value = false;
-    // displayUpdate();
   }
 }
 
@@ -616,6 +664,12 @@ onMounted(() => {
   height: auto;
   margin: auto;
 }
+#labelDiscription {
+  text-align: center;
+}
+#listArea {
+  margin-left: 20vw;
+}
 .bigBtn {
   width: 150px;
   padding: 10px;
@@ -643,6 +697,12 @@ onMounted(() => {
   }
   #graphArea {
     width: 90vw;
+  }
+  #labelDiscription {
+    font-size: .8rem;
+  }
+  #listArea {
+    margin-left: 5vw;
   }
   .bigBtn {
     padding: 5px;

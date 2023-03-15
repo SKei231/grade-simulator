@@ -89,11 +89,12 @@ export const logPush = (status:types.status, turn:number) => {
     }());
     // 注目度 100％→100
     (function() {
-        const attentionIndex = indexSeaech(status.Attention, log[turn].Attention)
+        const attention = status.Attention - 100;
+        const attentionIndex = indexSeaech(attention, log[turn].Attention)
         if(attentionIndex == "push") {
-            log[turn].Attention.push(status.Attention)
+            log[turn].Attention.push(attention)
         }else if(typeof attentionIndex === "number"){
-            log[turn].Attention.splice(attentionIndex, 0, status.Attention)
+            log[turn].Attention.splice(attentionIndex, 0, attention)
         }else {
             console.log("attention insert errer")
         }

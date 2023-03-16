@@ -152,6 +152,7 @@ export const buffList: visibleBuff[] = [
         EffectType: beforePassive,
         Value: function (value: number) {
             status.MentalEffect += Math.floor(defaultStatus.Mental * value * 0.01);
+            status.RecoveryTimesIncreases++;
         }
     },
     {

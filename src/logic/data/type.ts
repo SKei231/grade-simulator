@@ -197,6 +197,7 @@ export type status = {
     MentalEffect: number, // ライブスキル発動後のメンタル変動値
     Attention: number, // 注目度 100％→100
     RecoveryTimes: number, // 回復回数
+    RecoveryTimesIncreases: number, // 回復回数の増加量
     MemoryGauge: number, // 思い出ゲージ
     MemoryRatio: number, // 思い出増加量
     MemoryRize: number, // 思い出加速

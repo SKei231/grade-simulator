@@ -161,37 +161,65 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(メンタルが多いほど)【N】倍",
         ID: 3,
         variable: true,
-        value: function () { }
+        value: function (value:number, ratio:number) {
+            return value;
+        }
     },
     {
         label: "アピール(メンタルが少ないほど)【N】倍",
         ID: 4,
         variable: true,
-        value: function () { }
+        value: function (value:number, ratio:number) {
+            return value;
+        }
     },
     {
         label: "アピール(思い出ゲージが多いほど)【N】倍",
         ID: 5,
         variable: true,
-        value: function () { }
+        value: function (value:number, ratio:number) {
+            return value;
+        }
     },
     {
         label: "アピール(注目度が高いほど)【N】倍",
         ID: 6,
         variable: true,
-        value: function () { }
+        value: function (value:number, ratio:number) {
+            return value;
+        }
     },
     {
         label: "アピール(注目度が低いほど)【N】倍",
         ID: 7,
         variable: true,
-        value: function () { }
+        value: function (value:number, ratio:number) {
+            return value;
+        }
     },
     {
         label: "アピール(回復回数が多いほど)【N】倍",
         ID: 8,
         variable: true,
-        value: function () { }
+        value: function (value:number, ratio:number) {
+            return value;
+        }
+    },
+    {
+        label: "アピール(消去)【N】倍",
+        ID: 9,
+        variable: true,
+        value: function (value:number, ratio:number) {
+            return value;
+        }
+    },
+    {
+        label: "アピール(強化)【N】倍",
+        ID: 10,
+        variable: false,
+        value: function (value:number, ratio:number) {
+            return value;
+        }
     },
 ]
 

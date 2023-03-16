@@ -254,6 +254,98 @@
                                             </div>
                                         </li>
                                     </ul>
+                                    <div v-if="index == 4">
+                                        <p>思い出アピール</p>
+                                        <ul style="padding-left: 0;">
+                                            <li style="display: block;">
+                                                <div style="padding: 3px;">
+                                                    <div v-for="(Meffect, maIndex) in fesIdols[index].MemoryAppeal.mAppeal" style="padding: 2px;">
+                                                        アピール: 
+                                                        <select v-model="fesIdols[index].MemoryAppeal.mAppeal[maIndex].maID" @change="displayUpdate()">
+                                                            <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
+                                                            </option>
+                                                        </select>
+                                                        <span v-if="fesIdols[index].MemoryAppeal.mAppeal[maIndex].maID != 1">
+                                                            <br v-if="mobileView">属性:
+                                                            <select v-model="fesIdols[index].MemoryAppeal.mAppeal[maIndex].maAttribute">
+                                                                <option value="Vo">Vo</option>
+                                                                <option value="Da">Da</option>
+                                                                <option value="Vi">Vi</option>
+                                                                <option value="Excellent">Excellent</option>
+                                                            </select>
+                                                        </span>
+                                                        <span v-if="fesIdols[index].MemoryAppeal.mAppeal[maIndex].maID != 1" style="padding-left: 10px;"> N:
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[index].MemoryAppeal.mAppeal[maIndex].maValue">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div @click="plusMemory('appeal')" class="btn" style="font-size: 11px;">思い出アピールを追加</div>
+                                                <div style="padding: 3px;">
+                                                    <div v-for="(Meffect, meIndex) in fesIdols[index].MemoryAppeal.mEffect">
+                                                        効果: 
+                                                        <select v-model="fesIdols[index].MemoryAppeal.mEffect[meIndex].meID" @change="displayUpdate()">
+                                                            <option v-for="liveSkillEffects in skill_effect.liveSkillEffect" v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
+                                                            </option>
+                                                        </select><br v-if="mobileView">
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].MemoryAppeal.mEffect[meIndex].meID)].existM" style="padding-left: 10px;">
+                                                            M: 
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[index].MemoryAppeal.mEffect[meIndex].meTurn[1]">
+                                                            <br>
+                                                        </span>
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].MemoryAppeal.mEffect[meIndex].meID)].existAttribute" style="padding-left: 10px;">
+                                                            属性:
+                                                            <select v-model="fesIdols[index].MemoryAppeal.mEffect[meIndex].meNote">
+                                                                <option value="Vo">Vo</option>
+                                                                <option value="Da">Da</option>
+                                                                <option value="Vi">Vi</option>
+                                                            </select><br v-if="mobileView">
+                                                        </span>
+                                                        <span v-if="fesIdols[index].MemoryAppeal.mEffect[meIndex].meID == 2">
+                                                            :
+                                                            <select v-model="fesIdols[index].MemoryAppeal.mEffect[meIndex].meValue">
+                                                                <option v-for="idols in idol_list.duetList" v-bind:value="idols.ID">{{ idols.Name }}</option>
+                                                            </select>
+                                                        </span>
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].MemoryAppeal.mEffect[meIndex].meID)].existN" style="padding-left: 10px;"> N:
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[index].MemoryAppeal.mEffect[meIndex].meValue"><br v-if="mobileView">
+                                                        </span>
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].MemoryAppeal.mEffect[meIndex].meID)].existTurn" style="padding-left: 10px;">
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[index].MemoryAppeal.mEffect[meIndex].meTurn[0]">
+                                                            ターン<br v-if="mobileView">
+                                                        </span>
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[index].MemoryAppeal.mEffect[meIndex].meID)].existTime" style="padding-left: 10px;">
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[index].MemoryAppeal.mEffect[meIndex].meTime"> 回
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div @click="plusMemory('effect')" class="btn" style="font-size: 11px;">思い出効果を追加</div>
+                                                <div style="padding: 3px;">
+                                                    <div v-for="(LSeffect, mlaIndex) in fesIdols[index].MemoryAppeal.mLink.mlAppeal" style="padding: 2px;">
+                                                        Linkアピール: 
+                                                        <select v-model="fesIdols[index].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID" @change="displayUpdate()">
+                                                            <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
+                                                            </option>
+                                                        </select>
+                                                        <span v-if="fesIdols[index].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID != 1">
+                                                            <br v-if="mobileView">属性:
+                                                            <select v-model="fesIdols[index].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaAttribute">
+                                                                <option value="Vo">Vo</option>
+                                                                <option value="Da">Da</option>
+                                                                <option value="Vi">Vi</option>
+                                                                <option value="Excellent">Excellent</option>
+                                                            </select>
+                                                        </span>
+                                                        <span v-if="fesIdols[index].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID != 1" style="padding-left: 10px;"> N:
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[index].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaValue">
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div @click="plusMemory('link')" class="btn" style="font-size: 11px;">
+                                                    Linkアピールを追加
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
                                     <p>パッシブスキル</p>
                                     <div>
                                         <ul style="padding-left: 0;">
@@ -496,7 +588,28 @@ const setData = (data: {
                     }
                 }
             ],
-            PassiveIndex: data.fesIdol[i].PassiveIndex ?? []
+            PassiveIndex: data.fesIdol[i].PassiveIndex ?? [],
+            MemoryAppeal: data.fesIdol[i].MemoryAppeal ?? {
+                mAppeal: [{
+                    maID: ref(1).value,
+                    maValue: ref().value,
+                    maAttribute: ref().value
+                }],
+                mEffect: [{
+                    meID: ref().value,
+                    meValue: ref().value,
+                    meTurn: [ref().value, ref().value],
+                    meTime: ref().value,
+                    meNote: ref().value
+                }],
+                mLink: {
+                    mlAppeal: [{
+                        mlaID: ref(1).value,
+                        mlaValue: ref().value,
+                        mlaAttribute: ref().value
+                    }]
+                }
+            }
         }
         for (let j = 0; j < newFesIdol.LiveSkill[0].Appeal.length; j++) {
             if (typeof newFesIdol.LiveSkill[0].Appeal[j].aID !== "number") {
@@ -634,6 +747,49 @@ const setData = (data: {
                 }
             }
         }
+        for(let j = 0; j < newFesIdol.MemoryAppeal.mAppeal.length; j++) {
+            if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maID !== "number") {
+                newFesIdol.MemoryAppeal.mAppeal[j].maID = ref(1).value
+            }
+            if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maValue !== "number") {
+                newFesIdol.MemoryAppeal.mAppeal[j].maValue = ref().value
+            }
+            if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maAttribute !== "string") {
+                newFesIdol.MemoryAppeal.mAppeal[j].maAttribute = ref().value
+            }
+        }
+        for(let j = 0; j < newFesIdol.MemoryAppeal.mEffect.length; j++) {
+            if (typeof newFesIdol.MemoryAppeal.mEffect[j].meID !== "number") {
+                newFesIdol.MemoryAppeal.mEffect[j].meID = ref(1).value
+            }
+            try {
+                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[0] !== "number" && typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[1] !== "number") {
+                    newFesIdol.MemoryAppeal.mEffect[j].meTurn = [ref().value, ref().value]
+                }
+            }catch (error) {
+                newFesIdol.MemoryAppeal.mEffect[j].meTurn = [ref().value, ref().value]
+            }
+            if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTime !== "number") {
+                newFesIdol.MemoryAppeal.mEffect[j].meTime = ref().value
+            }
+            if (typeof newFesIdol.MemoryAppeal.mEffect[j].meValue !== "number") {
+                newFesIdol.MemoryAppeal.mEffect[j].meValue = ref().value
+            }
+            if (typeof newFesIdol.MemoryAppeal.mEffect[j].meNote !== "string") {
+                newFesIdol.MemoryAppeal.mEffect[j].meNote = ref().value
+            }
+        }
+        for(let j = 0; j < newFesIdol.MemoryAppeal.mLink.mlAppeal.length; j++) {
+            if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID !== "number") {
+                newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID = ref(1).value
+            }
+            if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue !== "number") {
+                newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue = ref().value
+            }
+            if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute !== "string") {
+                newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute = ref().value
+            }
+        }
         fesIdols.push(newFesIdol)
     }
     // 詳細設定
@@ -691,6 +847,22 @@ const makeJson = () => {
                     fesIdols[i].LiveSkill[j].Link.lEffect.splice(n,1)
                 }
             }
+            // memory
+            for(let n = 0; n < fesIdols[i].MemoryAppeal.mAppeal.length; n++) {
+                if(fesIdols[i].MemoryAppeal.mAppeal[n].maID == 1) {
+                    fesIdols[i].MemoryAppeal.mAppeal.splice(n,1)
+                }
+            }
+            for(let n = 0; n < fesIdols[i].MemoryAppeal.mEffect.length; n++) {
+                if(fesIdols[i].MemoryAppeal.mEffect[n].meID == 1) {
+                    fesIdols[i].MemoryAppeal.mEffect.splice(n,1)
+                }
+            }
+            for(let n = 0; n < fesIdols[i].MemoryAppeal.mLink.mlAppeal.length; n++) {
+                if(fesIdols[i].MemoryAppeal.mLink.mlAppeal[n].mlaID == 1) {
+                    fesIdols[i].MemoryAppeal.mLink.mlAppeal.splice(n,1)
+                }
+            }
 
         }
     }
@@ -704,15 +876,15 @@ const makeJson = () => {
 
 // パッシブスキルの入力画面
 const passiveSettingClass = ref("accBtn close")
-const displayPassiveSetting = ref(false)
+const displayPassiveSetting = ref(true)
 
 // 編成の入力画面
 const formationSettingClass = ref("accBtn close")
-const displayFormationSetting = ref(false)
+const displayFormationSetting = ref(true)
 
 // その他の設定画面
 const detailSettingClass = ref("accBtn close")
-const displayDetailSetting = ref(false)
+const displayDetailSetting = ref(true)
 
 // アコーディオンエリアのトグルスイッチ
 const toggleAccBtn = (eleClass: string, isBoxDisplay: boolean) => {
@@ -937,7 +1109,28 @@ const setIdolList = () => {
             PassiveIndex: [{
                 index: ref(0).value,
                 times: ref().value
-            }]
+            }],
+            MemoryAppeal: {
+                mAppeal: [{
+                    maID: ref(1).value,
+                    maValue: ref().value,
+                    maAttribute: ref().value
+                }],
+                mEffect: [{
+                    meID: ref(1).value,
+                    meValue: ref().value,
+                    meTurn: [ref().value, ref().value],
+                    meTime: ref().value,
+                    meNote: ref().value
+                }],
+                mLink: {
+                    mlAppeal: [{
+                        mlaID: ref(1).value,
+                        mlaValue: ref().value,
+                        mlaAttribute: ref().value
+                    }]
+                }
+            }
         })
     }
 }
@@ -1017,6 +1210,31 @@ const plusLinkEffect = (index: number, linkIndex: number) => {
         leNote: ref().value
     })
     displayUpdate()
+}
+
+const plusMemory = (plusType:'appeal' | 'effect' | 'link') => {
+    if(plusType == 'appeal') {
+        fesIdols[4].MemoryAppeal.mAppeal.push({
+            maID: ref(1).value,
+            maValue: ref(0).value,
+            maAttribute: ref().value
+        })
+    }else if(plusType == 'effect') {
+        fesIdols[4].MemoryAppeal.mEffect.push({
+            meID: ref(1).value,
+            meValue: ref(0).value,
+            meTime: ref().value,
+            meTurn: [ref().value, ref().value],
+            meNote: ref().value
+        })
+    }else if(plusType == 'link') {
+        fesIdols[4].MemoryAppeal.mLink.mlAppeal.push({
+            mlaID: ref(1).value,
+            mlaValue: ref(0).value,
+            mlaAttribute: ref().value
+        })
+    }
+    displayUpdate();
 }
 
 // パッシブスキルの追加ボタン
@@ -1129,7 +1347,8 @@ const snavBtnActive = () => {
 }
 const displayUserHelp = ref()
 const userHelp = () => {
-    displayUserHelp.value.open()
+    location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
+    // displayUserHelp.value.open()
 }
 
 // シミュレーション準備画面表示

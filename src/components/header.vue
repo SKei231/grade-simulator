@@ -13,7 +13,8 @@ import Help from './help.vue'
 const displayUserHelp = ref();
 
 const toggleDisplayUserHelp = () => {
-    displayUserHelp.value.open();
+    location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
+    // displayUserHelp.value.open();
 }
 
 </script>

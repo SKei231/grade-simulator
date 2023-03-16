@@ -97,7 +97,28 @@ export type fesIdol = {
     PassiveIndex: [{
         index: number,
         times: number
-    }]
+    }],
+    MemoryAppeal: {
+        mAppeal: [{
+            maID: number,
+            maValue: number,
+            maAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+        }],
+        mEffect: [{
+            meID: number,
+            meValue: number,
+            meTurn: number[],
+            meTime: number,
+            meNote: string
+        }]
+        mLink: {
+            mlAppeal: [{
+                mlaID: number,
+                mlaValue: number,
+                mlaAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+            }]
+        }
+    }
 }
 
 // 詳細設定

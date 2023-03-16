@@ -52,7 +52,7 @@ const setData = (data: {
   emit('displayUpdate');
 }
 
-// データチェック（未実装）
+// データチェック
 let correctData = false
 let errerMessage:string[] = []
 

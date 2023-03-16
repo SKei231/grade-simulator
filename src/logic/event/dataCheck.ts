@@ -186,10 +186,71 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
                     }
                 }
             }
-
-
         }
-        
+    }
+    // memory appeal
+    for(let aIndex = 0; aIndex < fesIdol[4].MemoryAppeal.mAppeal.length; aIndex++) {
+        if(fesIdol[4].MemoryAppeal.mAppeal[aIndex].maID != 1) {
+            // avalue
+            if(!fesIdol[4].MemoryAppeal.mAppeal[aIndex].maValue) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出アピールの【N】を入力してください');
+            }
+            // aattribute
+            if(!fesIdol[4].MemoryAppeal.mAppeal[aIndex].maAttribute) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出アピールの属性を入力してください');
+            }
+        }
+    }
+    // memory effect
+    for(let eIndex = 0; eIndex < fesIdol[4].MemoryAppeal.mEffect.length; eIndex++) {
+        // eturn 1
+        if(liveSkillEffect[findByLiveEffectID(fesIdol[4].MemoryAppeal.mEffect[eIndex].meID)].existM) {
+            if(!fesIdol[4].MemoryAppeal.mEffect[eIndex].meTurn[1]) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出効果の【M】を入力してください');
+            }
+        }
+        // evalue
+        if(liveSkillEffect[findByLiveEffectID(fesIdol[4].MemoryAppeal.mEffect[eIndex].meID)].existN) {
+            if(!fesIdol[4].MemoryAppeal.mEffect[eIndex].meValue) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出効果の【N】を入力してください');
+            }
+        }
+        if(fesIdol[4].MemoryAppeal.mEffect[eIndex].meID == 2) {
+            if(!fesIdol[4].MemoryAppeal.mEffect[eIndex].meValue) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出効果のデュエットを選択してください');
+            }
+        }
+        // eturn 0
+        if(liveSkillEffect[findByLiveEffectID(fesIdol[4].MemoryAppeal.mEffect[eIndex].meID)].existTurn) {
+            if(!fesIdol[4].MemoryAppeal.mEffect[eIndex].meTurn[0]) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出効果ターンを入力してください');
+            }
+        }
+        // etime
+        if(liveSkillEffect[findByLiveEffectID(fesIdol[4].MemoryAppeal.mEffect[eIndex].meID)].existTime) {
+            if(!fesIdol[4].MemoryAppeal.mEffect[eIndex].meTime) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出効果の回数を入力してください');
+            }
+        }
+        // enote
+        if(liveSkillEffect[findByLiveEffectID(fesIdol[4].MemoryAppeal.mEffect[eIndex].meID)].existAttribute) {
+            if(!fesIdol[4].MemoryAppeal.mEffect[eIndex].meNote) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出効果の属性を入力してください');
+            }
+        }
+    }
+    // memory link appeal
+    for(let laIndex = 0; laIndex < fesIdol[4].MemoryAppeal.mLink.mlAppeal.length; laIndex++) {
+        if(fesIdol[4].MemoryAppeal.mLink.mlAppeal[laIndex].mlaID != 1) {
+            // avalue
+            if(!fesIdol[4].MemoryAppeal.mLink.mlAppeal[laIndex].mlaValue) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出Linkの【N】を入力してください');
+            }
+            // aattribute
+            if(!fesIdol[4].MemoryAppeal.mLink.mlAppeal[laIndex].mlaAttribute) {
+                errerMessage.push(fesIdol[4].Position + ' の思い出Linkの属性を入力してください');
+            }
+        }
     }
 
     // detail check

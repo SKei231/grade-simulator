@@ -78,7 +78,7 @@ export const passiveEffect: pEffect[] = [
         existN: true,
         value: function (value:number) {
             status.MentalEffect += Math.floor(defaultStatus.Mental * value * 0.01);
-            status.RecoveryTimes++;
+            status.RecoveryTimesIncreases++;
         }
     },
     {
@@ -348,7 +348,7 @@ export const liveSkillEffect: sEffect[] = [
         existAttribute: false,
         value: function (value:number, turn:number) {
             status.MentalEffect += Math.floor(defaultStatus.Mental * (value * 0.01));
-            status.RecoveryTimes++;
+            status.RecoveryTimesIncreases++;
         }
     },
     {
@@ -364,7 +364,7 @@ export const liveSkillEffect: sEffect[] = [
             status.MentalEffect += Math.floor(defaultStatus.Mental * (value * 0.01));
             if(status.Mental + status.MentalEffect - defaultStatus.Mental > 0) {
                 status.MemoryRize += Math.ceil(((status.Mental + status.MentalEffect - defaultStatus.Mental)/defaultStatus.Mental) * 100) * 10; // 小数点以下切り上げ
-                status.RecoveryTimes++;
+                status.RecoveryTimesIncreases++;
             }
         }
     },

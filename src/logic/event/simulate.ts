@@ -46,6 +46,7 @@ export let status: types.status = {
     MentalEffect: 0, // ライブスキル発動後のメンタル変動値
     Attention: 100, // 注目度 100％→100
     RecoveryTimes: 0, // 回復回数
+    RecoveryTimesIncreases: 0, // 回復回数増加量
     MemoryGauge: 0, // 思い出ゲージ
     MemoryRatio: 1, // 思い出増加量
     MemoryRize: 0, // 思い出加速
@@ -467,6 +468,10 @@ const applyMentalDamageEffect = () => {
         status.Mental = 0;
     }
     status.MentalEffect = 0;
+
+    // 回復回数増加
+    status.RecoveryTimes += status.RecoveryTimesIncreases;
+    status.RecoveryTimesIncreases = 0;
 }
 
 /**

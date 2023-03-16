@@ -39,38 +39,86 @@ export type fesIdol = {
     },
     LiveSkill: [{
         Priority: number,
+        Appeal: [{
+            aID: number,
+            aValue: number,
+            aAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+        }],
         Effect: [{
             eID: number,
             eValue: number,
-            eTurn: number,
+            eTurn: number[],
             eTime: number,
-            eNote: number | string
+            eNote: string
         }],
-        Link: [{
-            lID: number,
-            lValue: number,
-            lTurn: number,
-            lTime: number,
-            lNote: number | string
-        }]
+        Link: {
+            lAppeal: [{
+                laID: number,
+                laValue: number,
+                laAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+            }],
+            lEffect: [{
+                leID: number,
+                leValue: number,
+                leTurn: number[],
+                leTime: number,
+                leNote: string
+            }]
+        }
     }, {
         Priority: number,
+        Appeal: [{
+            aID: number,
+            aValue: number,
+            aAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+        }],
         Effect: [{
             eID: number,
             eValue: number,
-            eTurn: number,
+            eTurn: number[],
             eTime: number,
-            eNote: number | string
+            eNote: string
         }],
-        Link: [{
-            lID: number,
-            lValue: number,
-            lTurn: number,
-            lTime: number,
-            lNote: number | string
-        }]
+        Link: {
+            lAppeal: [{
+                laID: number,
+                laValue: number,
+                laAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+            }],
+            lEffect: [{
+                leID: number,
+                leValue: number,
+                leTurn: number[],
+                leTime: number,
+                leNote: string
+            }]
+        }
     }],
-    PassiveIndex: number[]
+    PassiveIndex: [{
+        index: number,
+        times: number
+    }],
+    MemoryAppeal: {
+        mAppeal: [{
+            maID: number,
+            maValue: number,
+            maAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+        }],
+        mEffect: [{
+            meID: number,
+            meValue: number,
+            meTurn: number[],
+            meTime: number,
+            meNote: string
+        }]
+        mLink: {
+            mlAppeal: [{
+                mlaID: number,
+                mlaValue: number,
+                mlaAttribute: "Vo" | "Da" | "Vi" | "Excellent"
+            }]
+        }
+    }
 }
 
 // 詳細設定
@@ -89,13 +137,17 @@ export type detail = {
     omonouPlus: number,
     // 思い出増加+2%
     omonoukakin: number,
+    // 注目の的
+    centerOfAttention: number,
+    // ひかえめ
+    noAttention: number,
     // ライブスキルのランダム選択
     liveSkillRandom: boolean
 }
 
 // パッシブの発動条件
 export type trigger = {
-    label: String,
+    label: string,
     ID: number,
     existX: boolean,
     value: Function
@@ -109,20 +161,32 @@ export type pEffect = {
     value: Function
 }
 
+// ライブスキルアピール
+export type sAppeal = {
+    label:string,
+    ID: number,
+    variable: boolean,
+    value: Function
+}
+
 // ライブスキル効果
 export type sEffect = {
     label: string,
     ID: number,
     existN: boolean,
+    existM: boolean,
     existTurn: boolean,
+    existTime: boolean,
+    existNote: boolean,
+    existAttribute: boolean,
     value: Function
 }
 
 // アイドル
 export type idol = {
     Name: String,
-    Number: number,
-    Unit: number
+    ID: number,
+    Unit: number[]
 }
 
 // シュミレーション実行中ステータス
@@ -135,13 +199,18 @@ export type status = {
     RecoveryTimes: number, // 回復回数
     MemoryGauge: number, // 思い出ゲージ
     MemoryRatio: number, // 思い出増加量
+    MemoryRize: number, // 思い出加速
     TriggerRateIncreases: number, // パッシブ発動率上昇
     AppealLog: number[], // 履歴
+    AppealOrder: number[], // ライブスキルの入手順
+    AppealLIst: number[], // 選択可能なライブスキル
+    PassiveActTimes: number[][], // パッシブ発動回数
     VisibleBuffs: [{
         BuffID: number, // 可視バフID
         BuffTurn: number, // 可視バフターン
         BuffValue: number, // 可視バフ倍率
-        BuffTimes: number // 可視バフ回数
+        BuffTimes: number, // 可視バフ回数
+        BuffNote: number // 二次バフの要素
     }],
     Buff: {
         Visible: {

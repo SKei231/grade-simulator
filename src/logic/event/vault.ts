@@ -1,5 +1,6 @@
 // 設定、ログの保管
 import * as types from '../data/type'
+import { defaultStatus } from './simulate';
 
 // 最大ターン
 export let maxTurn = 10;
@@ -13,7 +14,7 @@ export let staticStatus = {
 }
 
 // シュミレートログ
-export const log: types.log[] = []
+export let log: types.log[] = []
 
 // ログの初期化
 export const createLog = () => {
@@ -41,6 +42,16 @@ export const createLog = () => {
             },
             PassiveActTime: createPassiveCount() // パッシブ発動回数
         }
+        defaultLog.Mental.length = 0;
+        defaultLog.Attention.length = 0;
+        defaultLog.RecoveryTimes.length = 0;
+        defaultLog.MemoryGauge.length = 0;
+        defaultLog.Buff.Total.tVo.length = 0;
+        defaultLog.Buff.Total.tDa.length = 0;
+        defaultLog.Buff.Total.tVi.length = 0;
+        defaultLog.Buff.Passive.pVo.length = 0;
+        defaultLog.Buff.Passive.pDa.length = 0;
+        defaultLog.Buff.Passive.pVi.length = 0;
         log.push(defaultLog)
     }
 }
@@ -55,29 +66,35 @@ const createPassiveCount = ():number[] => {
 
 // パッシブ発動回数の挿入
 export const countPassiveAct = (turn:number ,index:number) => {
-    log
+    log[turn].PassiveActTime[index]++
 }
 
 // シュミレート結果の挿入
 export const logPush = (status:types.status, turn:number) => {
     // メンタル
     (function() {
-        const mentalIndex = indexSeaech(status.Mental, log[turn].Mental)
-        if(mentalIndex == "push") {
-            log[turn].Mental.push(status.Mental)
-        }else if(typeof mentalIndex === "number"){
-            log[turn].Mental.splice(mentalIndex, 0, status.Mental)
-        }else {
-            console.log("mental insert errer")
+        if(turn == 0) {
+            log[0].Mental.push(defaultStatus.Mental)
+        }
+        if(turn != 9) {
+            const mentalIndex = indexSeaech(status.Mental, log[turn + 1].Mental)
+            if(mentalIndex == "push") {
+                log[turn + 1].Mental.push(status.Mental)
+            }else if(typeof mentalIndex === "number"){
+                log[turn + 1].Mental.splice(mentalIndex, 0, status.Mental)
+            }else {
+                console.log("mental insert errer")
+            }
         }
     }());
     // 注目度 100％→100
     (function() {
-        const attentionIndex = indexSeaech(status.Attention, log[turn].Attention)
+        const attention = status.Attention - 100;
+        const attentionIndex = indexSeaech(attention, log[turn].Attention)
         if(attentionIndex == "push") {
-            log[turn].Attention.push(status.Attention)
+            log[turn].Attention.push(attention)
         }else if(typeof attentionIndex === "number"){
-            log[turn].Attention.splice(attentionIndex, 0, status.Attention)
+            log[turn].Attention.splice(attentionIndex, 0, attention)
         }else {
             console.log("attention insert errer")
         }
@@ -132,7 +149,7 @@ export const logPush = (status:types.status, turn:number) => {
         // Viバフ倍率
         (function() {
             const tVi = status.Buff.Visible.vVi + status.Buff.Passive.pVi
-            const tViIndex = indexSeaech(tVi, log[turn].Buff.Total.tDa)
+            const tViIndex = indexSeaech(tVi, log[turn].Buff.Total.tVi)
             if(tViIndex == "push") {
                 log[turn].Buff.Total.tVi.push(tVi)
             }else if(typeof tViIndex === "number"){
@@ -166,7 +183,7 @@ export const logPush = (status:types.status, turn:number) => {
         }());
         // Viバフ倍率
         (function() {
-            const tViIndex = indexSeaech(status.Buff.Passive.pVi, log[turn].Buff.Passive.pDa)
+            const tViIndex = indexSeaech(status.Buff.Passive.pVi, log[turn].Buff.Passive.pVi)
             if(tViIndex == "push") {
                 log[turn].Buff.Passive.pVi.push(status.Buff.Passive.pVi)
             }else if(typeof tViIndex === "number"){
@@ -194,6 +211,10 @@ export const setData = (passive: types.passive[], fesIdol: types.fesIdol[], deta
     passiveSkills = passive;
     fesIdols = fesIdol;
     detailSetting = detail;
+    staticStatus.Vo = 0;
+    staticStatus.Da = 0;
+    staticStatus.Vi = 0;
+    staticStatus.Me = 0;
     for (let i = 0; i < fesIdol.length; i++) {
         staticStatus.Vo += fesIdols[i].Status.VoValue;
         staticStatus.Da += fesIdols[i].Status.DaValue;

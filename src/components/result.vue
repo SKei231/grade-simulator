@@ -1,9 +1,1485 @@
-<!--  -->
-<template></template>
+<template>
+  <div v-if="logErrer" id="errerArea">
+    <h2 style="text-align: center;">エラーが発生しました。</h2>
+    <p style="text-align: center; margin: 0 10vw;">データの読み込みに失敗しました。<br v-if="mobileView">入力画面へ戻り、再度シュミレートを行ってください。</p>
+    <br>
+    <p style="text-align: center; font-size: .8rem; margin: 0 10vw;">※ページのリロードを行うとシュミレート結果が破棄されます。</p>
+    <p style="text-align: center; font-size: .8rem;">リロード以外で何度もこの画面が表示される場合、<br v-if="mobileView">
+      <a href="https://twitter.com/messages/1000751929008447489-1341019207417221122" style="text-decoration: underline;">管理者のTwitter</a>へメッセージを送信してください。
+    </p>
+  </div>
+  <div v-if="!displayChart && !logErrer">
+    <h2 style="text-align: center;">解析中...</h2>
+  </div>
+  <div v-if="displayChart">
+    <h1 style="text-align: center;">Result</h1>
+    <div id="settingArea">
+      <div>
+        表示方法: 
+        <select v-model="graphTurn" @change="changeTurn();">
+          <option value="0">全てのターン</option>
+          <option v-for="turn in vault.log" v-bind:value="turn.Turn">{{ turn.Turn }}ターン目</option>
+        </select>
+      </div>
+      <div>
+        表示カテゴリ: 
+        <select v-model="selectedGraphMode" @change="createCharts();" style="margin-right: 10px;">
+          <option v-for="GraphMode in graphMode" v-bind:value="GraphMode.ModeID">{{ GraphMode.Name }}</option>
+        </select>
+        <br v-if="mobileView">
+        <span v-if="graphTurn == 0">
+          表示データ: 
+          <select v-model="selectedDataMode" @change="createCharts();">
+            <option v-for="DataMode in dataMode" v-bind:value="DataMode.ModeID">{{ DataMode.Name }}</option>
+          </select>
+        </span>
+      </div>
+      <div v-if="selectedGraphMode == 1 || selectedGraphMode == 2">
+        <label style="user-select: none;">
+          <input type="checkbox" v-model="selectedVo" @change="createCharts();">Vo を表示
+        </label>
+        <label style="user-select: none;">
+          <input type="checkbox" v-model="selectedDa" @change="createCharts();">Da を表示
+        </label>
+        <label style="user-select: none;">
+          <input type="checkbox" v-model="selectedVi" @change="createCharts();">Vi を表示
+        </label>
+      </div>
+    </div>
+    <div id="graphArea">
+      <canvas ref="resultGraph">ブラウザがサポートしていないため、グラフを表示できません</canvas>
+    </div>
+    <p id="labelDiscription">{{ labelDiscription }}</p>
+    <div id="listArea" v-if="graphTurn != 0">
+      <h3>{{ vault.log[graphTurn - 1].Turn }}ターン目の詳細</h3>
+      <ul class="accArea">
+        <li>
+          <section>
+            <h2 v-bind:class="statusDetailClass" @click="toggleAccBtn('statusDetail', displayStatusDetail)">ステータスの詳細</h2>
+            <div class="accBox" v-if="displayStatusDetail">
+              <ul>
+                <li v-for="DetailList in detailList">
+                  {{ DetailList.label }}
+                  <ul style="display: flex; flex-wrap: wrap;">
+                    <span style="padding-right: 10px;">最大値:{{ DetailList.max }}</span>
+                    <span style="padding-right: 10px;">最小値:{{ DetailList.min }}</span>
+                    <span style="padding-right: 10px;">平均値:{{ DetailList.average }}</span>
+                    <span style="padding-right: 10px;">中央値:{{ DetailList.median }}</span>
+                    <span style="padding-right: 10px;">上位25%:{{ DetailList.firstQuartile }}</span>
+                    <span style="padding-right: 10px;">下位25%:{{ DetailList.thirdQuartile }}</span>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </li>
+        <li>
+          <section>
+            <h2 v-bind:class="passiveDetailClass" @click="toggleAccBtn('passiveDetail', displayPassiveDetail)">パッシブ発動率</h2>
+            <div class="accBox" v-if="displayPassiveDetail">
+              <ul>
+                <li v-for="passives in passiveActiveList" style="padding-bottom: 2px;" v-bind:class="passives.color">
+                  <p style="margin: 2px;"><span style="font-weight: bold;">{{ passives.rate }}%</span> "{{ passives.label }}" <br v-if="mobileView">{{ passives.attribute }} {{ passives.value }}%up <br v-if="mobileView">条件:{{ passives.trigger }}</p>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </li>
+        <li>
+          <section>
+            <h2 v-bind:class="appealDetailClass" @click="toggleAccBtn('appealDetail', displayAppealDetail)">アピール値の計算</h2>
+            <div class="accBox" v-if="displayAppealDetail">
+              <ul>
+                <li style="border: none; margin: 0; padding-bottom: 0;">
+                  <div>アピールアイドル</div>
+                  <div style="padding-left: 10px;">
+                    <select v-model="appealIdol" @change="appealCalculation()">
+                      <option v-for="(appealIdols, idolIndex) in vault.fesIdols" v-bind:value="idolIndex">{{ idolList[findByIdolID(appealIdols.Idol)].Name }}: {{ appealIdols.Position }}</option>
+                    </select><br>
+                    <select v-model="liveSkillIndex" @change="appealCalculation()">
+                      <option v-for="(liveskills, lsIndex) in vault.fesIdols[appealIdol].LiveSkill" v-bind:value="lsIndex">{{ appealLabel(lsIndex, 'appeal', 0) }}, {{ appealLabel(lsIndex, 'effect', 0) }}</option>
+                      <option v-if="appealIdol == 4" value="2">思い出アピール</option>
+                    </select>
+                  </div>
+                </li>
+                <li style="border: none; margin: 5px 0 0 0;" v-if="liveSkillIndex != 2">
+                  <div>アピール</div>
+                  <div style="padding-left: 10px;">
+                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(liveSkillIndex, 'allAppeal', 0)">{{ appealLabel(liveSkillIndex, 'allAppeal', 0) }}</p>
+                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(liveSkillIndex, 'allEffect', 0)">{{ appealLabel(liveSkillIndex, 'allEffect', 0) }}</p>
+                  </div>
+                  <div v-if="appealLabel(liveSkillIndex, 'allLinkAppeal', 0) || appealLabel(liveSkillIndex, 'allLinkEffect', 0)">Linkアピール</div>
+                  <div style="padding-left: 10px;">
+                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(liveSkillIndex, 'allLinkAppeal', 0)">{{ appealLabel(liveSkillIndex, 'allLinkAppeal', 0) }}</p>
+                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(liveSkillIndex, 'allLinkEffect', 0)">{{ appealLabel(liveSkillIndex, 'allLinkEffect', 0) }}</p>
+                  </div>
+                </li>
+                <li style="border: none; margin: 5px 0 0 0;" v-if="liveSkillIndex == 2">
+                  <div>思い出アピール</div>
+                  <div style="padding-left: 10px;">
+                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(2, 'memoryAppeal', 0)">{{ appealLabel(2, 'memoryAppeal', 0) }}</p>
+                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(2, 'memoryEffect', 0)">{{ appealLabel(2, 'memoryEffect', 0) }}</p>
+                  </div>
+                  <div v-if="appealLabel(2, 'memoryLink', 0)">思い出Link</div>
+                  <div style="padding-left: 10px;">
+                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(2, 'memoryLink', 0)">{{ appealLabel(2, 'memoryLink', 0) }}</p>
+                  </div>
+                  <p>※現在、変動するアピール倍率において、倍率が最大の場合で計算を行っています。</p>
+                </li>
+                <li style="border: none; margin: 5px 0 0 0;">
+                  <div style="padding-left: 10px;">
+                    <div>興味:<input type="number" v-model="interest" style="width: 50px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">倍</div>
+                    <div>スロースターター:<input type="number" v-model="slowStart" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">人</div>
+                    <div>スタートダッシュ:<input type="number" v-model="startDash" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">人</div>
+                    <div>アピールUP(思い出高):<input type="number" v-model="memoryHigh" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">人</div>
+                    <div>アピールUP(思い出低):<input type="number" v-model="memoryLow" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">人</div>
+                    <div>その他アピールUP:<input type="number" v-model="appealUp" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">%</div>
+                  </div>
+                  <div style="padding-top: 10px;">アピール値</div>
+                  <div>
+                    表示データ: 
+                    <select v-model="appealDataMode" @change="getBuff(); appealCalculation();">
+                      <option v-for="DataMode in dataMode" v-bind:value="DataMode.ModeID">{{ DataMode.Name }}</option>
+                    </select>
+                  </div>
+                  <div style="padding: 10px 0 0 10px;">
+                    <div style="font-size: 1.2rem;">Vo:{{ Math.floor(VoAppeal * interest) }}</div>
+                    <div style="font-size: 1.2rem;">Da:{{ Math.floor(DaAppeal * interest) }}</div>
+                    <div style="font-size: 1.2rem;">Vi :{{ Math.floor(ViAppeal * interest) }}</div>
+                  </div>
+                </li>
+              </ul> 
+            </div>
+          </section>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div v-if="display"></div>
+  <div class="bigBtn" @click="(router.go(-1))">入力画面に戻る</div>
+</template>
 
 <script setup lang="ts">
-import Sim from './simulation.vue'
+import { onMounted, ref } from 'vue';
+import * as vault from '../logic/event/vault';
+import { Chart, registerables } from 'chart.js';
+import router from '../router/router';
+import { triggerList, findByTriggerID } from '../logic/data/passiveTrigger';
+import { idolList, findByIdolID } from '../logic/data/idolList';
+import { liveSkillAppeal, findByAppealID, liveSkillEffect, findByLiveEffectID } from '../logic/data/skillEffect';
+
+Chart.register(...registerables);
+
+const logErrer = ref(false);
+const displayChart = ref(false);
+const graphTurn = ref(0); // グラフの表示ターン
+const graphMode: { Name: string, ModeID: number }[] = [{
+  Name: "バフ（総合）",
+  ModeID: 1
+}, {
+  Name: "バフ（パッシブのみ）",
+  ModeID: 2
+}, {
+  Name: "メンタル",
+  ModeID: 3
+}, {
+  Name: "注目度",
+  ModeID: 4
+}, {
+  Name: "回復回数",
+  ModeID: 5
+}, {
+  Name: "思い出ゲージ",
+  ModeID: 6
+},
+]
+const selectedGraphMode = ref(1); // グラフの表示項目
+const dataMode: { Name: string, ModeID: number }[] = [{
+    Name: "平均値",
+    ModeID: 1
+  },{
+    Name: "中央値",
+    ModeID: 2
+  },{
+    Name: "上位25%",
+    ModeID: 3
+  },{
+    Name: "下位25%",
+    ModeID: 4
+  },
+]
+const selectedDataMode = ref(1); // グラフの表示データ
+const selectedVo = ref(true); // Vo の選択
+const selectedDa = ref(true); // Ds の選択
+const selectedVi = ref(true); // Vi の選択
+const labelDiscription = ref("aaa") // ラベルの説明文
+
+// グラフの描写
+const resultGraph = ref<HTMLCanvasElement | null>(null);
+let ctx: Chart; // @ts-ignore
+const drawChart = (data, option) => {
+  const canvas = resultGraph.value;
+  if (canvas === null) {
+    return
+  } else {
+    if (ctx) {
+      ctx.destroy();
+    }
+    ctx = new Chart(canvas, {
+      type: 'line',
+      data: data,
+      options: option
+    })
+  }
+}
+type Datasets = {
+  label: string,
+  data: number[],
+  borderColor: string,
+}
+const chartColor = {
+  Vo: '#f44',
+  Da: '#3bf',
+  Vi: '#fb3',
+  Me: '#c4f',
+  Attention: '#f50',
+  RecTime: '#3fb',
+  Memory: '#61f'
+}
+const createCharts = () => {
+  try {
+    // 平均値、中央値、四分位数の取得
+    const searchData = (searchArray:number[]):number => {
+      if(selectedDataMode.value == 1) {
+        // 平均値の取得
+        let sum = 0;
+        for(let i = 0; i < searchArray.length; i++) {
+          sum += searchArray[i];
+        }
+        return (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10); // 小数点第一位まで計算
+      }else if(selectedDataMode.value == 2) {
+        // 中央値の取得
+        return searchArray[vault.detailSetting.count * 500 - 1];
+      }else if(selectedDataMode.value == 3) {
+        // 上位25% (第一四分位数) の取得
+        return searchArray[vault.detailSetting.count * 250 - 1];
+      }else if(selectedDataMode.value == 4) {
+        // 下位25% (第二四分位数) の取得
+        return searchArray[vault.detailSetting.count * 750 - 1];
+      }else {
+        console.log("searchMode is not found");
+        return 0;
+      }
+    }
+  
+    // 全ターンのデータの作成
+    const createAllTurnChart = () => {
+      if(vault.log[1].MemoryGauge) {} // errer の発生
+      type psData = {
+        label: string,
+        data: number[],
+        borderColor: string
+      }
+      let data:{labels:string[], datasets:Datasets[]} = {
+        labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+        datasets: [],
+      }
+      data.datasets.length = 0;
+      if(selectedGraphMode.value == 1) {
+        if(selectedVo.value) {
+          let pushData:psData = {
+            label: 'Vo総合',
+            data: [],
+            borderColor: chartColor.Vo,
+          }
+          for(let i = 0; i < vault.log.length; i++) {
+            pushData.data.push(searchData(vault.log[i].Buff.Total.tVo))
+          }
+          data.datasets.push(pushData)
+        }
+        if(selectedDa.value) {
+          let pushData:psData = {
+            label: 'Da総合',
+            data: [],
+            borderColor: chartColor.Da,
+          }
+          for(let i = 0; i < vault.log.length; i++) {
+            pushData.data.push(searchData(vault.log[i].Buff.Total.tDa))
+          }
+          data.datasets.push(pushData)
+        }
+        if(selectedVi.value) {
+          let pushData:psData = {
+            label: 'Vi総合',
+            data: [],
+            borderColor: chartColor.Vi,
+          }
+          for(let i = 0; i < vault.log.length; i++) {
+            pushData.data.push(searchData(vault.log[i].Buff.Total.tVi))
+          }
+          data.datasets.push(pushData)
+        }
+        labelDiscription.value = "縦軸:バフの倍率、横軸:ターン数";
+        drawChart(data, {})
+      }else if(selectedGraphMode.value == 2) {
+        if(selectedVo.value) {
+          let pushData:psData = {
+            label: 'Voパッシブ',
+            data: [],
+            borderColor: chartColor.Vo,
+          }
+          for(let i = 0; i < vault.log.length; i++) {
+            pushData.data.push(searchData(vault.log[i].Buff.Passive.pVo))
+          }
+          data.datasets.push(pushData)
+        }
+        if(selectedDa.value) {
+          let pushData:psData = {
+            label: 'Daパッシブ',
+            data: [],
+            borderColor: chartColor.Da,
+          }
+          for(let i = 0; i < vault.log.length; i++) {
+            pushData.data.push(searchData(vault.log[i].Buff.Passive.pDa))
+          }
+          data.datasets.push(pushData)
+        }
+        if(selectedVi.value) {
+          let pushData:psData = {
+            label: 'Viパッシブ',
+            data: [],
+            borderColor: chartColor.Vi,
+          }
+          for(let i = 0; i < vault.log.length; i++) {
+            pushData.data.push(searchData(vault.log[i].Buff.Passive.pVi))
+          }
+          data.datasets.push(pushData)
+        }
+        labelDiscription.value = "縦軸:バフの倍率、横軸:ターン数";
+        drawChart(data, {})
+      }else if(selectedGraphMode.value == 3) {
+        let pushData:psData = {
+          label: 'メンタル',
+          data: [],
+          borderColor: chartColor.Me,
+        }
+        for(let i = 0; i < vault.log.length; i++) {
+          pushData.data.push(searchData(vault.log[i].Mental))
+        }
+        data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:ターン開始メンタルの値、横軸:ターン数";
+        drawChart(data, {
+            scales: {
+              y: {
+                min: 0,
+                max: vault.staticStatus.Me
+              }
+            }
+          })
+      }else if(selectedGraphMode.value == 4) {
+        let pushData:psData = {
+          label: '注目度',
+          data: [],
+          borderColor: chartColor.Attention,
+        }
+        for(let i = 0; i < vault.log.length; i++) {
+          pushData.data.push(searchData(vault.log[i].Attention))
+        }
+        data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:変動した注目度の値、横軸:ターン数";
+        drawChart(data, {})
+      }else if(selectedGraphMode.value == 5) {
+        let pushData:psData = {
+          label: '回復回数',
+          data: [],
+          borderColor: chartColor.RecTime,
+        }
+        for(let i = 0; i < vault.log.length; i++) {
+          pushData.data.push(searchData(vault.log[i].RecoveryTimes))
+        }
+        data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:回復回数、横軸:ターン数";
+        drawChart(data, {
+            scales: {
+              y: {
+                min: 0
+              }
+            }
+          })
+      }else if(selectedGraphMode.value == 6) {
+        let pushData:psData = {
+          label: '思い出ゲージ',
+          data: [],
+          borderColor: chartColor.Memory,
+        }
+        for(let i = 0; i < vault.log.length; i++) {
+          pushData.data.push(searchData(vault.log[i].MemoryGauge) / 10)
+        }
+        data.datasets.push(pushData)
+        labelDiscription.value = "縦軸:思い出ゲージ(%)、横軸:ターン数";
+        drawChart(data, {
+            scales: {
+              y: {
+                min: 0,
+                max: 100
+              }
+            }
+          })
+      }
+    }
+  
+    // 1ターンのデータの作成
+    const createOneTurnChart = (turn:number) => {
+      let Turn = turn -1;
+      vault.log[Turn]
+      type psData = {
+        label: string,
+        data: number[],
+        borderColor: string
+      }
+      let data:{labels:string[], datasets:Datasets[]} = {
+        labels: [],
+        datasets: [],
+      }
+      data.labels.length = 0;
+      data.datasets.length = 0;
+      const createLabel = (array:number[]):number[] => {
+        let returnArray = [];
+        returnArray.length = 0;
+        let labelValue = 0;
+            data.labels.push(String(labelValue));
+            returnArray.push(0);
+        for(let i = array.length - 1; i >= 0; i--) {
+          if(array[i] > labelValue) {
+            labelValue += 10;
+            data.labels.push(String(labelValue));
+            returnArray.push(0);
+          }
+        }
+        return returnArray;
+      }
+      if(selectedGraphMode.value == 1) {
+        let maxArray = [0];
+        if(selectedVo.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tVo[vault.log[Turn].Buff.Total.tVo.length - 1]) {
+          maxArray = vault.log[Turn].Buff.Total.tVo;
+        }
+        if(selectedDa.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tDa[vault.log[Turn].Buff.Total.tDa.length - 1]) {
+          maxArray = vault.log[Turn].Buff.Total.tDa;
+        }
+        if(selectedVi.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tVi[vault.log[Turn].Buff.Total.tVi.length - 1]) {
+          maxArray = vault.log[Turn].Buff.Total.tVi;
+        }
+        let dataModel = createLabel(maxArray);
+        if(selectedVo.value) {
+          let pushData:psData = {
+            label: 'Vo総合',
+            data: [],
+            borderColor: chartColor.Vo,
+          }
+          pushData.data.length = 0;
+          for(let i = 0; i < dataModel.length; i++) {
+            pushData.data.push(0);
+          }
+          let sum = 0;
+          for(let i = 0; i < vault.log[Turn].Buff.Total.tVo.length; i++) {
+            pushData.data[Math.floor(vault.log[Turn].Buff.Total.tVo[i] / 10)] += 1;
+            sum += vault.log[Turn].Buff.Total.tVo[i];
+          }
+          data.datasets.push(pushData)
+          detailListPush(pushData.label, vault.log[Turn].Buff.Total.tVo[0], vault.log[Turn].Buff.Total.tVo[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].Buff.Total.tVo[vault.detailSetting.count * 500 - 1], vault.log[Turn].Buff.Total.tVo[vault.detailSetting.count * 250 - 1], vault.log[Turn].Buff.Total.tVo[vault.detailSetting.count * 750 - 1])
+        }
+        if(selectedDa.value) {
+          let pushData:psData = {
+            label: 'Da総合',
+            data: [],
+            borderColor: chartColor.Da,
+          }
+          pushData.data.length = 0;
+          for(let i = 0; i < dataModel.length; i++) {
+            pushData.data.push(0);
+          }
+          let sum = 0;
+          for(let i = 0; i < vault.log[Turn].Buff.Total.tDa.length; i++) {
+            pushData.data[Math.floor(vault.log[Turn].Buff.Total.tDa[i] / 10)] += 1;
+            sum += vault.log[Turn].Buff.Total.tDa[i];
+          }
+          data.datasets.push(pushData)
+          detailListPush(pushData.label, vault.log[Turn].Buff.Total.tDa[0], vault.log[Turn].Buff.Total.tDa[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].Buff.Total.tDa[vault.detailSetting.count * 500 - 1], vault.log[Turn].Buff.Total.tDa[vault.detailSetting.count * 250 - 1], vault.log[Turn].Buff.Total.tDa[vault.detailSetting.count * 750 - 1])
+        }
+        if(selectedVi.value) {
+          let pushData:psData = {
+            label: 'Vi総合',
+            data: [],
+            borderColor: chartColor.Vi,
+          }
+          pushData.data.length = 0;
+          for(let i = 0; i < dataModel.length; i++) {
+            pushData.data.push(0);
+          }
+          let sum = 0;
+          for(let i = 0; i < vault.log[Turn].Buff.Total.tVi.length; i++) {
+            pushData.data[Math.floor(vault.log[Turn].Buff.Total.tVi[i] / 10)] += 1;
+            sum += vault.log[Turn].Buff.Total.tVi[i];
+          }
+          data.datasets.push(pushData)
+          detailListPush(pushData.label, vault.log[Turn].Buff.Total.tVi[0], vault.log[Turn].Buff.Total.tVi[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].Buff.Total.tVi[vault.detailSetting.count * 500 - 1], vault.log[Turn].Buff.Total.tVi[vault.detailSetting.count * 250 - 1], vault.log[Turn].Buff.Total.tVi[vault.detailSetting.count * 750 - 1])
+        }
+        for(let i = 0; i < data.datasets.length; i++) {
+          for(let j = 0; j < data.datasets[i].data.length; j++) {
+            data.datasets[i].data[j] = Math.floor((data.datasets[i].data[j] / (vault.detailSetting.count * 1000)) * 10000) / 100
+          }
+        }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:バフの値";
+        drawChart(data, {})
+      }else if(selectedGraphMode.value == 2) {
+        let maxArray = [0];
+        if(selectedVo.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tVo[vault.log[Turn].Buff.Total.tVo.length - 1]) {
+          maxArray = vault.log[Turn].Buff.Total.tVo;
+        }
+        if(selectedDa.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tDa[vault.log[Turn].Buff.Total.tDa.length - 1]) {
+          maxArray = vault.log[Turn].Buff.Total.tDa;
+        }
+        if(selectedVi.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tVi[vault.log[Turn].Buff.Total.tVi.length - 1]) {
+          maxArray = vault.log[Turn].Buff.Total.tVi;
+        }
+        let dataModel = createLabel(maxArray);
+        if(selectedVo.value) {
+          let pushData:psData = {
+            label: 'Voパッシブ',
+            data: [],
+            borderColor: chartColor.Vo,
+          }
+          pushData.data.length = 0;
+          for(let i = 0; i < dataModel.length; i++) {
+            pushData.data.push(0);
+          }
+          let sum = 0;
+          for(let i = 0; i < vault.log[Turn].Buff.Passive.pVo.length; i++) {
+            pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pVo[i] / 10)] += 1;
+            sum += vault.log[Turn].Buff.Passive.pVo[i];
+          }
+          data.datasets.push(pushData);
+          detailListPush(pushData.label, vault.log[Turn].Buff.Passive.pVo[0], vault.log[Turn].Buff.Passive.pVo[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10),vault.log[Turn].Buff.Passive.pVo[vault.detailSetting.count * 500 - 1], vault.log[Turn].Buff.Passive.pVo[vault.detailSetting.count * 250 - 1], vault.log[Turn].Buff.Passive.pVo[vault.detailSetting.count * 750 - 1])
+        }
+        if(selectedDa.value) {
+          let pushData:psData = {
+            label: 'Daパッシブ',
+            data: [],
+            borderColor: chartColor.Da,
+          }
+          pushData.data.length = 0;
+          for(let i = 0; i < dataModel.length; i++) {
+            pushData.data.push(0);
+          }
+          let sum = 0;
+          for(let i = 0; i < vault.log[Turn].Buff.Passive.pDa.length; i++) {
+            pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pDa[i] / 10)] += 1;
+            sum += vault.log[Turn].Buff.Passive.pDa[i];
+          }
+          data.datasets.push(pushData);
+          detailListPush(pushData.label, vault.log[Turn].Buff.Passive.pDa[0], vault.log[Turn].Buff.Passive.pDa[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].Buff.Passive.pDa[vault.detailSetting.count * 500 - 1], vault.log[Turn].Buff.Passive.pDa[vault.detailSetting.count * 250 - 1], vault.log[Turn].Buff.Passive.pDa[vault.detailSetting.count * 750 - 1]);
+        }
+        if(selectedVi.value) {
+          let pushData:psData = {
+            label: 'Viパッシブ',
+            data: [],
+            borderColor: chartColor.Vi,
+          }
+          pushData.data.length = 0;
+          for(let i = 0; i < dataModel.length; i++) {
+            pushData.data.push(0);
+          }
+          let sum = 0;
+          for(let i = 0; i < vault.log[Turn].Buff.Passive.pVi.length; i++) {
+            pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pVi[i] / 10) - 1] += 1;
+            sum += vault.log[Turn].Buff.Passive.pVi[i];
+          }
+          data.datasets.push(pushData);
+          detailListPush(pushData.label, vault.log[Turn].Buff.Passive.pVi[0], vault.log[Turn].Buff.Passive.pVi[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].Buff.Passive.pVi[vault.detailSetting.count * 500 - 1], vault.log[Turn].Buff.Passive.pVi[vault.detailSetting.count * 250 - 1], vault.log[Turn].Buff.Passive.pVi[vault.detailSetting.count * 750 - 1]);
+        }
+        for(let i = 0; i < data.datasets.length; i++) {
+          for(let j = 0; j < data.datasets[i].data.length; j++) {
+            data.datasets[i].data[j] = Math.floor((data.datasets[i].data[j] / (vault.detailSetting.count * 1000)) * 10000) / 100
+          }
+        }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:バフの値";
+        drawChart(data, {})
+      }else if(selectedGraphMode.value == 3) {
+        const createMentalLabel = ():number[] => {
+          let returnArray = [];
+          returnArray.length = 0;
+          for(let i = 0; i <= 100; i += 5) {
+            data.labels.push(String(i));
+            returnArray.push(0);
+          }
+          return returnArray;
+        }
+        let pushData:psData = {
+          label: 'メンタル',
+          data: createMentalLabel(),
+          borderColor: chartColor.Me,
+        }
+        let sum = 0;
+        for(let i = 0; i < vault.log[Turn].Mental.length; i++) {
+          pushData.data[Math.floor(Math.floor((vault.log[Turn].Mental[i] / vault.staticStatus.Me) * 100) / 5)] += 1;
+          sum += vault.log[Turn].Mental[i];
+        }
+        data.datasets.push(pushData);
+        detailListPush(pushData.label, vault.log[Turn].Mental[0], vault.log[Turn].Mental[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].Mental[vault.detailSetting.count * 500 - 1], vault.log[Turn].Mental[vault.detailSetting.count * 250 - 1], vault.log[Turn].Mental[vault.detailSetting.count * 750 - 1]);
+        for(let i = 0; i < data.datasets[0].data.length; i++) {
+          data.datasets[0].data[i] = Math.floor((data.datasets[0].data[i] / (vault.detailSetting.count * 1000)) * 10000) / 100;
+        }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:メンタルの割合(%以上)";
+        drawChart(data, {
+            scales: {
+              y: {
+                min: 0,
+              }
+            }
+          })
+      }else if(selectedGraphMode.value == 4) {
+      const createAttentionLabel = ():number[] => {
+        let returnArray = [];
+        returnArray.length = 0;
+        let labelValue = -100;
+        for(let i = vault.log[Turn].Attention.length - 1; i >= 0; i--) {
+          if(vault.log[Turn].Attention[i] > labelValue) {
+            labelValue += 10;
+            data.labels.push(String(labelValue));
+            returnArray.push(0);
+          }
+        }
+        return returnArray;
+      }
+        let pushData:psData = {
+            label: '注目度',
+            data: createAttentionLabel(),
+            borderColor: chartColor.Attention,
+        }
+        let sum = 0;
+        for(let i = 0; i < vault.log[Turn].Attention.length; i++) {
+          pushData.data[Math.floor(vault.log[Turn].Attention[i] / 10) + 9] += 1;
+          sum += vault.log[Turn].Attention[i];
+        }
+        data.datasets.push(pushData);
+          detailListPush(pushData.label, vault.log[Turn].Attention[0], vault.log[Turn].Attention[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].Attention[vault.detailSetting.count * 500 - 1], vault.log[Turn].Attention[vault.detailSetting.count * 250 - 1], vault.log[Turn].Attention[vault.detailSetting.count * 750 - 1]);
+        for(let i = 0; i < data.datasets.length; i++) {
+          for(let j = 0; j < data.datasets[i].data.length; j++) {
+            data.datasets[i].data[j] = Math.floor((data.datasets[i].data[j] / (vault.detailSetting.count * 1000)) * 10000) / 100
+          }
+        }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:注目度の値";
+        drawChart(data, {})
+      }else if(selectedGraphMode.value == 5) {
+          const createRecTimeLabel = ():number[] => {
+            let returnArray = [];
+            returnArray.length = 0;
+            let labelValue = 0;
+            data.labels.push(String(labelValue));
+            returnArray.push(0);
+            for(let i = vault.log[Turn].RecoveryTimes.length - 1; i >= 0; i--) {
+              if(vault.log[Turn].RecoveryTimes[i] > labelValue) {
+                labelValue++;
+                data.labels.push(String(labelValue));
+                returnArray.push(0);
+              }
+            }
+            return returnArray;
+          }
+          let pushData:psData = {
+            label: '回復回数',
+            data: createRecTimeLabel(),
+            borderColor: chartColor.RecTime,
+          }
+          let sum = 0;
+          for(let i = 0; i < vault.log[Turn].Buff.Passive.pVi.length; i++) {
+            pushData.data[vault.log[Turn].RecoveryTimes[i]] += 1;
+            sum += vault.log[Turn].RecoveryTimes[i];
+          }
+          data.datasets.push(pushData);
+          detailListPush(pushData.label, vault.log[Turn].RecoveryTimes[0], vault.log[Turn].RecoveryTimes[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].RecoveryTimes[vault.detailSetting.count * 500 - 1], vault.log[Turn].RecoveryTimes[vault.detailSetting.count * 250 - 1], vault.log[Turn].RecoveryTimes[vault.detailSetting.count * 750 - 1]);
+        for(let i = 0; i < data.datasets.length; i++) {
+          for(let j = 0; j < data.datasets[i].data.length; j++) {
+            data.datasets[i].data[j] = Math.floor((data.datasets[i].data[j] / (vault.detailSetting.count * 1000)) * 10000) / 100
+          }
+        }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:回復回数";
+        drawChart(data, {
+            scales: {
+              y: {
+                min: 0
+              }
+            }
+          })
+      }else if(selectedGraphMode.value == 6) {
+        const createMemoryLabel = ():number[] => {
+          let returnArray = [];
+          returnArray.length = 0;
+          for(let i = 0; i <= 100; i++) {
+            data.labels.push(String(i));
+            returnArray.push(0);
+          }
+          return returnArray;
+        }
+        let pushData:psData = {
+          label: '思い出ゲージ',
+          data: createMemoryLabel(),
+          borderColor: chartColor.Memory,
+        }
+        let sum = 0;
+        for(let i = 0; i < vault.log[Turn].Buff.Total.tVo.length; i++) {
+          pushData.data[Math.floor(vault.log[Turn].MemoryGauge[i] / 10)] += 1;
+          sum += vault.log[Turn].MemoryGauge[i];
+        }
+        data.datasets.push(pushData);
+        detailListPush(pushData.label, vault.log[Turn].MemoryGauge[0], vault.log[Turn].MemoryGauge[vault.detailSetting.count * 1000 - 1], (Math.floor((sum * 10) / (vault.detailSetting.count * 1000)) / 10), vault.log[Turn].MemoryGauge[vault.detailSetting.count * 500 - 1], vault.log[Turn].MemoryGauge[vault.detailSetting.count * 250 - 1], vault.log[Turn].MemoryGauge[vault.detailSetting.count * 750 - 1]);
+        for(let i = 0; i < data.datasets[0].data.length; i++) {
+          data.datasets[0].data[i] = Math.floor((data.datasets[0].data[i] / (vault.detailSetting.count * 1000)) * 10000) / 100;
+        }
+        labelDiscription.value = "縦軸:試行回数に対する割合(%)、横軸:思い出ゲージ";
+        drawChart(data, {
+            scales: {
+              y: {
+                min: 0
+              }
+            }
+          })
+      }
+    }
+    
+    detailList.length = 0;
+    if(graphTurn.value == 0) {
+      createAllTurnChart();
+    }else {
+      createOneTurnChart(graphTurn.value);
+      createTriggerList();
+    }
+    displayChart.value = true;
+  } catch (error) {
+    console.log(error)
+    logErrer.value = true;
+    displayChart.value = false;
+  }
+}
+
+// 詳細リスト
+type dList = {
+  label: string,
+  max: number,
+  min: number,
+  average: number,
+  median: number,
+  firstQuartile: number,
+  thirdQuartile: number
+}
+let detailList:dList[] = [{
+  label: 'test',
+  max: 0,
+  min: 0,
+  average: 0,
+  median: 0,
+  firstQuartile: 0,
+  thirdQuartile: 0
+}]
+detailList.length = 0;
+/**
+ * ステータス詳細リストへの挿入
+ * @param label ラベル
+ * @param max 最大値
+ * @param min 最小値
+ * @param average 平均値
+ * @param median 中央値
+ * @param fQuartile 第一四分位数
+ * @param tQuartile 第三四分位数
+ */
+const detailListPush = (label:string, max:number, min:number, average:number, median:number, fQuartile:number, tQuartile:number) => {
+  detailList.push({
+    label: label,
+    max: max,
+    min: min,
+    average: average,
+    median: median,
+    firstQuartile: fQuartile,
+    thirdQuartile: tQuartile
+  });
+  displayUpdate();
+}
+
+// パッシブ発動率
+type pActiveList = {
+  label: string,
+  attribute: string,
+  color: "white" | "gold" | "rainbow",
+  value: number,
+  trigger: string,
+  rate: number
+}
+let passiveActiveList:pActiveList[] = [{
+  label: 'test',
+  attribute: '',
+  color: 'white',
+  value: 0,
+  trigger: 'test',
+  rate: 0
+}]
+const createTriggerList = () => {
+  passiveActiveList.length = 0;
+  const Turn = graphTurn.value - 1;
+  for(let i = 0; i < vault.passiveSkills.length; i++) {
+    passiveActiveList.push({
+      label: vault.passiveSkills[i].Name,
+      attribute: vault.passiveSkills[i].Attribute,
+      color: vault.passiveSkills[i].Color,
+      value: vault.passiveSkills[i].Value,
+      trigger: triggerList[findByTriggerID(vault.passiveSkills[i].Trigger.tID)].label.replace('【X】', String(vault.passiveSkills[i].Trigger.tX)),
+      rate: Math.floor((vault.log[Turn].PassiveActTime[i] / (vault.detailSetting.count * 1000)) * 10000) / 100
+    })
+  }
+  // ソート
+  for(let i = 0; i < passiveActiveList.length - 1; i++) {
+    for(let j = 0; j < passiveActiveList.length - 1 - i; j++) {
+      if(passiveActiveList[j].rate < passiveActiveList[j + 1].rate) {
+        let tmp:pActiveList = passiveActiveList[j];
+        passiveActiveList[j] = passiveActiveList[j + 1];
+        passiveActiveList[j + 1] = tmp;
+      }
+    }
+  }
+}
+
+// アピール計算
+const appealIdol = ref(0);
+const liveSkillIndex = ref(0);
+const appealLabel = (lsindex:number, mode:'appeal' | 'effect' | 'allAppeal' | 'allEffect' | 'allLinkAppeal' | 'allLinkEffect' | 'memoryAppeal' | 'memoryEffect' | 'memoryLink', elseIndex:number):string => {
+  const linkLabel = (linkIndex:number, linkMode:'appeal' | 'effect'):string => {
+    if(linkMode == 'appeal') {
+      return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lAppeal[linkIndex].laAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lAppeal[linkIndex].laID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lAppeal[linkIndex].laValue))
+    }else {
+      let str = liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leValue));
+      str =  str.replace('【M】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leTurn[1]));
+      if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leID)].existAttribute) {
+        return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leNote + str;
+      }
+      return str;
+    }
+  }
+  if(mode == 'appeal') {
+    try {
+      return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aValue));
+    } catch (error) {
+      return '';
+    }
+  }else if(mode == 'effect') {
+    try {
+      let str = liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eValue));
+      str =  str.replace('【M】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eTurn[1]));
+      if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eID)].existAttribute) {
+        return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eNote + str;
+      }
+      return str;
+    } catch (error) {
+      return '';
+    }
+  }else if(mode == 'allAppeal') {
+    try {
+      let str = appealLabel(lsindex, 'appeal', 0)
+      for(let i = 1; i < vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal.length; i++) {
+        str = appealLabel(lsindex, 'appeal', i) + '、' + str;
+      }
+      return str;
+    } catch (error) {
+      return '';
+    }
+  }else if(mode == 'allEffect') {
+    try {
+      let str = appealLabel(lsindex, 'effect', 0)
+      for(let i = 1; i < vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect.length; i++) {
+        str = appealLabel(lsindex, 'effect', i) + '、' + str;
+      }
+      return str;
+    } catch (error) {
+      return '';
+    }
+  }else if(mode == 'allLinkAppeal') {
+    try {
+      let str = linkLabel(0, 'appeal')
+      for(let i = 1; i < vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lAppeal.length; i++) {
+        str = linkLabel(i, 'appeal') + '、' + str;
+      }
+      return str;
+    } catch (error) {
+      return '';
+    }
+  }else if(mode == 'allLinkEffect') {
+    try {
+      let str = linkLabel(0, 'effect')
+      for(let i = 1; i < vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect.length; i++) {
+        str = linkLabel(i, 'effect') + '、' + str;
+      }
+      return str;
+    } catch (error) {
+      return '';
+    }
+  }else if(mode == 'memoryAppeal') {
+    try {
+      let str = '';
+      for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mAppeal.length; i++) {
+        str = vault.fesIdols[4].MemoryAppeal.mAppeal[elseIndex].maAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[elseIndex].maID)].label.replace('【N】', String(vault.fesIdols[4].MemoryAppeal.mAppeal[elseIndex].maValue)) + '、' + str;
+      }
+      return str;
+    } catch (error) {
+      return '';
+    }
+  }else if(mode == 'memoryEffect') {
+    try {
+      let str = '';
+      for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mEffect.length; i++) {
+        let string = liveSkillEffect[findByLiveEffectID(vault.fesIdols[4].MemoryAppeal.mEffect[elseIndex].meID)].label.replace('【N】', String(vault.fesIdols[4].MemoryAppeal.mEffect[elseIndex].meValue));
+        string =  string.replace('【M】', String(vault.fesIdols[4].MemoryAppeal.mEffect[elseIndex].meTurn[1]))
+        str = string + '、' + str;
+      }
+      return str;
+    } catch (error) {
+      return '';
+    }
+  }else if(mode == 'memoryLink') {
+    try {
+      let str = '';
+      for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal.length; i++) {
+        str = vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaID)].label.replace('【N】', String(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaValue)) + '、' + str;
+      }
+      return str;
+    } catch (error) {
+      return '';
+    }
+  }else {
+    console.log('mode is not found')
+    return '';
+  }
+}
+const interest = ref(1); // 興味値
+const slowStart = ref(0); // スロースターター
+const startDash = ref(0); // スタートダッシュ
+const memoryHigh = ref(0); // 思い出高
+const memoryLow = ref(0) // 思い出低
+const appealUp = ref(0); // その他アピールUP
+const appealRatio = ref(0); // アピールの変数
+const appealDataMode = ref(1);
+let buff = {
+  Vo: 0,
+  Da: 0,
+  Vi: 0,
+  Passive: {
+    Vo: 0,
+    Da: 0,
+    Vi: 0
+  }
+};
+let memory = 0;
+const getBuff = () => {
+  // バフ、思い出ゲージの取得
+  if(appealDataMode.value == 1) {
+    let buffSum = {
+      Vo: 0,
+      Da: 0,
+      Vi: 0,
+      Passive: {
+        Vo: 0,
+        Da: 0,
+        Vi: 0
+      }
+    }
+    let memorySum = 0;
+    for(let j = 0; j < vault.detailSetting.count * 1000; j++) {
+      buffSum.Vo += vault.log[graphTurn.value - 1].Buff.Total.tVo[j];
+      buff.Passive.Vo += vault.log[graphTurn.value - 1].Buff.Passive.pVo[j];
+      buffSum.Da += vault.log[graphTurn.value - 1].Buff.Total.tDa[j];
+      buff.Passive.Da += vault.log[graphTurn.value - 1].Buff.Passive.pDa[j];
+      buffSum.Vi += vault.log[graphTurn.value - 1].Buff.Total.tVi[j];
+      buff.Passive.Vi += vault.log[graphTurn.value - 1].Buff.Passive.pVi[j];
+      memorySum += vault.log[graphTurn.value - 1].MemoryGauge[j];
+    }
+    buffSum.Vo /= (vault.detailSetting.count * 1000);
+    buffSum.Passive.Vo /= (vault.detailSetting.count * 1000);
+    buffSum.Da /= (vault.detailSetting.count * 1000);
+    buffSum.Passive.Da /= (vault.detailSetting.count * 1000);
+    buffSum.Vi /= (vault.detailSetting.count * 1000);
+    buffSum.Passive.Vi /= (vault.detailSetting.count * 1000);
+    buff = buffSum;
+    memorySum /= (vault.detailSetting.count * 1000);
+    memory = Math.floor(memorySum)
+  }else if(appealDataMode.value == 2) {
+    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[500 - 1];
+    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[500 - 1];
+    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[500 - 1];
+    memory = vault.log[graphTurn.value - 1].MemoryGauge[500 - 1];
+  }else if(appealDataMode.value == 3) {
+    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[250 - 1];
+    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[250 - 1];
+    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[250 - 1];
+    memory = vault.log[graphTurn.value - 1].MemoryGauge[250 - 1];
+  }else if(appealDataMode.value == 4) {
+    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[750 - 1];
+    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[750 - 1];
+    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[750 - 1];
+    memory = vault.log[graphTurn.value - 1].MemoryGauge[750 - 1];
+  }
+}
+const appealCalculation = () => {
+  VoAppeal.value = 0;
+  DaAppeal.value = 0;
+  ViAppeal.value = 0;
+  const perfect = 1.5;
+  const appealUP = (slowStart.value * (4 + 16 / 9 * (graphTurn.value - 1))) + (startDash.value * (10 - 8 / 9 * (graphTurn.value - 1))) + ((memoryHigh.value * memory * 8 / 1000) + 2)+(memoryLow.value * (20 - 16 * (memory / 1000))) + appealUp.value;
+  const calcBasicFactor = (status:number, buff:number) => {
+    return Math.floor(status * (1 + ((buff + appealUP) / 100)) * perfect);
+  } 
+  if(liveSkillIndex.value != 2) {
+    for(let i = 0; i < vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal.length; i++) {
+      let value = liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID)].value(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aValue, appealRatio.value);
+      if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute == 'Vo') {
+        const basicStatus = vault.fesIdols[appealIdol.value].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
+        let basicFactor = calcBasicFactor(basicStatus, buff.Vo);
+        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
+          basicFactor = calcBasicFactor(basicStatus, buff.Vo - buff.Passive.Vo);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value) * 2;
+        DaAppeal.value += Math.floor(basicFactor * value);
+        ViAppeal.value += Math.floor(basicFactor * value);
+      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute == 'Da') {
+        const basicStatus = vault.fesIdols[appealIdol.value].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
+        let basicFactor = calcBasicFactor(basicStatus, buff.Da);
+        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
+          basicFactor = calcBasicFactor(basicStatus, buff.Da - buff.Passive.Da);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value);
+        DaAppeal.value += Math.floor(basicFactor * value) * 2;
+        ViAppeal.value += Math.floor(basicFactor * value);
+      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute == 'Vi') {
+        const basicStatus = vault.fesIdols[appealIdol.value].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
+        let basicFactor = calcBasicFactor(basicStatus, buff.Vi);
+        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
+          basicFactor = calcBasicFactor(basicStatus, buff.Vi - buff.Passive.Vi);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value);
+        DaAppeal.value += Math.floor(basicFactor * value);
+        ViAppeal.value += Math.floor(basicFactor * value) * 2;
+      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute == 'Excellent') {
+        let basicStatus = vault.fesIdols[appealIdol.value].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
+        let basicFactor = calcBasicFactor(basicStatus, buff.Vo);
+        VoAppeal.value += Math.floor(basicFactor * value) * 2;
+        basicStatus = vault.fesIdols[appealIdol.value].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
+        basicFactor = calcBasicFactor(basicStatus, buff.Da);
+        DaAppeal.value += Math.floor(basicFactor * value) * 2;
+        basicStatus = vault.fesIdols[appealIdol.value].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
+        basicFactor = calcBasicFactor(basicStatus, buff.Vi);
+        ViAppeal.value += Math.floor(basicFactor * value) * 2;
+      }
+    }
+    for(let i = 0; i < vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal.length; i++) {
+      let value = liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laID)].value(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laValue, appealRatio.value);
+      if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute == 'Vo') {
+        const basicStatus = vault.fesIdols[appealIdol.value].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
+        let basicFactor = calcBasicFactor(basicStatus, buff.Vo);
+        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
+          basicFactor = calcBasicFactor(basicStatus, buff.Vo - buff.Passive.Vo);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value) * 2;
+        DaAppeal.value += Math.floor(basicFactor * value);
+        ViAppeal.value += Math.floor(basicFactor * value);
+      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute == 'Da') {
+        const basicStatus = vault.fesIdols[appealIdol.value].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
+        let basicFactor = calcBasicFactor(basicStatus, buff.Da);
+        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
+          basicFactor = calcBasicFactor(basicStatus, buff.Da - buff.Passive.Da);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value);
+        DaAppeal.value += Math.floor(basicFactor * value) * 2;
+        ViAppeal.value += Math.floor(basicFactor * value);
+      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute == 'Vi') {
+        const basicStatus = vault.fesIdols[appealIdol.value].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
+        let basicFactor = calcBasicFactor(basicStatus, buff.Vi);
+        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
+          basicFactor = calcBasicFactor(basicStatus, buff.Vi - buff.Passive.Vi);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value);
+        DaAppeal.value += Math.floor(basicFactor * value);
+        ViAppeal.value += Math.floor(basicFactor * value) * 2;
+      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute == 'Excellent') {
+        let basicStatus = vault.fesIdols[appealIdol.value].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
+        let basicFactor = calcBasicFactor(basicStatus, buff.Vo);
+        VoAppeal.value += Math.floor(basicFactor * value) * 2;
+        basicStatus = vault.fesIdols[appealIdol.value].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
+        basicFactor = calcBasicFactor(basicStatus, buff.Da);
+        DaAppeal.value += Math.floor(basicFactor * value) * 2;
+        basicStatus = vault.fesIdols[appealIdol.value].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
+        basicFactor = calcBasicFactor(basicStatus, buff.Vi);
+        ViAppeal.value += Math.floor(basicFactor * value) * 2;
+      }
+    }
+  }else {
+    const basicStatus = {
+      Vo: vault.fesIdols[4].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5,
+      Da: vault.fesIdols[4].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5,
+      Vi: vault.fesIdols[4].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5
+    }
+    let basicRatio = 0;
+    if(vault.fesIdols[4].MemorieLevel == 5) {
+      basicRatio = 2;
+    }else if(vault.fesIdols[4].MemorieLevel == 4) {
+      basicRatio = 1.4;
+    }else if(vault.fesIdols[4].MemorieLevel == 3) {
+      basicRatio = 1.2;
+    }else if(vault.fesIdols[4].MemorieLevel == 2) {
+      basicRatio = 1;
+    }else if(vault.fesIdols[4].MemorieLevel == 1) {
+      basicRatio = 0.8;
+    }
+    let othersMLevelRatio = 0;
+    for(let i = 0; i < 4; i++) {
+      if(vault.fesIdols[i].MemorieLevel == 5) {
+        othersMLevelRatio += 0.075;
+      }else if(vault.fesIdols[i].MemorieLevel == 4) {
+        othersMLevelRatio += 0.05;
+      }else if(vault.fesIdols[i].MemorieLevel == 3) {
+        othersMLevelRatio += 0.03;
+      }else if(vault.fesIdols[i].MemorieLevel == 2) {
+        othersMLevelRatio += 0.02;
+      }
+    }
+    // 本体アピール
+    let memoryVo = Math.floor(Math.floor(Math.floor(basicStatus.Vo * (1 + (buff.Vo + appealUP) / 100) * perfect) * basicRatio) * othersMLevelRatio);
+    let memoryDa = Math.floor(Math.floor(Math.floor(basicStatus.Da * (1 + (buff.Da + appealUP) / 100) * perfect) * basicRatio) * othersMLevelRatio);
+    let memoryVi = Math.floor(Math.floor(Math.floor(basicStatus.Vi * (1 + (buff.Vi + appealUP) / 100) * perfect) * basicRatio) * othersMLevelRatio);
+    VoAppeal.value += (memoryVo * 2) + memoryDa + memoryVi;
+    DaAppeal.value += memoryVo + (memoryDa * 2) + memoryVi;
+    ViAppeal.value += memoryVo + memoryDa + (memoryVi * 2);
+    // バフのみ起動
+    for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mEffect.length; i++) {
+      if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 18) {
+        if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vo') {
+          buff.Vo += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+        }
+        if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Da') {
+          buff.Da += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+        }
+        if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vi') {
+          buff.Vi += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+        }
+      }
+    }
+    // 追撃
+    for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mAppeal.length; i++) {
+      let value = liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID)].value(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maValue, appealRatio.value);
+      if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute == 'Vo') {
+        let basicFactor = calcBasicFactor(basicStatus.Vo, buff.Vo);
+        if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID == 10) {
+          basicFactor = calcBasicFactor(basicStatus.Vo, buff.Vo - buff.Passive.Vo);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value) * 2;
+        DaAppeal.value += Math.floor(basicFactor * value);
+        ViAppeal.value += Math.floor(basicFactor * value);
+      }else if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute == 'Da') {
+        let basicFactor = calcBasicFactor(basicStatus.Da, buff.Da);
+        if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID == 10) {
+          basicFactor = calcBasicFactor(basicStatus.Da, buff.Da - buff.Passive.Da);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value);
+        DaAppeal.value += Math.floor(basicFactor * value) * 2;
+        ViAppeal.value += Math.floor(basicFactor * value);
+      }else if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute == 'Vi') {
+        let basicFactor = calcBasicFactor(basicStatus.Vi, buff.Vi);
+        if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID == 10) {
+          basicFactor = calcBasicFactor(basicStatus.Vi, buff.Vi - buff.Passive.Vi);
+        }
+        VoAppeal.value += Math.floor(basicFactor * value);
+        DaAppeal.value += Math.floor(basicFactor * value);
+        ViAppeal.value += Math.floor(basicFactor * value) * 2;
+      }else if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute == 'Excellent') {
+        let basicFactor = Math.floor(basicStatus.Vo * (1 + ((buff.Vo + appealUP) / 100)) * perfect);
+        VoAppeal.value += Math.floor(basicFactor * value) * 2;
+        basicFactor = Math.floor(basicStatus.Da * (1 + ((buff.Da + appealUP) / 100)) * perfect);
+        DaAppeal.value += Math.floor(basicFactor * value) * 2;
+        basicFactor = Math.floor(basicStatus.Vi * (1 + ((buff.Vi + appealUP) / 100)) * perfect);
+        ViAppeal.value += Math.floor(basicFactor * value) * 2;
+      }
+    }
+    for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal.length; i++) {
+      let value = liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaID)].value(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaValue, appealRatio.value);
+      if(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute == 'Vo') {
+        const basicStatus = vault.fesIdols[4].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
+        const basicFactor = Math.floor(basicStatus * (1 + ((buff.Vo + appealUP) / 100)) * perfect);
+        VoAppeal.value += Math.floor(basicFactor * value) * 2;
+        DaAppeal.value += Math.floor(basicFactor * value);
+        ViAppeal.value += Math.floor(basicFactor * value);
+      }else if(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute == 'Da') {
+        const basicStatus = vault.fesIdols[4].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
+        const basicFactor = Math.floor(basicStatus * (1 + ((buff.Da + appealUP) / 100)) * perfect);
+        VoAppeal.value += Math.floor(basicFactor * value);
+        DaAppeal.value += Math.floor(basicFactor * value) * 2;
+        ViAppeal.value += Math.floor(basicFactor * value);
+      }else if(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute == 'Vi') {
+        const basicStatus = vault.fesIdols[4].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
+        const basicFactor = Math.floor(basicStatus * (1 + ((buff.Vi + appealUP) / 100)) * perfect);
+        VoAppeal.value += Math.floor(basicFactor * value);
+        DaAppeal.value += Math.floor(basicFactor * value);
+        ViAppeal.value += Math.floor(basicFactor * value) * 2;
+      }else if(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute == 'Excellent') {
+        let basicStatus = vault.fesIdols[4].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
+        let basicFactor = Math.floor(basicStatus * (1 + ((buff.Vo + appealUP) / 100)) * perfect);
+        VoAppeal.value += Math.floor(basicFactor * value) * 2;
+        basicStatus = vault.fesIdols[4].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
+        basicFactor = Math.floor(basicStatus * (1 + ((buff.Da + appealUP) / 100)) * perfect);
+        DaAppeal.value += Math.floor(basicFactor * value) * 2;
+        basicStatus = vault.fesIdols[4].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
+        basicFactor = Math.floor(basicStatus * (1 + ((buff.Vi + appealUP) / 100)) * perfect);
+        ViAppeal.value += Math.floor(basicFactor * value) * 2;
+      }
+    }
+  }
+}
+const VoAppeal = ref(0);
+const DaAppeal = ref(0);
+const ViAppeal = ref(0);
+
+// ステータス詳細画面
+const statusDetailClass = ref("accBtn close")
+const displayStatusDetail = ref(true)
+
+// パッシブ発動率画面
+const passiveDetailClass = ref("accBtn close")
+const displayPassiveDetail = ref(true)
+
+// アピール計算画面
+const appealDetailClass = ref("accBtn close")
+const displayAppealDetail = ref(true)
+
+// アコーディオンエリアのトグルスイッチ
+const toggleAccBtn = (eleClass: string, isBoxDisplay: boolean) => {
+    if (eleClass == "statusDetail") {
+      if (isBoxDisplay) {
+        statusDetailClass.value = "accBtn";
+        displayStatusDetail.value = false;
+      } else {
+        statusDetailClass.value = "accBtn close";
+        displayStatusDetail.value = true;
+      }
+    } else if (eleClass == "passiveDetail") {
+      if (isBoxDisplay) {
+        passiveDetailClass.value = "accBtn";
+        displayPassiveDetail.value = false;
+      } else {
+        passiveDetailClass.value = "accBtn close";
+        displayPassiveDetail.value = true;
+      }
+    } else if (eleClass == "appealDetail") {
+      if (isBoxDisplay) {
+        appealDetailClass.value = "accBtn";
+        displayAppealDetail.value = false;
+      } else {
+        appealDetailClass.value = "accBtn close";
+        displayAppealDetail.value = true;
+      }
+    }
+}
+
+// 表示ターン変更時
+const changeTurn = () => {
+  if(graphTurn.value != 0) {
+    getBuff();
+    appealCalculation();
+  }
+  createCharts();
+}
+
+// 画面更新のための関数
+const display = ref(false);
+const displayUpdate = () => {
+  display.value = true;
+  display.value = false;
+}
+
+// モバイル切り替え
+const mobileView = ref(false);
+const watchWindowSize = () => {
+  if (window.innerWidth < 1000) {
+    mobileView.value = true;
+  } else {
+    mobileView.value = false;
+  }
+  createCharts();
+}
+watchWindowSize()
+window.addEventListener('resize', watchWindowSize);
+
+onMounted(() => {
+  createCharts();
+})
 
 </script>
 
-<style scoped></style>
+<style scoped>
+#errerArea {
+  margin-top: 10%;
+}
+#settingArea {
+  margin-left: 20vw;
+}
+#graphArea {
+  width: 60vw;
+  height: auto;
+  margin: auto;
+}
+#labelDiscription {
+  text-align: center;
+}
+#listArea {
+  margin: 10vh 0 0 15vw;
+}
+.bigBtn {
+  width: 150px;
+  padding: 10px;
+  text-align: center;
+  font-size: 17px;
+  font-weight: bold;
+  border-radius: 10px;
+  user-select: none;
+  color: aliceblue;
+  background-color: rgba(3, 36, 182, 0.658);
+  margin: auto;
+  margin-top: 10vh;
+}
+.bigBtn:hover {
+  cursor: pointer;
+  background-color: rgba(3, 36, 182, 0.9);
+}
+
+.accArea {
+    list-style: none;
+  padding-inline-start: 2px;
+}
+
+.accArea li {
+    margin: 10px 0;
+}
+
+.accArea section {
+  margin-right: 15vw;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+.accArea section h2 {
+    z-index: 10;
+    user-select: none;
+}
+
+.accBtn {
+    position: relative;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: normal;
+    padding: 1% 0 1% 5%;
+}
+
+/*アイコンの＋と×*/
+.accBtn::before,
+.accBtn::after {
+    position: absolute;
+    content: '';
+    width: 15px;
+    height: 2px;
+    background-color: #333;
+
+}
+
+.accBtn::before {
+    top: 48%;
+    left: 15px;
+    transform: rotate(0deg);
+
+}
+
+.accBtn::after {
+    top: 48%;
+    left: 15px;
+    transform: rotate(90deg);
+
+}
+
+/*　closeというクラスがついたら形状変化　*/
+.accBtn.close::before {
+    transform: rotate(45deg);
+}
+
+.accBtn.close::after {
+    transform: rotate(-45deg);
+}
+
+/* accordion box style */
+.accBox {
+    margin: 0 2% 2% 2%;
+}
+
+.accBox ul {
+  padding-inline-start: 10px;
+  list-style: none;
+  padding-right: 5px;
+}
+
+.accBox ul>li {
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 2px solid rgba(0, 0, 0, .3);
+  border-radius: 10px;
+}
+
+.accBox ul li>div {
+    border-radius: 10px;
+}
+.gold {
+    background-color: rgba(255, 215, 0, 0.3);
+}
+
+.rainbow {
+    background-color: rgba(87, 216, 255, 0.3);
+}
+
+@media screen and (max-width: 999px) {
+  #errerArea {
+    margin-top: 20%;
+  }
+  #settingArea {
+    margin-left: 5vw;
+  }
+  #graphArea {
+    width: 90vw;
+  }
+  #labelDiscription {
+    font-size: .8rem;
+  }
+  #listArea {
+    margin: 5vh 0 0 5vw;
+  }
+  .bigBtn {
+    padding: 5px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.603);
+  }
+  .accArea>li>section {
+    margin-right: 5vw;
+  }
+  .accBox ul {
+        padding-right: 0;
+    }
+
+    .accBtn {
+        text-align: center;
+    }
+
+    .accBox>ul>li>div {
+        min-width: 70vw;
+    }
+}
+</style>

@@ -8,17 +8,22 @@ export const findByBuffID = (ID: number): number => {
         if (buffList[seaechIndex].ID == ID) {
             return seaechIndex;
         } else if (seaechIndex == buffList.length) {
-            return 99
+            return 999 // errer
         }
         seaechIndex++;
     }
 }
 
+const beforePassive = 1;
+const DamageAvoidance = 2;
+const AvoidanceSuccess = 3;
+const Damaged = 4;
+// EffectType = 2 || 4 の場合、return boolean
 export const buffList: visibleBuff[] = [
     {
         Name: 'Voバフ',
         ID: 1,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
             status.Buff.Visible.vVo += value;
         }
@@ -26,7 +31,7 @@ export const buffList: visibleBuff[] = [
     {
         Name: 'Daバフ',
         ID: 2,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
             status.Buff.Visible.vDa += value;
         }
@@ -34,7 +39,7 @@ export const buffList: visibleBuff[] = [
     {
         Name: 'Viバフ',
         ID: 3,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
             status.Buff.Visible.vVi += value;
         }
@@ -42,27 +47,23 @@ export const buffList: visibleBuff[] = [
     {
         Name: 'メンタルダメージカット',
         ID: 4,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
-            let ratio = value * 0.01
-            ratio = 1 - ratio
-            status.DamageRatio *= ratio;
+            status.DamageRatio *= 1 - (value * 0.01);
         }
     },
     {
         Name: 'メンタルダメージアップ',
         ID: 5,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
-            let ratio = value * 0.01
-            ratio += 1
-            status.DamageRatio *= ratio;
+            status.DamageRatio *= 1 + (value * 0.01);
         }
     },
     {
         Name: '注目度アップ',
         ID: 6,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
             status.Attention += value;
         }
@@ -70,7 +71,7 @@ export const buffList: visibleBuff[] = [
     {
         Name: '注目度ダウン',
         ID: 7,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
             status.Attention -= value;
         }
@@ -78,7 +79,7 @@ export const buffList: visibleBuff[] = [
     {
         Name: 'パッシブ発動率上昇',
         ID: 8,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
             status.TriggerRateIncreases += value;
         }
@@ -86,45 +87,65 @@ export const buffList: visibleBuff[] = [
     {
         Name: 'メランコリ',
         ID: 9,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
-            let ratio = value * 0.01;
-            status.MentalEffect += - Math.floor(status.Mental * ratio);
+            status.MentalEffect += - Math.floor(status.Mental * value * 0.01);
+        }
+    },
+    {
+        Name: 'リザレクション',
+        ID: 21,
+        EffectType: Damaged,
+        Value: function (value: number):boolean {
+            if(status.Mental <= 0) {
+                console.log("rez");
+                status.Mental = Math.floor(defaultStatus.Mental * value * 0.01);
+                return true;
+            }else {
+                return false;
+            }
         }
     },
     {
         Name: '影響力アップ',
         ID: 18,
-        EffectType: 4,
+        EffectType: beforePassive,
         Value: function (value: number) {
-            let ratio = value * 0.01;
-            ratio += 1;
-            status.Damage *= Math.floor(status.Damage * ratio);
+            status.Damage += Math.floor(status.Damage * (1 + (value * 0.01))) - status.Damage;
         }
     },
     {
         Name: '影響力ダウン',
         ID: 19,
-        EffectType: 4,
+        EffectType: beforePassive,
         Value: function (value: number) {
-            let ratio = value * 0.01;
-            ratio = 1 - ratio;
-            status.Damage *= Math.floor(status.Damage * ratio);
+            status.Damage -= status.Damage - Math.floor(status.Damage * (1 - (value * 0.01)));
         }
     },
     {
         Name: 'リラックス',
         ID: 10,
-        EffectType: 1,
+        EffectType: beforePassive,
         Value: function (value: number) {
-            let ratio = value * 0.01;
-            status.MentalEffect += Math.floor(defaultStatus.Mental * ratio);
+            status.MentalEffect += Math.floor(defaultStatus.Mental * value * 0.01);
         }
     },
     {
         Name: 'リアクション回避',
         ID: 11,
-        EffectType: 2,
+        EffectType: DamageAvoidance,
+        Value: function (value: number): boolean {
+            if (Math.floor(Math.random() * 100) < value) {
+                return true
+            } else {
+                return false
+            }
+        }
+    },
+    {
+        Name: 'リアクション回避(パッシブ)',
+        ID: 20,
+        EffectType: DamageAvoidance,
         Value: function (value: number): boolean {
             if (Math.floor(Math.random() * 100) < value) {
                 return true
@@ -136,52 +157,52 @@ export const buffList: visibleBuff[] = [
     {
         Name: '回避時Voバフ',
         ID: 12,
-        EffectType: 3,
+        EffectType: AvoidanceSuccess,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(1,turn,value, 0)
-            // status.Buff.Visible.vVo += value;
+            pushVisibleBuff(1,turn,value, 0, 0);
         }
     },
     {
         Name: '回避時Daバフ',
         ID: 13,
-        EffectType: 3,
+        EffectType: AvoidanceSuccess,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(2,turn,value, 0)
-            // status.Buff.Visible.vDa += value;
+            pushVisibleBuff(2,turn,value, 0, 0);
         }
     },
     {
         Name: '回避時Viバフ',
         ID: 14,
-        EffectType: 3,
+        EffectType: AvoidanceSuccess,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(3,turn,value, 0)
-            // status.Buff.Visible.vVi += value;
+            pushVisibleBuff(3,turn,value, 0, 0);
         }
     },
     {
         Name: '被弾時Voバフ',
         ID: 15,
-        EffectType: 4,
+        EffectType: Damaged,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(1,turn,value, 0)
+            pushVisibleBuff(1,turn,value, 0, 0);
+            return true;
         }
     },
     {
         Name: '被弾時Daバフ',
         ID: 16,
-        EffectType: 4,
+        EffectType: Damaged,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(2,turn,value, 0)
+            pushVisibleBuff(2,turn,value, 0, 0);
+            return true;
         }
     },
     {
         Name: '被弾時Viバフ',
         ID: 17,
-        EffectType: 4,
+        EffectType: Damaged,
         Value: function (value: number, turn:number) {
-            pushVisibleBuff(3,turn,value, 0)
+            pushVisibleBuff(3,turn,value, 0, 0);
+            return true;
         }
     },
 
@@ -238,7 +259,7 @@ export const buffListCheck = () => {
                 }
             }
             if (checkNumber > buffList.length) {
-                console.log("buffListID is all correct")
+                console.log("buffListID complete")
                 buffCheck = false;
             } else {
                 console.log('errer [buffListID]')

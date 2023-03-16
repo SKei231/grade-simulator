@@ -126,7 +126,7 @@ export type detail = {
 
 // パッシブの発動条件
 export type trigger = {
-    label: String,
+    label: string,
     ID: number,
     existX: boolean,
     value: Function

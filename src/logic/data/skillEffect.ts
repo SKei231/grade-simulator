@@ -145,13 +145,17 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "なし",
         ID: 1,
         variable: false,
-        value: function () { }
+        value: function () {
+            return 0;
+        }
     },
     {
         label: "アピール【N】倍",
         ID: 2,
         variable: false,
-        value: function () { }
+        value: function (value:number, ratio:number) {
+            return value
+        }
     },
     {
         label: "アピール(メンタルが多いほど)【N】倍",
@@ -300,7 +304,7 @@ export const liveSkillEffect: sEffect[] = [
         value: function (value:number, turn:number) {
             status.MentalEffect += Math.floor(defaultStatus.Mental * (value * 0.01));
             if(status.Mental + status.MentalEffect - defaultStatus.Mental > 0) {
-                status.MemoryRize += Math.floor(((status.Mental + status.MentalEffect - defaultStatus.Mental)/defaultStatus.Mental) * 1000);
+                status.MemoryRize += Math.ceil(((status.Mental + status.MentalEffect - defaultStatus.Mental)/defaultStatus.Mental) * 100) * 10; // 小数点以下切り上げ
                 status.RecoveryTimes++;
             }
         }

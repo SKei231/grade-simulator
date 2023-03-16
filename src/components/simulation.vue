@@ -15,8 +15,6 @@
     <div class="finalCheck" v-if="simulationRunning">
       <h2 style="padding-top: 2%;">シュミレーション中…</h2>
       <div style="text-align: center;">
-        <!-- <p>{{ progressPer }}%</p>
-                <progress v-bind:value="progressPer" max="100">{{ progressPer }}%</progress> -->
         <div class="loader">Loading...</div>
       </div>
     </div>
@@ -57,9 +55,6 @@ const setData = (data: {
 // データチェック（未実装）
 let correctData = false
 let errerMessage:string[] = []
-
-// プログレスバー
-const progressPer = ref(0)
 
 // ボタン
 const noSet = ref(false)
@@ -103,11 +98,8 @@ defineExpose({
 // シミュレーション
 const simulateStart = () => {
   vault.createLog()
-  for(let i = 0; i < 100 ; i++){
-      for(let j = 0; j < detailSetting.count * 10; j++){
-          simulate.run();
-      }
-      // progressPer.value++;
+  for(let i = 0; i < 1000 * detailSetting.count ; i++){
+    simulate.run();
   }
   setTimeout(() => { router.push('/Result'); }, 100)
 }

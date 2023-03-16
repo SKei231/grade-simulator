@@ -206,8 +206,16 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(消去)【N】倍",
+        label: "アピール(UP消去)【N】倍",
         ID: 9,
+        variable: true,
+        value: function (value:number, ratio:number) {
+            return value;
+        }
+    },
+    {
+        label: "アピール(DOWN消去)【N】倍",
+        ID: 11,
         variable: true,
         value: function (value:number, ratio:number) {
             return value;
@@ -267,6 +275,29 @@ export const liveSkillEffect: sEffect[] = [
                 attribute = 2;
             }else if(note == "Vi") {
                 attribute = 3;
+            }
+            if(attribute != 0) {
+                pushVisibleBuff(attribute, turn, value, 0 ,0);
+            }
+        }
+    },
+    {
+        label: "【N】%DOWN",
+        ID: 20,
+        existN: true,
+        existM: false,
+        existTurn: true,
+        existTime: false,
+        existNote: false,
+        existAttribute: true,
+        value: function (value:number, turn:number, note:string, ) {
+            let attribute = 0;
+            if(note == "Vo") {
+                attribute = 22;
+            }else if(note == "Da") {
+                attribute = 23;
+            }else if(note == "Vi") {
+                attribute = 24;
             }
             if(attribute != 0) {
                 pushVisibleBuff(attribute, turn, value, 0 ,0);
@@ -478,6 +509,30 @@ export const liveSkillEffect: sEffect[] = [
         existAttribute: false,
         value: function (value:number, turn:number) {
             pushVisibleBuff(11, turn, value, 0, 0);
+        }
+    },
+    {
+        label: "【N】%UP[ダメージを受けるまで]",
+        ID: 21,
+        existN: true,
+        existM: false,
+        existTurn: false,
+        existTime: false,
+        existNote: false,
+        existAttribute: true,
+        value: function (value:number, turn:number, note:string, ) {
+            let attribute = 0;
+            if(note == "Vo") {
+                attribute = 25;
+            }else if(note == "Da") {
+                attribute = 26;
+            }else if(note == "Vi") {
+                attribute = 27;
+            }
+            if(attribute != 0) {
+                pushVisibleBuff(attribute, 10, value, 0 ,0);
+                pushVisibleBuff(28, 10, value, 1, 0)
+            }
         }
     },
     {

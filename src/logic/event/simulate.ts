@@ -286,7 +286,7 @@ const passiveSkillActivate = (turn:number) => {
             for(let j = 0; j < vault.fesIdols[order[i]].PassiveIndex.length; j++) {
                 const passiveClass = (vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Color == "rainbow")
                 if(rainbowMode == passiveClass){
-                    if(status.PassiveActTimes[order[i]][j] > 0 && passiveActTime < 6) {
+                    if(status.PassiveActTimes[order[i]][j] > 0 && passiveActTime <= 6) {
                         if(passiveAct(vault.fesIdols[order[i]].PassiveIndex[j].index, i)) {
                             if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Vo") {
                                 status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;

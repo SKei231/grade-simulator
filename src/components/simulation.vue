@@ -13,7 +13,7 @@
       <div class="bigBtn" id="backBtn" @click="close()">戻る</div>
     </div>
     <div class="finalCheck" v-if="simulationRunning">
-      <h2 style="padding-top: 2%;">シュミレーション中…</h2>
+      <h2 style="padding-top: 2%;">シミュレート中…</h2>
       <div style="text-align: center;">
         <div class="loader">Loading...</div>
       </div>

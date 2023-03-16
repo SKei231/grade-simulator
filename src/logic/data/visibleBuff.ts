@@ -45,6 +45,30 @@ export const buffList: visibleBuff[] = [
         }
     },
     {
+        Name: 'Voデバフ',
+        ID: 22,
+        EffectType: beforePassive,
+        Value: function (value: number) {
+            status.Buff.Visible.vVo -= value;
+        }
+    },
+    {
+        Name: 'Daデバフ',
+        ID: 23,
+        EffectType: beforePassive,
+        Value: function (value: number) {
+            status.Buff.Visible.vDa -= value;
+        }
+    },
+    {
+        Name: 'Viデバフ',
+        ID: 24,
+        EffectType: beforePassive,
+        Value: function (value: number) {
+            status.Buff.Visible.vVi -= value;
+        }
+    },
+    {
         Name: 'メンタルダメージカット',
         ID: 4,
         EffectType: beforePassive,
@@ -143,7 +167,7 @@ export const buffList: visibleBuff[] = [
         }
     },
     {
-        Name: 'リアクション回避(パッシブ)',
+        Name: 'リアクション回避(システム)',
         ID: 20,
         EffectType: DamageAvoidance,
         Value: function (value: number): boolean {
@@ -152,6 +176,43 @@ export const buffList: visibleBuff[] = [
             } else {
                 return false
             }
+        }
+    },
+    {
+        Name: 'Voバフ',
+        ID: 25,
+        EffectType: beforePassive,
+        Value: function (value: number) {
+            status.Buff.Visible.vVo += value;
+        }
+    },
+    {
+        Name: 'Daバフ',
+        ID: 26,
+        EffectType: beforePassive,
+        Value: function (value: number) {
+            status.Buff.Visible.vDa += value;
+        }
+    },
+    {
+        Name: 'Viバフ',
+        ID: 27,
+        EffectType: beforePassive,
+        Value: function (value: number) {
+            status.Buff.Visible.vVi += value;
+        }
+    },
+    {
+        Name: 'ダメージ受けるまで類全消去(システム)',
+        ID: 28,
+        EffectType: Damaged,
+        Value: function (value: number, turn:number) {
+            for(let i = 0; i < status.VisibleBuffs.length; i++) {
+                if(status.VisibleBuffs[i].BuffID == 25 || status.VisibleBuffs[i].BuffID == 26 || status.VisibleBuffs[i].BuffID == 27) {
+                    status.VisibleBuffs[i].BuffTurn = 0;
+                }
+            }
+            return true;
         }
     },
     {

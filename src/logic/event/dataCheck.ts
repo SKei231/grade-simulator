@@ -11,7 +11,7 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
     // Passive check
     for(let i = 0; i < passive.length; i++) {
         // Value 
-        if(passive[i].Attribute != undefined) {
+        if(typeof passive[i].Attribute === 'number') {
             if(!passive[i].Value) {
                 errerMessage.push('パッシブスキル "' + passive[i].Name + '" のバフ効果量を入力してください');
             }
@@ -32,21 +32,21 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
         }
         // activeturn
         if(!passive[i].ActiveTurn.after || !passive[i].ActiveTurn.before ) {
-            errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動ターンを入力してください')
+            errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動ターンを入力してください');
         }
         // probability
         if(!passive[i].Probability) {
-            errerMessage.push('パッシブスキル "' + passive[i].Name + '" の確率を入力してください')
+            errerMessage.push('パッシブスキル "' + passive[i].Name + '" の確率を入力してください');
         }
         // times
         if(!passive[i].Times) {
-            errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動回数を入力してください')
+            errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動回数を入力してください');
         }
         // passive effect
         for(let eIndex = 0; eIndex < passive[i].Effect.length; eIndex++) {
             if(passiveEffect[findByPassiveID(passive[i].Effect[eIndex].eID)].existN) {
                 if(!passive[i].Effect[eIndex].eValue) {
-                    errerMessage.push('パッシブスキル "' + passive[i].Name + ' " 「' + passiveEffect[findByPassiveID(passive[i].Effect[eIndex].eID)].label + '」の【N】の値を入力してください')
+                    errerMessage.push('パッシブスキル "' + passive[i].Name + ' " 「' + passiveEffect[findByPassiveID(passive[i].Effect[eIndex].eID)].label + '」の【N】の値を入力してください');
                 }
             }
         }

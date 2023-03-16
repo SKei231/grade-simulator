@@ -1,7 +1,6 @@
 <template>
     <div id="userHelp" v-if="displayBool">
         <div id="helpInfo">
-            <!-- ver 1.0.0 -->
             <h1>使い方</h1>
             <p style="padding-top: 100vh; padding-bottom: 100vh;">aaa</p>
         </div>
@@ -12,7 +11,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-// })
 const displayBool = ref(false);
 const open = () => {
     displayBool.value = true;

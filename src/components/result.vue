@@ -591,7 +591,7 @@ const createCharts = () => {
           }
           let sum = 0;
           for(let i = 0; i < vault.log[Turn].Buff.Passive.pVi.length; i++) {
-            pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pVi[i] / 10) - 1] += 1;
+            pushData.data[Math.floor(vault.log[Turn].Buff.Passive.pVi[i] / 10)] += 1;
             sum += vault.log[Turn].Buff.Passive.pVi[i];
           }
           data.datasets.push(pushData);

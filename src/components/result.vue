@@ -534,13 +534,13 @@ const createCharts = () => {
       }else if(selectedGraphMode.value == 2) {
         let maxArray = [0];
         if(selectedVo.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tVo[vault.log[Turn].Buff.Total.tVo.length - 1]) {
-          maxArray = vault.log[Turn].Buff.Total.tVo;
+          maxArray = vault.log[Turn].Buff.Passive.pVo;
         }
         if(selectedDa.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tDa[vault.log[Turn].Buff.Total.tDa.length - 1]) {
-          maxArray = vault.log[Turn].Buff.Total.tDa;
+          maxArray = vault.log[Turn].Buff.Passive.pDa;
         }
         if(selectedVi.value && maxArray[maxArray.length - 1] <= vault.log[Turn].Buff.Total.tVi[vault.log[Turn].Buff.Total.tVi.length - 1]) {
-          maxArray = vault.log[Turn].Buff.Total.tVi;
+          maxArray = vault.log[Turn].Buff.Passive.pVi;
         }
         let dataModel = createLabel(maxArray);
         if(selectedVo.value) {

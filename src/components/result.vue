@@ -1007,20 +1007,20 @@ const getBuff = () => {
     buff.Passive.Vi = Math.floor(buffSum.Passive.Vi / (vault.detailSetting.count * 1000));
     memory = Math.floor(memorySum / (vault.detailSetting.count * 1000));
   }else if(appealDataMode.value == 2) {
-    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[500 - 1];
-    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[500 - 1];
-    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[500 - 1];
-    memory = vault.log[graphTurn.value - 1].MemoryGauge[500 - 1];
+    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[vault.detailSetting.count * 500 - 1];
+    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[vault.detailSetting.count * 500 - 1];
+    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[vault.detailSetting.count * 500 - 1];
+    memory = vault.log[graphTurn.value - 1].MemoryGauge[vault.detailSetting.count * 500 - 1];
   }else if(appealDataMode.value == 3) {
-    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[250 - 1];
-    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[250 - 1];
-    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[250 - 1];
-    memory = vault.log[graphTurn.value - 1].MemoryGauge[250 - 1];
+    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[vault.detailSetting.count * 250 - 1];
+    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[vault.detailSetting.count * 250 - 1];
+    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[vault.detailSetting.count * 250 - 1];
+    memory = vault.log[graphTurn.value - 1].MemoryGauge[vault.detailSetting.count * 250 - 1];
   }else if(appealDataMode.value == 4) {
-    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[750 - 1];
-    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[750 - 1];
-    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[750 - 1];
-    memory = vault.log[graphTurn.value - 1].MemoryGauge[750 - 1];
+    buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[vault.detailSetting.count * 750 - 1];
+    buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[vault.detailSetting.count * 750 - 1];
+    buff.Vi = vault.log[graphTurn.value - 1].Buff.Total.tVi[vault.detailSetting.count * 750 - 1];
+    memory = vault.log[graphTurn.value - 1].MemoryGauge[vault.detailSetting.count * 750 - 1];
   }
 }
 const appealCalculation = () => {

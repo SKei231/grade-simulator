@@ -447,7 +447,7 @@ const liveSkillAppeal = (turn:number) => {
 } 
 
 export const appealLogPush = (idolID:number) => {
-    if(status.AppealLog.length <= 6) {
+    if(status.AppealLog.length <= 4) {
         status.AppealLog.push(idolID);
     }else {
         status.AppealLog.shift();

@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const version = '1.0.5'
+const version = '1.0.6'
 console.log(version)
 
 const displayBool = ref(false);

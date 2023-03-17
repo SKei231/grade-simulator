@@ -992,22 +992,20 @@ const getBuff = () => {
     let memorySum = 0;
     for(let j = 0; j < vault.detailSetting.count * 1000; j++) {
       buffSum.Vo += vault.log[graphTurn.value - 1].Buff.Total.tVo[j];
-      buff.Passive.Vo += vault.log[graphTurn.value - 1].Buff.Passive.pVo[j];
+      buffSum.Passive.Vo += vault.log[graphTurn.value - 1].Buff.Passive.pVo[j];
       buffSum.Da += vault.log[graphTurn.value - 1].Buff.Total.tDa[j];
-      buff.Passive.Da += vault.log[graphTurn.value - 1].Buff.Passive.pDa[j];
+      buffSum.Passive.Da += vault.log[graphTurn.value - 1].Buff.Passive.pDa[j];
       buffSum.Vi += vault.log[graphTurn.value - 1].Buff.Total.tVi[j];
-      buff.Passive.Vi += vault.log[graphTurn.value - 1].Buff.Passive.pVi[j];
+      buffSum.Passive.Vi += vault.log[graphTurn.value - 1].Buff.Passive.pVi[j];
       memorySum += vault.log[graphTurn.value - 1].MemoryGauge[j];
     }
-    buffSum.Vo /= (vault.detailSetting.count * 1000);
-    buffSum.Passive.Vo /= (vault.detailSetting.count * 1000);
-    buffSum.Da /= (vault.detailSetting.count * 1000);
-    buffSum.Passive.Da /= (vault.detailSetting.count * 1000);
-    buffSum.Vi /= (vault.detailSetting.count * 1000);
-    buffSum.Passive.Vi /= (vault.detailSetting.count * 1000);
-    buff = buffSum;
-    memorySum /= (vault.detailSetting.count * 1000);
-    memory = Math.floor(memorySum)
+    buff.Vo = Math.floor(buffSum.Vo / (vault.detailSetting.count * 1000));
+    buff.Da = Math.floor(buffSum.Da / (vault.detailSetting.count * 1000));
+    buff.Vi = Math.floor(buffSum.Vi / (vault.detailSetting.count * 1000));
+    buff.Passive.Vo = Math.floor(buffSum.Passive.Vo / (vault.detailSetting.count * 1000));
+    buff.Passive.Da = Math.floor(buffSum.Passive.Da / (vault.detailSetting.count * 1000));
+    buff.Passive.Vi = Math.floor(buffSum.Passive.Vi / (vault.detailSetting.count * 1000));
+    memory = Math.floor(memorySum / (vault.detailSetting.count * 1000));
   }else if(appealDataMode.value == 2) {
     buff.Vo = vault.log[graphTurn.value - 1].Buff.Total.tVo[500 - 1];
     buff.Da = vault.log[graphTurn.value - 1].Buff.Total.tDa[500 - 1];

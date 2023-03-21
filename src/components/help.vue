@@ -67,7 +67,7 @@ defineExpose({
 
 /* モバイル　1000px
 --------------------------------------------------------------------------------- */
-@media screen and (max-width: 999px) {
+@media screen and (max-width: 1030px) {
     #helpInfo h1 {
         font-size: 1.5rem;
     }

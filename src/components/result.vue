@@ -1445,7 +1445,7 @@ onMounted(() => {
     background-color: rgba(87, 216, 255, 0.3);
 }
 
-@media screen and (max-width: 999px) {
+@media screen and (max-width: 1030px) {
   #errerArea {
     margin-top: 20%;
   }

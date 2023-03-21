@@ -93,11 +93,11 @@
                     <h2 v-bind:class="formationSettingClass" @click="toggleAccBtn('formationSetting', displayFormationSetting)">編成</h2>
                     <div class="accBox" v-if="displayFormationSetting">
                         <ul>
-                            <li v-for="(fesIdolStatus, index) in fesIdols">
+                            <li v-for="(fesIdolStatus, index) in fesIdols" v-bind:id="fesIdolStatus.Position">
                                 <div style="width: 100%; padding-left: 10px;">
                                     <div style="display: flex;">
                                         <h3 class="positionName">{{ fesIdolStatus.Position }} : </h3>
-                                        <select v-model="fesIdols[index].Idol" style="margin: 5px;">
+                                        <select v-model="fesIdols[index].Idol" style="margin: 5px;" @change="setLinkTrigger(index)">
                                             <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
                                         </select>
                                     </div>
@@ -187,6 +187,15 @@
                                                 </div>
                                             </div>
                                             <div @click="plusLiveSkillEffect(index, lindex)" class="btn" style="font-size: 11px;">スキル効果を追加</div>
+                                            <div style="padding: 3px;" v-if="fesIdols[index].Idol >= 20 && fesIdols[index].Idol <= 23">
+                                                Link条件: {{ idol_list.idolList[idol_list.findByIdolID(fesIdols[index].LiveSkill[lindex].LinkTrigger[0])].Name ?? "" }}
+                                                <span v-for="(LT, ltindex) in fesIdols[index].LiveSkill[lindex].LinkTrigger">
+                                                    <select v-if="ltindex != 0" v-model="fesIdols[index].LiveSkill[lindex].LinkTrigger[ltindex]" style="margin: 5px;" @change="displayUpdate()">
+                                                        <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
+                                                    </select>
+                                                </span>
+                                                <div @click="plusLinkTrigger(index, lindex)" class="btn" style="font-size: 11px;">Link条件を追加</div>
+                                            </div>
                                             <div style="padding: 3px;">
                                                 <div v-for="(LSeffect, laIndex) in fesIdols[index].LiveSkill[lindex].Link.lAppeal" style="padding: 2px;">
                                                     Linkアピール: 
@@ -556,7 +565,8 @@ const setData = (data: {
                             leTime: ref().value,
                             leNote: ref().value
                         }],
-                    }
+                    },
+                    LinkTrigger: data.fesIdol[i].LiveSkill[0].LinkTrigger ?? [ref().value]
                 },
                 {
                     Priority: data.fesIdol[i].LiveSkill[1].Priority ?? ref().value,
@@ -585,7 +595,8 @@ const setData = (data: {
                             leTime: ref().value,
                             leNote: ref().value
                         }],
-                    }
+                    },
+                    LinkTrigger: data.fesIdol[i].LiveSkill[0].LinkTrigger ?? [ref().value]
                 }
             ],
             PassiveIndex: data.fesIdol[i].PassiveIndex ?? [],
@@ -675,6 +686,11 @@ const setData = (data: {
                 newFesIdol.LiveSkill[0].Link.lEffect[j].leNote = ref().value
             }
         }
+        for (let j = 0; j < newFesIdol.LiveSkill[0].LinkTrigger.length; j++) {
+            if (typeof newFesIdol.LiveSkill[0].LinkTrigger[j] !== "number") {
+                newFesIdol.LiveSkill[0].LinkTrigger[j] = ref().value
+            }
+        }
         for (let j = 0; j < newFesIdol.LiveSkill[1].Appeal.length; j++) {
             if (typeof newFesIdol.LiveSkill[1].Appeal[j].aID !== "number") {
                 newFesIdol.LiveSkill[1].Appeal[j].aID = ref(1).value
@@ -737,6 +753,11 @@ const setData = (data: {
             }
             if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leNote !== "string") {
                 newFesIdol.LiveSkill[1].Link.lEffect[j].leNote = ref().value
+            }
+        }
+        for (let j = 0; j < newFesIdol.LiveSkill[1].LinkTrigger.length; j++) {
+            if (typeof newFesIdol.LiveSkill[1].LinkTrigger[j] !== "number") {
+                newFesIdol.LiveSkill[1].LinkTrigger[j] = ref().value
             }
         }
         for(let j = 0; j < newFesIdol.PassiveIndex.length; j++) {
@@ -1074,7 +1095,8 @@ const setIdolList = () => {
                             leTime: ref().value,
                             leNote: ref().value
                         }]
-                    }
+                    },
+                    LinkTrigger: [ref().value]
                 },
                 {
                     Priority: ref().value,
@@ -1103,7 +1125,8 @@ const setIdolList = () => {
                             leTime: ref().value,
                             leNote: ref().value
                         }]
-                    }
+                    },
+                    LinkTrigger: [ref().value]
                 }
             ],
             PassiveIndex: [{
@@ -1189,6 +1212,23 @@ const plusLiveSkillEffect = (index: number, effectIndex: number) => {
         eNote: ref().value
     })
     displayUpdate()
+}
+
+// Link条件
+const setLinkTrigger = (index:number) => {
+    fesIdols[index].LiveSkill[0].LinkTrigger.length = 0;
+    fesIdols[index].LiveSkill[1].LinkTrigger.length = 0;
+    fesIdols[index].LiveSkill[0].LinkTrigger.push(ref(fesIdols[index].Idol).value);
+    fesIdols[index].LiveSkill[0].LinkTrigger.push(ref().value);
+    fesIdols[index].LiveSkill[1].LinkTrigger.push(ref(fesIdols[index].Idol).value);
+    fesIdols[index].LiveSkill[1].LinkTrigger.push(ref().value);
+    displayUpdate();
+}
+
+// Link条件追加ボタン
+const plusLinkTrigger = (index:number, linkIndex:number) => {
+    fesIdols[index].LiveSkill[linkIndex].LinkTrigger.push(ref().value);
+    displayUpdate();
 }
 
 // Linkアピール追加ボタン
@@ -1468,17 +1508,18 @@ input[type="number"] {
     z-index: 50;
     top: 0;
     left: 0;
-    padding-top: 10vh;
     backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.7);
     transition: all 0.3s;
 }
 
 .smallnav ul {
-    display: block;
+    display: flex;
+    flex-flow: column;
+    justify-content: space-between;
     position: absolute;
     width: 50%;
-    height: 60%;
+    height: 70%;
     z-index: 59;
     top: 0;
     bottom: 0;
@@ -1492,7 +1533,7 @@ input[type="number"] {
     text-align: center;
     font-size: large;
     font-weight: bolder;
-    padding: 15% 5%;
+    color: #ffffff;
 }
 
 
@@ -1706,9 +1747,25 @@ input[type="number"] {
     background-color: rgba(0, 0, 0, 0.2);
 }
 
+#Leader {
+    border: 10px solid rgba(204, 68, 255, .3);
+}
+#Vocal {
+    border: 10px solid rgba(255, 68, 68, .3);
+}
+#Dance {
+    border: 10px solid rgba(51, 187, 255, .3);
+}
+#Visual {
+    border: 10px solid rgba(255, 187, 51, .3);
+}
+#Center {
+    border: 10px solid rgba(121, 248, 206, 0.3);
+}
+
 /* モバイル　1000px
 --------------------------------------------------------------------------------- */
-@media screen and (max-width: 999px) {
+@media screen and (max-width: 1030px) {
     #contents {
         margin: 0 1%;
     }

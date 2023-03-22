@@ -367,8 +367,11 @@ const liveSkillAppeal = (turn:number) => {
     }
     // Linkの発動有無 
     // @ts-ignore
-    const linkAct = (idolID:number):boolean => {
-        const linkList = idolList[findByIdolID(idolID)].Unit;
+    const linkAct = (idolID:number, LinkTrigger:number[]):boolean => {
+        let linkList = idolList[findByIdolID(idolID)].Unit;
+        if(idolID >= 20 && idolID <= 23) {
+            linkList = LinkTrigger;
+        }
         let checker = true;
         let scanningIndex = 0;
         while(checker) {
@@ -418,7 +421,7 @@ const liveSkillAppeal = (turn:number) => {
             }
         }
         // Linkの発動
-        if(linkAct(vault.fesIdols[lin[0]].Idol)) {
+        if(linkAct(vault.fesIdols[lin[0]].Idol, vault.fesIdols[lin[0]].LiveSkill[lin[1]].LinkTrigger)) {
             for(let i = 0; i < vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect.length; i++) {
                 if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].existAttribute) {
                     if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].existM) {

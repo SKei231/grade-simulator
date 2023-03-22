@@ -127,15 +127,56 @@
                   <p>※現在、変動するアピール倍率において、倍率が最大の場合で計算を行っています。</p>
                 </li>
                 <li style="border: none; margin: 5px 0 0 0;">
-                  <div style="padding-left: 10px;">
-                    <div>興味:<input type="number" v-model="interest" style="width: 50px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">倍</div>
-                    <div>スロースターター:<input type="number" v-model="slowStart" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">人</div>
-                    <div>スタートダッシュ:<input type="number" v-model="startDash" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">人</div>
-                    <div>アピールUP(思い出高):<input type="number" v-model="memoryHigh" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">人</div>
-                    <div>アピールUP(思い出低):<input type="number" v-model="memoryLow" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">人</div>
-                    <div>その他アピールUP:<input type="number" v-model="appealUp" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">%</div>
-                  </div>
-                  <div style="padding-top: 10px;">アピール値</div>
+                  <section style="margin: 0;">
+                    <h2 v-bind:class="appealUPClass" @click="toggleAccBtn('appealUP', displayAppealUP)" style="margin: 2px 0;">アピールUP系</h2>
+                    <div class="accBox" v-if="displayAppealUP">
+                      <ul>
+                        <div>興味:<input type="number" v-model="interest" style="width: 50px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">倍</div>
+                        <div>スロースターター:
+                          <select v-model="slowStart" @change="appealCalculation()">
+                            <option value="0">なし</option>
+                            <option value="1">1人</option>
+                            <option value="2">2人</option>
+                            <option value="3">3人</option>
+                            <option value="4">4人</option>
+                            <option value="5">5人</option>
+                          </select>
+                        </div>
+                        <div>スタートダッシュ:
+                          <select v-model="startDash" @change="appealCalculation()">
+                            <option value="0">なし</option>
+                            <option value="1">1人</option>
+                            <option value="2">2人</option>
+                            <option value="3">3人</option>
+                            <option value="4">4人</option>
+                            <option value="5">5人</option>
+                          </select>
+                        </div>
+                        <div>アピールUP(思い出高):
+                          <select v-model="memoryHigh" @change="appealCalculation()">
+                            <option value="0">なし</option>
+                            <option value="1">1人</option>
+                            <option value="2">2人</option>
+                            <option value="3">3人</option>
+                            <option value="4">4人</option>
+                            <option value="5">5人</option>
+                          </select>
+                        </div>
+                        <div>アピールUP(思い出低):
+                          <select v-model="memoryLow" @change="appealCalculation()">
+                            <option value="0">なし</option>
+                            <option value="1">1人</option>
+                            <option value="2">2人</option>
+                            <option value="3">3人</option>
+                            <option value="4">4人</option>
+                            <option value="5">5人</option>
+                          </select>
+                        </div>
+                        <div>その他アピールUP:<input type="number" v-model="appealUp" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">%</div>
+                      </ul>
+                    </div>
+                  </section>
+                  <div style="padding-top: 20px;">アピール値</div>
                   <div>
                     表示データ: 
                     <select v-model="appealDataMode" @change="getBuff(); appealCalculation();">
@@ -1253,6 +1294,10 @@ const displayPassiveDetail = ref(true)
 const appealDetailClass = ref("accBtn close")
 const displayAppealDetail = ref(true)
 
+// アピールUP画面
+const appealUPClass = ref("accBtn close")
+const displayAppealUP = ref(true)
+
 // アコーディオンエリアのトグルスイッチ
 const toggleAccBtn = (eleClass: string, isBoxDisplay: boolean) => {
     if (eleClass == "statusDetail") {
@@ -1278,6 +1323,14 @@ const toggleAccBtn = (eleClass: string, isBoxDisplay: boolean) => {
       } else {
         appealDetailClass.value = "accBtn close";
         displayAppealDetail.value = true;
+      }
+    } else if (eleClass == "appealUP") {
+      if (isBoxDisplay) {
+        appealUPClass.value = "accBtn";
+        displayAppealUP.value = false;
+      } else {
+        appealUPClass.value = "accBtn close";
+        displayAppealUP.value = true;
       }
     }
 }
@@ -1379,6 +1432,7 @@ onMounted(() => {
     font-size: 1rem;
     font-weight: normal;
     padding: 1% 0 1% 5%;
+    -webkit-tap-highlight-color:rgba(0,0,0,0);
 }
 
 /*アイコンの＋と×*/
@@ -1445,7 +1499,7 @@ onMounted(() => {
     background-color: rgba(87, 216, 255, 0.3);
 }
 
-@media screen and (max-width: 999px) {
+@media screen and (max-width: 1030px) {
   #errerArea {
     margin-top: 20%;
   }

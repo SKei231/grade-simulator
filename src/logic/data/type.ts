@@ -64,7 +64,8 @@ export type fesIdol = {
                 leTime: number,
                 leNote: string
             }]
-        }
+        },
+        LinkTrigger: number[]
     }, {
         Priority: number,
         Appeal: [{
@@ -92,7 +93,8 @@ export type fesIdol = {
                 leTime: number,
                 leNote: string
             }]
-        }
+        },
+        LinkTrigger: number[]
     }],
     PassiveIndex: [{
         index: number,

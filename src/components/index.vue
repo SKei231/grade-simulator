@@ -596,7 +596,7 @@ const setData = (data: {
                             leNote: ref().value
                         }],
                     },
-                    LinkTrigger: data.fesIdol[i].LiveSkill[0].LinkTrigger ?? [ref().value]
+                    LinkTrigger: data.fesIdol[i].LiveSkill[1].LinkTrigger ?? [ref().value]
                 }
             ],
             PassiveIndex: data.fesIdol[i].PassiveIndex ?? [],

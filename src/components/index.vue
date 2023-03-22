@@ -1509,6 +1509,7 @@ input[type="number"] {
     z-index: 50;
     top: 0;
     left: 0;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     background: rgba(0, 0, 0, 0.8);
     transition: all 0.3s;

@@ -1511,7 +1511,7 @@ input[type="number"] {
     left: 0;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(255, 255, 255, 0.3);
     transition: all 0.3s;
 }
 
@@ -1535,7 +1535,7 @@ input[type="number"] {
     text-align: center;
     font-size: large;
     font-weight: bolder;
-    color: #ffffff;
+    color: #000000;
 }
 
 

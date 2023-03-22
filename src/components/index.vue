@@ -81,7 +81,7 @@
                                     </div>
                                     <div @click="plusEffect(index)" class="btn" style="font-size: 13px;">スキル効果を追加</div>
                                 </div>
-                                <button style="cursor:pointer;"><img src="../assets/trashCan.png" alt="消去" style="height: 40px;" @click="deletePassive(index)"></button>
+                                <button class="passiveDelBtn"><img src="../assets/trashCan.png" alt="消去" @click="deletePassive(index)"></button>
                             </li>
                             <div class="btn" @click="plusPassive()">パッシブを追加</div>
                         </ul>
@@ -1439,6 +1439,7 @@ input[type="number"] {
     border-radius: 15px;
     background-color: rgb(114, 113, 113);
     z-index: 99;
+    -webkit-tap-highlight-color:rgba(0,0,0,0);
 }
 
 .smallnav-btn span {
@@ -1509,7 +1510,7 @@ input[type="number"] {
     top: 0;
     left: 0;
     backdrop-filter: blur(10px);
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     transition: all 0.3s;
 }
 
@@ -1595,8 +1596,6 @@ input[type="number"] {
     background-color: rgba(3, 36, 182, 0.9);
 }
 
-/* パッシブスキル入力エリア
---------------------------------------------------------------------------------- */
 /* accordinon area style */
 .accArea {
     list-style: none;
@@ -1622,6 +1621,7 @@ input[type="number"] {
     font-size: 1rem;
     font-weight: normal;
     padding: 1% 0 1% 5%;
+    -webkit-tap-highlight-color:rgba(0,0,0,0);
 }
 
 /*アイコンの＋と×*/
@@ -1690,6 +1690,15 @@ input[type="number"] {
 
 .accBox ul li>button:hover {
     opacity: 1;
+}
+
+.passiveDelBtn {
+    cursor:pointer;
+    -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+
+.passiveDelBtn>img {
+    height: 40px;
 }
 
 .gold {
@@ -1792,5 +1801,14 @@ input[type="number"] {
 
     .btn {
         margin: 0 0 0 auto;
+    }
+
+    .passiveDelBtn {
+        padding: 2px;
+        margin-left: 5px;
+    }
+    .passiveDelBtn>img {
+        width: 30px;
+        height: auto;
     }
 }</style>

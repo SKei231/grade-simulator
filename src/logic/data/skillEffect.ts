@@ -4,7 +4,7 @@
 import { pEffect, sEffect, sAppeal } from "./type";
 import { status, defaultStatus, pushVisibleBuff, appealLogPush } from "../event/simulate";
 import * as visivleBuff from './visibleBuff'
-import { duetList, idolList } from './idolList'
+import { duetList, getUnitMember, idolList } from './idolList'
 
 visivleBuff.buffListCheck()
 
@@ -255,7 +255,12 @@ export const liveSkillEffect: sEffect[] = [
         existNote: false,
         existAttribute: false,
         value: function (value:number, turn:number) {
-            appealLogPush(value);
+            if(value < 26 || value == 33) {
+                appealLogPush(value);
+            }else {
+                let unitList = getUnitMember(value - 24);
+                appealLogPush(unitList[Math.floor(Math.random() * unitList.length)]);
+            }
         }
     },
     {

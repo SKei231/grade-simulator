@@ -10,6 +10,28 @@ const alstroemeria = [14, 15, 16];
 const straylight = [17, 18, 19];
 const noctchill = [20, 21, 22, 23];
 const shiis = [24, 25];
+const ruka = [33];
+
+export const getUnitMember = (index:number):number[] => {
+    if(index == 2) {
+        return illuminationStars;
+    }else if(index == 3) {
+        return lAntica;
+    }else if(index == 4) {
+        return afterSchool;
+    }else if(index == 5) {
+        return alstroemeria;
+    }else if(index == 6) {
+        return straylight;
+    }else if(index == 7) {
+        return noctchill;
+    }else if(index == 8) {
+        return shiis;
+    }else {
+        console.log("getUnitMember index errer");
+        return [0];
+    }
+}
 
 export const findByIdolID = (id: number): number => {
     let seaechIndex = 0;
@@ -163,6 +185,11 @@ export const idolList: idol[] = [
         ID: 25,
         Unit: shiis
     },
+    {
+        Name: "斑鳩ルカ",
+        ID: 33,
+        Unit: ruka
+    },
 ]
 
 // デュエット選択
@@ -174,37 +201,37 @@ const makeDuetList = () => {
     duetList.push(
         {
             Name: "イルミネ",
-            ID: idolList.length + 1,
+            ID: 26,
             Unit: illuminationStars
         },
         {
             Name: "アンティーカ",
-            ID: idolList.length + 2,
+            ID: 27,
             Unit: lAntica
         },
         {
             Name: "放クラ",
-            ID: idolList.length + 3,
+            ID: 28,
             Unit: afterSchool
         },
         {
             Name: "アルスト",
-            ID: idolList.length + 4,
+            ID: 29,
             Unit: alstroemeria
         },
         {
             Name: "ストレイ",
-            ID: idolList.length + 5,
+            ID: 30,
             Unit: straylight
         },
         {
             Name: "ノクチル",
-            ID: idolList.length + 6,
+            ID: 31,
             Unit: noctchill
         },
         {
             Name: "シーズ",
-            ID: idolList.length + 7,
+            ID: 32,
             Unit: shiis
         },
     )

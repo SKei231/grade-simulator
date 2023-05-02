@@ -2,6 +2,7 @@
 import { trigger } from "./type"
 import { status, defaultStatus } from "../event/simulate"
 import { passiveSkills } from "../event/vault"
+import { getUnitMember } from "./idolList"
 
 export const triggerCheck = (ID: number) => {
     return triggerList[findByTriggerID(ID)].value()
@@ -78,10 +79,41 @@ export const triggerList: trigger[] = [
         ID: 3,
         existX: true,
         value: function (turn:number, index:number) {
-            if(turn + 1 >= passiveSkills[index].Trigger.tX) {
-                return turnCheck(turn, index);
+            if(status.AppealLog.length < passiveSkills[index].Trigger.tX) {
+                return false;
             }else {
                 return triggerList[findByTriggerID(2)].value(turn, index);
+            }
+        }
+    },
+    {
+        label: "履歴に【X】人以上ある場合",
+        ID: 18,
+        existX: true,
+        value: function (turn:number, index:number) {
+            if(turn + 1 < passiveSkills[index].Trigger.tX) {
+                return false;
+            }else {
+                if(status.AppealLog.length < passiveSkills[index].Trigger.tX) {
+                    return false;
+                }else if(passiveSkills[index].Trigger.tHis[0] == 1) {
+                    return turnCheck(turn, index);
+                }else {
+                    let unit:number[] = getUnitMember(passiveSkills[index].Trigger.tHis[0]);
+                    let hitTimes = 0;
+                    for(let i = 0; i < status.AppealLog.length; i ++) {
+                        for(let j = 0; j < unit.length; j++) {
+                            if(status.AppealLog[i] == unit[j]) {
+                                hitTimes++;
+                            }
+                        }
+                    }
+                    if(hitTimes >= passiveSkills[index].Trigger.tX) {
+                        return turnCheck(turn, index);
+                    }else {
+                        return false;
+                    }
+                }
             }
         }
     },

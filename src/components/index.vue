@@ -62,6 +62,23 @@
                                         </span>
                                         <div @click="plusHistory(index)" class="btn" style="font-size: 13px;">履歴を追加</div>
                                     </div>
+                                    <div class="passiveSettingArea"
+                                        v-if="passiveSkills[index].Trigger.tID == 18">
+                                        <!-- 履歴(ユニット人数) -->
+                                        <span>
+                                            ユニット:
+                                            <select v-model="passiveSkills[index].Trigger.tHis[0]">
+                                                <option value="1">指定なし</option>
+                                                <option value="2">イルミネ</option>
+                                                <option value="3">アンティーカ</option>
+                                                <option value="4">方クラ</option>
+                                                <option value="5">アルスト</option>
+                                                <option value="6">ストレイ</option>
+                                                <option value="7">ノクチル</option>
+                                                <option value="8">シーズ</option>
+                                            </select>
+                                        </span>
+                                    </div>
                                     <div class="passiveSettingArea">
                                         <input type="number" style="margin-left: 10px; width: 30px;" v-model="passiveSkills[index].ActiveTurn.after" min="1" v-bind:max="vault.maxTurn">ターン以降<br v-if="mobileView">
                                         <input type="number" style="margin-left: 10px; width: 30px;" v-model="passiveSkills[index].ActiveTurn.before" min="1" v-bind:max="vault.maxTurn">ターン以前　<br v-if="mobileView">確率:

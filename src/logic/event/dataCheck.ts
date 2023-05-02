@@ -24,6 +24,13 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
                 }
             }
         }
+        if(passive[i].Trigger.tID == 18) {
+            for(let tHisIndex = 0; tHisIndex < passive[i].Trigger.tHis.length; tHisIndex++) {
+                if(!passive[i].Trigger.tHis[tHisIndex]) {
+                    errerMessage.push('パッシブスキル "' + passive[i].Name + '" のユニット条件を入力してください');
+                }
+            }
+        }
         // trigger tN
         if(triggerList[findByTriggerID(passive[i].Trigger.tID)].existX) {
             if(!passive[i].Trigger.tX) {

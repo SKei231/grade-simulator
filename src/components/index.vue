@@ -8,12 +8,13 @@
         </div>
         <Help ref="displayUserHelp"></Help>
         <div class="smallnav" v-if="smallnavDisplay">
-            <ul>
+            <ul id="snavMain">
                 <li @click="simulationOpen()">次へ</li>
-                <li @click="setLocalStorage()">設定を保存</li>
-                <li @click="openFile()">設定を入力</li>
-                <li @click="outputSetting()">設定を出力</li>
                 <li @click="userHelp()">使い方</li>
+                <li @click="setLocalStorage()">設定を保存</li>
+                <li @click="openFile('all')">設定をすべて入力</li>
+                <li @click="openFile('passive')">パッシブのみ入力</li>
+                <li @click="outputSetting()">設定を出力</li>
             </ul>
         </div>
         <div v-if="!mobileView" id="saveBtn" class="bigBtn" @click="setLocalStorage()">設定を保存</div>
@@ -204,6 +205,57 @@
                                                 </div>
                                             </div>
                                             <div @click="plusLiveSkillEffect(index, lindex)" class="btn" style="font-size: 11px;">スキル効果を追加</div>
+                                            <div style="padding: 3px;">
+                                                追加効果:
+                                                <select v-model="fesIdols[index].LiveSkill[lindex].Link.lType" @change="displayUpdate()">
+                                                    <option value='Link'>Link</option>
+                                                    <option value='Plus'>Plus</option>
+                                                    <!-- <option value='Change'>Change</option> -->
+                                                </select>
+                                            </div>
+                                            <div v-if="fesIdols[index].LiveSkill[lindex].Link.lType == 'Plus'" style="padding: 3px;">
+                                                <div>
+                                                    <input type="number" style="margin-left: 10px; width: 30px;" v-model="fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltAfter" min="1" v-bind:max="vault.maxTurn">ターン以降<br v-if="mobileView">
+                                                    <input type="number" style="margin-left: 10px; width: 30px;" v-model="fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltBefore" min="1" v-bind:max="vault.maxTurn">ターン以前　<br v-if="mobileView">
+                                                </div>
+                                                <div v-for="(plusTriggers, pIndex) in fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList" style="padding-top: 3px;">
+                                                    発動条件:
+                                                    <select v-model="fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID" @change="clearPAppealHistry(index, lindex, pIndex)">
+                                                        <option v-for="passiveTrigers in passive_trigger.triggerList" v-bind:value="passiveTrigers.ID">{{ passiveTrigers.label }}</option>
+                                                    </select>
+                                                    <!-- X の入力 -->
+                                                    <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID)].existX" style="padding-left: 10px;"> X:
+                                                        <input type="number" style="width: 30px;" v-model="fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltX">
+                                                    </span>
+                                                    <div v-if="fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 2 || fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 3">
+                                                        <!-- 履歴 -->
+                                                        <span v-for="(his, LHindex) in fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis">
+                                                            履歴:
+                                                            <select v-model="fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis[LHindex]">
+                                                                <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
+                                                            </select>
+                                                        </span>
+                                                        <div @click="plusPAppealHistory(index, lindex, pIndex)" class="btn" style="font-size: 13px;">履歴を追加</div>
+                                                    </div>
+                                                    <div v-if="fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 18">
+                                                        <!-- 履歴(ユニット人数) -->
+                                                        <span>
+                                                            ユニット:
+                                                            <select v-model="fesIdols[index].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis[0]">
+                                                                <option value="1">指定なし</option>
+                                                                <option value="2">イルミネ</option>
+                                                                <option value="3">アンティーカ</option>
+                                                                <option value="4">方クラ</option>
+                                                                <option value="5">アルスト</option>
+                                                                <option value="6">ストレイ</option>
+                                                                <option value="7">ノクチル</option>
+                                                                <option value="8">シーズ</option>
+                                                            </select>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div @click="plusPAppealTrigger(index, lindex)" class="btn" style="font-size: 11px; margin-top: 3px;">発動条件を追加</div>
+                                            </div>
                                             <div style="padding: 3px;" v-if="fesIdols[index].Idol >= 20 && fesIdols[index].Idol <= 23">
                                                 Link条件: {{ idol_list.idolList[idol_list.findByIdolID(fesIdols[index].LiveSkill[lindex].LinkTrigger[0])].Name ?? "" }}
                                                 <span v-for="(LT, ltindex) in fesIdols[index].LiveSkill[lindex].LinkTrigger">
@@ -215,7 +267,7 @@
                                             </div>
                                             <div style="padding: 3px;">
                                                 <div v-for="(LSeffect, laIndex) in fesIdols[index].LiveSkill[lindex].Link.lAppeal" style="padding: 2px;">
-                                                    Linkアピール: 
+                                                    {{ fesIdols[index].LiveSkill[lindex].Link.lType }}アピール: 
                                                     <select v-model="fesIdols[index].LiveSkill[lindex].Link.lAppeal[laIndex].laID" @change="displayUpdate()">
                                                         <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
                                                         </option>
@@ -235,10 +287,10 @@
                                                 </div>
                                             </div>
                                             <div @click="plusLinkAppeal(index, lindex)" class="btn" style="font-size: 11px;">
-                                                Linkアピールを追加</div>
+                                                {{ fesIdols[index].LiveSkill[lindex].Link.lType }}アピールを追加</div>
                                             <div style="padding: 3px;">
                                                 <div v-for="(LSeffect, leIndex) in fesIdols[index].LiveSkill[lindex].Link.lEffect" style="padding: 2px;">
-                                                    Link効果:
+                                                    {{ fesIdols[index].LiveSkill[lindex].Link.lType }}効果:
                                                     <select v-model="fesIdols[index].LiveSkill[lindex].Link.lEffect[leIndex].leID" @change="displayUpdate()">
                                                         <option v-for="liveSkillEffects in skill_effect.liveSkillEffect" v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
                                                         </option>
@@ -276,7 +328,7 @@
                                                 </div>
                                             </div>
                                             <div @click="plusLinkEffect(index, lindex)" class="btn" style="font-size: 11px;">
-                                                Link効果を追加
+                                                {{ fesIdols[index].LiveSkill[lindex].Link.lType }}効果を追加
                                             </div>
                                         </li>
                                     </ul>
@@ -462,10 +514,11 @@
                 </section>
             </li>
         </ul>
-        <div v-if="!mobileView" style="display: flex; padding-left: 40px;justify-content: space-between;">
-            <div style="display: flex;;">
+        <div v-if="!mobileView" style="display: flex; padding-left: 40px; justify-content: space-between;">
+            <div style="display: flex;">
                 <div id="outputBtn" class="bigBtn" @click="outputSetting()">設定を出力</div>
-                <div id="inputBtn" class="bigBtn" @click="openFile()">設定を入力</div>
+                <div id="inputAllBtn" class="bigBtn" @click="openFile('all')" style="width: 140px;">設定をすべて入力</div>
+                <div id="inputPassiveBtn" class="bigBtn" @click="openFile('passive')" style="width: 140px;">パッシブのみ入力</div>
             </div>
             <div id="nextBtn" class="bigBtn" @click="simulationOpen()">次へ</div>
         </div>
@@ -479,7 +532,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import * as passive_trigger from '../logic/data/passiveTrigger'
+import * as passive_trigger from '../logic/data/skillTrigger'
 import * as skill_effect from '../logic/data/skillEffect'
 import * as idol_list from '../logic/data/idolList'
 import * as vault from '../logic/event/vault'
@@ -541,307 +594,355 @@ const setData = (data: {
         }
         passiveSkills.push(newPassive);
     }
-    // 編成
-    fesIdols = []
-    for (let i = 0; i < 5; i++) {
-        let newFesIdol: types.fesIdol = {
-            Idol: data.fesIdol[i].Idol ?? ref().value,
-            Position: data.fesIdol[i].Position ?? positionList[i],
-            MemorieLevel: data.fesIdol[i].MemorieLevel ?? ref().value,
-            Status: {
-                VoValue: data.fesIdol[i].Status.VoValue ?? ref().value,
-                DaValue: data.fesIdol[i].Status.DaValue ?? ref().value,
-                ViValue: data.fesIdol[i].Status.ViValue ?? ref().value,
-                MeValue: data.fesIdol[i].Status.MeValue ?? ref().value
-            },
-            LiveSkill: [
-                {
-                    Priority: data.fesIdol[i].LiveSkill[0].Priority ?? ref().value,
-                    Appeal: data.fesIdol[i].LiveSkill[0].Appeal ?? [{
-                        aID: ref(1).value,
-                        aValue: ref().value,
-                        aAttribute: ref().value
-                    }],
-                    Effect: data.fesIdol[i].LiveSkill[0].Effect ?? [{
-                        eID: ref(1).value,
-                        eValue: ref().value,
-                        eTurn: [ref().value, ref().value],
-                        eTime: ref().value,
-                        eNote: ref().value
-                    }],
-                    Link: {
-                        lAppeal: data.fesIdol[i].LiveSkill[0].Link.lAppeal ?? [{
-                            laID: ref(1).value,
-                            laValue: ref().value,
-                            laAttribute: ref().value
-                        }],
-                        lEffect: data.fesIdol[i].LiveSkill[0].Link.lEffect ?? [{
-                            leID: ref(1).value,
-                            leValue: ref().value,
-                            leTurn: [ref().value, ref().value],
-                            leTime: ref().value,
-                            leNote: ref().value
-                        }],
-                    },
-                    LinkTrigger: data.fesIdol[i].LiveSkill[0].LinkTrigger ?? [ref().value]
+    if(inputFileType == 0) {
+        // 編成
+        fesIdols = []
+        for (let i = 0; i < 5; i++) {
+            let newFesIdol: types.fesIdol = {
+                Idol: data.fesIdol[i].Idol ?? ref().value,
+                Position: data.fesIdol[i].Position ?? positionList[i],
+                MemorieLevel: data.fesIdol[i].MemorieLevel ?? ref().value,
+                Status: {
+                    VoValue: data.fesIdol[i].Status.VoValue ?? ref().value,
+                    DaValue: data.fesIdol[i].Status.DaValue ?? ref().value,
+                    ViValue: data.fesIdol[i].Status.ViValue ?? ref().value,
+                    MeValue: data.fesIdol[i].Status.MeValue ?? ref().value
                 },
-                {
-                    Priority: data.fesIdol[i].LiveSkill[1].Priority ?? ref().value,
-                    Appeal: data.fesIdol[i].LiveSkill[1].Appeal ?? [{
-                        aID: ref(1).value,
-                        aValue: ref().value,
-                        aAttribute: ref().value
-                    }],
-                    Effect: data.fesIdol[i].LiveSkill[1].Effect ?? [{
-                        eID: ref(1).value,
-                        eValue: ref().value,
-                        eTurn: [ref().value, ref().value],
-                        eTime: ref().value,
-                        eNote: ref().value
-                    }],
-                    Link: {
-                        lAppeal: data.fesIdol[i].LiveSkill[1].Link.lAppeal ?? [{
-                            laID: ref(1).value,
-                            laValue: ref().value,
-                            laAttribute: ref().value
+                LiveSkill: [
+                    {
+                        Priority: data.fesIdol[i].LiveSkill[0].Priority ?? ref().value,
+                        Appeal: data.fesIdol[i].LiveSkill[0].Appeal ?? [{
+                            aID: ref(1).value,
+                            aValue: ref().value,
+                            aAttribute: ref().value
                         }],
-                        lEffect: data.fesIdol[i].LiveSkill[1].Link.lEffect ?? [{
-                            leID: ref(1).value,
-                            leValue: ref().value,
-                            leTurn: [ref().value, ref().value],
-                            leTime: ref().value,
-                            leNote: ref().value
+                        Effect: data.fesIdol[i].LiveSkill[0].Effect ?? [{
+                            eID: ref(1).value,
+                            eValue: ref().value,
+                            eTurn: [ref().value, ref().value],
+                            eTime: ref().value,
+                            eNote: ref().value
                         }],
+                        Link: {
+                            lType: data.fesIdol[i].LiveSkill[0].Link.lType ?? ref('Link').value,
+                            lTrigger: data.fesIdol[i].LiveSkill[0].Link.lTrigger ?? {
+                                ltBefore: ref(vault.maxTurn).value,
+                                ltAfter: ref(1).value,
+                                ltList: [{
+                                    ltID: ref(1).value,
+                                    ltX: ref().value,
+                                    ltHis: [ref().value]
+                                }]
+                            },
+                            lAppeal: data.fesIdol[i].LiveSkill[0].Link.lAppeal ?? [{
+                                laID: ref(1).value,
+                                laValue: ref().value,
+                                laAttribute: ref().value
+                            }],
+                            lEffect: data.fesIdol[i].LiveSkill[0].Link.lEffect ?? [{
+                                leID: ref(1).value,
+                                leValue: ref().value,
+                                leTurn: [ref().value, ref().value],
+                                leTime: ref().value,
+                                leNote: ref().value
+                            }],
+                        },
+                        LinkTrigger: data.fesIdol[i].LiveSkill[0].LinkTrigger ?? [ref().value]
                     },
-                    LinkTrigger: data.fesIdol[i].LiveSkill[1].LinkTrigger ?? [ref().value]
+                    {
+                        Priority: data.fesIdol[i].LiveSkill[1].Priority ?? ref().value,
+                        Appeal: data.fesIdol[i].LiveSkill[1].Appeal ?? [{
+                            aID: ref(1).value,
+                            aValue: ref().value,
+                            aAttribute: ref().value
+                        }],
+                        Effect: data.fesIdol[i].LiveSkill[1].Effect ?? [{
+                            eID: ref(1).value,
+                            eValue: ref().value,
+                            eTurn: [ref().value, ref().value],
+                            eTime: ref().value,
+                            eNote: ref().value
+                        }],
+                        Link: {
+                            lType: data.fesIdol[i].LiveSkill[1].Link.lType ?? ref('Link').value,
+                            lTrigger: data.fesIdol[i].LiveSkill[1].Link.lTrigger ?? {
+                                ltBefore: ref(vault.maxTurn).value,
+                                ltAfter: ref(1).value,
+                                ltList: [{
+                                    ltID: ref(1).value,
+                                    ltX: ref().value,
+                                    ltHis: [ref().value]
+                                }]
+                            },
+                            lAppeal: data.fesIdol[i].LiveSkill[1].Link.lAppeal ?? [{
+                                laID: ref(1).value,
+                                laValue: ref().value,
+                                laAttribute: ref().value
+                            }],
+                            lEffect: data.fesIdol[i].LiveSkill[1].Link.lEffect ?? [{
+                                leID: ref(1).value,
+                                leValue: ref().value,
+                                leTurn: [ref().value, ref().value],
+                                leTime: ref().value,
+                                leNote: ref().value
+                            }],
+                        },
+                        LinkTrigger: data.fesIdol[i].LiveSkill[1].LinkTrigger ?? [ref().value]
+                    }
+                ],
+                PassiveIndex: data.fesIdol[i].PassiveIndex ?? [],
+                MemoryAppeal: data.fesIdol[i].MemoryAppeal ?? {
+                    mAppeal: [{
+                        maID: ref(1).value,
+                        maValue: ref().value,
+                        maAttribute: ref().value
+                    }],
+                    mEffect: [{
+                        meID: ref().value,
+                        meValue: ref().value,
+                        meTurn: [ref().value, ref().value],
+                        meTime: ref().value,
+                        meNote: ref().value
+                    }],
+                    mLink: {
+                        mlAppeal: [{
+                            mlaID: ref(1).value,
+                            mlaValue: ref().value,
+                            mlaAttribute: ref().value
+                        }]
+                    }
                 }
-            ],
-            PassiveIndex: data.fesIdol[i].PassiveIndex ?? [],
-            MemoryAppeal: data.fesIdol[i].MemoryAppeal ?? {
-                mAppeal: [{
-                    maID: ref(1).value,
-                    maValue: ref().value,
-                    maAttribute: ref().value
-                }],
-                mEffect: [{
-                    meID: ref().value,
-                    meValue: ref().value,
-                    meTurn: [ref().value, ref().value],
-                    meTime: ref().value,
-                    meNote: ref().value
-                }],
-                mLink: {
-                    mlAppeal: [{
-                        mlaID: ref(1).value,
-                        mlaValue: ref().value,
-                        mlaAttribute: ref().value
-                    }]
+            }
+            for (let j = 0; j < newFesIdol.LiveSkill[0].Appeal.length; j++) {
+                if (typeof newFesIdol.LiveSkill[0].Appeal[j].aID !== "number") {
+                    newFesIdol.LiveSkill[0].Appeal[j].aID = ref(1).value
+                }
+                if (typeof newFesIdol.LiveSkill[0].Appeal[j].aValue !== "number") {
+                    newFesIdol.LiveSkill[0].Appeal[j].aValue = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[0].Appeal[j].aAttribute !== "string") {
+                    newFesIdol.LiveSkill[0].Appeal[j].aAttribute = ref().value
                 }
             }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[0].Appeal.length; j++) {
-            if (typeof newFesIdol.LiveSkill[0].Appeal[j].aID !== "number") {
-                newFesIdol.LiveSkill[0].Appeal[j].aID = ref(1).value
-            }
-            if (typeof newFesIdol.LiveSkill[0].Appeal[j].aValue !== "number") {
-                newFesIdol.LiveSkill[0].Appeal[j].aValue = ref().value
-            }
-            if (typeof newFesIdol.LiveSkill[0].Appeal[j].aAttribute !== "string") {
-                newFesIdol.LiveSkill[0].Appeal[j].aAttribute = ref().value
-            }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[0].Effect.length; j++) {
-            if (typeof newFesIdol.LiveSkill[0].Effect[j].eID !== "number") {
-                newFesIdol.LiveSkill[0].Effect[j].eID = ref(1).value
-            }
-            try {
-                if (typeof newFesIdol.LiveSkill[0].Effect[j].eTurn[0] !== "number" && typeof newFesIdol.LiveSkill[0].Effect[j].eTurn[1] !== "number") {
+            for (let j = 0; j < newFesIdol.LiveSkill[0].Effect.length; j++) {
+                if (typeof newFesIdol.LiveSkill[0].Effect[j].eID !== "number") {
+                    newFesIdol.LiveSkill[0].Effect[j].eID = ref(1).value
+                }
+                try {
+                    if (typeof newFesIdol.LiveSkill[0].Effect[j].eTurn[0] !== "number" && typeof newFesIdol.LiveSkill[0].Effect[j].eTurn[1] !== "number") {
+                        newFesIdol.LiveSkill[0].Effect[j].eTurn = [ref().value, ref().value]
+                    }
+                }catch (error) {
                     newFesIdol.LiveSkill[0].Effect[j].eTurn = [ref().value, ref().value]
                 }
-            }catch (error) {
-                newFesIdol.LiveSkill[0].Effect[j].eTurn = [ref().value, ref().value]
+                if (typeof newFesIdol.LiveSkill[0].Effect[j].eTime !== "number") {
+                    newFesIdol.LiveSkill[0].Effect[j].eTime = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[0].Effect[j].eValue !== "number") {
+                    newFesIdol.LiveSkill[0].Effect[j].eValue = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[0].Effect[j].eNote !== "string") {
+                    newFesIdol.LiveSkill[0].Effect[j].eNote = ref().value
+                }
             }
-            if (typeof newFesIdol.LiveSkill[0].Effect[j].eTime !== "number") {
-                newFesIdol.LiveSkill[0].Effect[j].eTime = ref().value
+            for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lTrigger.ltList.length; j++) {
+                if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltID !== "number") {
+                    newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltID = ref(1).value
+                }
+                if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX !== "number") {
+                    newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX = ref().value
+                }
+                for(let p = 0; p < newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis.length; p++) {
+                    if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis[p] !== "number") {
+                        newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis[p] = ref().value
+                    }
+                }
             }
-            if (typeof newFesIdol.LiveSkill[0].Effect[j].eValue !== "number") {
-                newFesIdol.LiveSkill[0].Effect[j].eValue = ref().value
+            for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lAppeal.length; j++) {
+                if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laID !== "number") {
+                    newFesIdol.LiveSkill[0].Link.lAppeal[j].laID = ref(1).value
+                }
+                if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laValue !== "number") {
+                    newFesIdol.LiveSkill[0].Link.lAppeal[j].laValue = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laAttribute !== "string") {
+                    newFesIdol.LiveSkill[0].Link.lAppeal[j].laAttribute = ref().value
+                }
             }
-            if (typeof newFesIdol.LiveSkill[0].Effect[j].eNote !== "string") {
-                newFesIdol.LiveSkill[0].Effect[j].eNote = ref().value
-            }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lAppeal.length; j++) {
-            if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laID !== "number") {
-                newFesIdol.LiveSkill[0].Link.lAppeal[j].laID = ref(1).value
-            }
-            if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laValue !== "number") {
-                newFesIdol.LiveSkill[0].Link.lAppeal[j].laValue = ref().value
-            }
-            if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laAttribute !== "string") {
-                newFesIdol.LiveSkill[0].Link.lAppeal[j].laAttribute = ref().value
-            }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lEffect.length; j++) {
-            if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leID !== "number") {
-                newFesIdol.LiveSkill[0].Link.lEffect[j].leID = ref(1).value
-            }
-            try {
-                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn[0] !== "number" && typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn[1] !== "number") {
+            for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lEffect.length; j++) {
+                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leID !== "number") {
+                    newFesIdol.LiveSkill[0].Link.lEffect[j].leID = ref(1).value
+                }
+                try {
+                    if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn[0] !== "number" && typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn[1] !== "number") {
+                        newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn = [ref().value, ref().value]
+                    }
+                } catch (error) {
                     newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn = [ref().value, ref().value]
                 }
-            } catch (error) {
-                newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn = [ref().value, ref().value]
-            }
-            if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTime !== "number") {
-                newFesIdol.LiveSkill[0].Link.lEffect[j].leTime = ref().value
-            }
-            if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leValue !== "number") {
-                newFesIdol.LiveSkill[0].Link.lEffect[j].leValue = ref().value
-            }
-            if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leNote !== "string") {
-                newFesIdol.LiveSkill[0].Link.lEffect[j].leNote = ref().value
-            }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[0].LinkTrigger.length; j++) {
-            if (typeof newFesIdol.LiveSkill[0].LinkTrigger[j] !== "number") {
-                newFesIdol.LiveSkill[0].LinkTrigger[j] = ref().value
-            }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[1].Appeal.length; j++) {
-            if (typeof newFesIdol.LiveSkill[1].Appeal[j].aID !== "number") {
-                newFesIdol.LiveSkill[1].Appeal[j].aID = ref(1).value
-            }
-            if (typeof newFesIdol.LiveSkill[1].Appeal[j].aValue !== "number") {
-                newFesIdol.LiveSkill[1].Appeal[j].aValue = ref().value
-            }
-            if (typeof newFesIdol.LiveSkill[1].Appeal[j].aAttribute !== "string") {
-                newFesIdol.LiveSkill[1].Appeal[j].aAttribute = ref().value
-            }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[1].Effect.length; j++) {
-            if (typeof newFesIdol.LiveSkill[1].Effect[j].eID !== "number") {
-                newFesIdol.LiveSkill[1].Effect[j].eID = ref(1).value
-            }
-            try {
-                if (typeof newFesIdol.LiveSkill[1].Effect[j].eTurn[0] !== "number" && typeof newFesIdol.LiveSkill[1].Effect[j].eTurn[1] !== "number") {
-                    newFesIdol.LiveSkill[1].Effect[j].eTurn = [ref().value, ref().value]
+                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTime !== "number") {
+                    newFesIdol.LiveSkill[0].Link.lEffect[j].leTime = ref().value
                 }
-            } catch (error) {
-                    newFesIdol.LiveSkill[1].Effect[j].eTurn = [ref().value, ref().value]
+                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leValue !== "number") {
+                    newFesIdol.LiveSkill[0].Link.lEffect[j].leValue = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leNote !== "string") {
+                    newFesIdol.LiveSkill[0].Link.lEffect[j].leNote = ref().value
+                }
             }
-            if (typeof newFesIdol.LiveSkill[1].Effect[j].eTime !== "number") {
-                newFesIdol.LiveSkill[1].Effect[j].eTime = ref().value
+            for (let j = 0; j < newFesIdol.LiveSkill[0].LinkTrigger.length; j++) {
+                if (typeof newFesIdol.LiveSkill[0].LinkTrigger[j] !== "number") {
+                    newFesIdol.LiveSkill[0].LinkTrigger[j] = ref().value
+                }
             }
-            if (typeof newFesIdol.LiveSkill[1].Effect[j].eValue !== "number") {
-                newFesIdol.LiveSkill[1].Effect[j].eValue = ref().value
+            for (let j = 0; j < newFesIdol.LiveSkill[1].Appeal.length; j++) {
+                if (typeof newFesIdol.LiveSkill[1].Appeal[j].aID !== "number") {
+                    newFesIdol.LiveSkill[1].Appeal[j].aID = ref(1).value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Appeal[j].aValue !== "number") {
+                    newFesIdol.LiveSkill[1].Appeal[j].aValue = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Appeal[j].aAttribute !== "string") {
+                    newFesIdol.LiveSkill[1].Appeal[j].aAttribute = ref().value
+                }
             }
-            if (typeof newFesIdol.LiveSkill[1].Effect[j].eNote !== "string") {
-                newFesIdol.LiveSkill[1].Effect[j].eNote = ref().value
+            for (let j = 0; j < newFesIdol.LiveSkill[1].Effect.length; j++) {
+                if (typeof newFesIdol.LiveSkill[1].Effect[j].eID !== "number") {
+                    newFesIdol.LiveSkill[1].Effect[j].eID = ref(1).value
+                }
+                try {
+                    if (typeof newFesIdol.LiveSkill[1].Effect[j].eTurn[0] !== "number" && typeof newFesIdol.LiveSkill[1].Effect[j].eTurn[1] !== "number") {
+                        newFesIdol.LiveSkill[1].Effect[j].eTurn = [ref().value, ref().value]
+                    }
+                } catch (error) {
+                        newFesIdol.LiveSkill[1].Effect[j].eTurn = [ref().value, ref().value]
+                }
+                if (typeof newFesIdol.LiveSkill[1].Effect[j].eTime !== "number") {
+                    newFesIdol.LiveSkill[1].Effect[j].eTime = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Effect[j].eValue !== "number") {
+                    newFesIdol.LiveSkill[1].Effect[j].eValue = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Effect[j].eNote !== "string") {
+                    newFesIdol.LiveSkill[1].Effect[j].eNote = ref().value
+                }
             }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lAppeal.length; j++) {
-            if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laID !== "number") {
-                newFesIdol.LiveSkill[1].Link.lAppeal[j].laID = ref(1).value
+            for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lTrigger.ltList.length; j++) {
+                if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltID !== "number") {
+                    newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltID = ref(1).value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX !== "number") {
+                    newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX = ref().value
+                }
+                for(let k = 0; k < newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis.length; k++) {
+                    if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis[k] !== "number") {
+                        newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis[k] = ref().value
+                    }
+                }
             }
-            if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laValue !== "number") {
-                newFesIdol.LiveSkill[1].Link.lAppeal[j].laValue = ref().value
+            for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lAppeal.length; j++) {
+                if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laID !== "number") {
+                    newFesIdol.LiveSkill[1].Link.lAppeal[j].laID = ref(1).value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laValue !== "number") {
+                    newFesIdol.LiveSkill[1].Link.lAppeal[j].laValue = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laAttribute !== "string") {
+                    newFesIdol.LiveSkill[1].Link.lAppeal[j].laAttribute = ref().value
+                }
             }
-            if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laAttribute !== "string") {
-                newFesIdol.LiveSkill[1].Link.lAppeal[j].laAttribute = ref().value
-            }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lEffect.length; j++) {
-            if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leID !== "number") {
-                newFesIdol.LiveSkill[1].Link.lEffect[j].leID = ref(1).value
-            }
-            try {
-                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn[0] !== "number" && typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn[1] !== "number") {
+            for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lEffect.length; j++) {
+                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leID !== "number") {
+                    newFesIdol.LiveSkill[1].Link.lEffect[j].leID = ref(1).value
+                }
+                try {
+                    if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn[0] !== "number" && typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn[1] !== "number") {
+                        newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn = [ref().value, ref().value]
+                    }
+                } catch (error) {
                     newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn = [ref().value, ref().value]
                 }
-            } catch (error) {
-                newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn = [ref().value, ref().value]
-            }
-            if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTime !== "number") {
-                newFesIdol.LiveSkill[1].Link.lEffect[j].leTime = ref().value
-            }
-            if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leValue !== "number") {
-                newFesIdol.LiveSkill[1].Link.lEffect[j].leValue = ref().value
-            }
-            if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leNote !== "string") {
-                newFesIdol.LiveSkill[1].Link.lEffect[j].leNote = ref().value
-            }
-        }
-        for (let j = 0; j < newFesIdol.LiveSkill[1].LinkTrigger.length; j++) {
-            if (typeof newFesIdol.LiveSkill[1].LinkTrigger[j] !== "number") {
-                newFesIdol.LiveSkill[1].LinkTrigger[j] = ref().value
-            }
-        }
-        for(let j = 0; j < newFesIdol.PassiveIndex.length; j++) {
-            if (typeof newFesIdol.PassiveIndex[j].index !== "number") {
-                newFesIdol.PassiveIndex[j] = {
-                    index: ref(0).value,
-                    times: ref().value
+                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTime !== "number") {
+                    newFesIdol.LiveSkill[1].Link.lEffect[j].leTime = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leValue !== "number") {
+                    newFesIdol.LiveSkill[1].Link.lEffect[j].leValue = ref().value
+                }
+                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leNote !== "string") {
+                    newFesIdol.LiveSkill[1].Link.lEffect[j].leNote = ref().value
                 }
             }
-        }
-        for(let j = 0; j < newFesIdol.MemoryAppeal.mAppeal.length; j++) {
-            if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maID !== "number") {
-                newFesIdol.MemoryAppeal.mAppeal[j].maID = ref(1).value
+            for (let j = 0; j < newFesIdol.LiveSkill[1].LinkTrigger.length; j++) {
+                if (typeof newFesIdol.LiveSkill[1].LinkTrigger[j] !== "number") {
+                    newFesIdol.LiveSkill[1].LinkTrigger[j] = ref().value
+                }
             }
-            if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maValue !== "number") {
-                newFesIdol.MemoryAppeal.mAppeal[j].maValue = ref().value
+            for(let j = 0; j < newFesIdol.PassiveIndex.length; j++) {
+                if (typeof newFesIdol.PassiveIndex[j].index !== "number") {
+                    newFesIdol.PassiveIndex[j] = {
+                        index: ref(0).value,
+                        times: ref().value
+                    }
+                }
             }
-            if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maAttribute !== "string") {
-                newFesIdol.MemoryAppeal.mAppeal[j].maAttribute = ref().value
+            for(let j = 0; j < newFesIdol.MemoryAppeal.mAppeal.length; j++) {
+                if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maID !== "number") {
+                    newFesIdol.MemoryAppeal.mAppeal[j].maID = ref(1).value
+                }
+                if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maValue !== "number") {
+                    newFesIdol.MemoryAppeal.mAppeal[j].maValue = ref().value
+                }
+                if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maAttribute !== "string") {
+                    newFesIdol.MemoryAppeal.mAppeal[j].maAttribute = ref().value
+                }
             }
-        }
-        for(let j = 0; j < newFesIdol.MemoryAppeal.mEffect.length; j++) {
-            if (typeof newFesIdol.MemoryAppeal.mEffect[j].meID !== "number") {
-                newFesIdol.MemoryAppeal.mEffect[j].meID = ref(1).value
-            }
-            try {
-                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[0] !== "number" && typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[1] !== "number") {
+            for(let j = 0; j < newFesIdol.MemoryAppeal.mEffect.length; j++) {
+                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meID !== "number") {
+                    newFesIdol.MemoryAppeal.mEffect[j].meID = ref(1).value
+                }
+                try {
+                    if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[0] !== "number" && typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[1] !== "number") {
+                        newFesIdol.MemoryAppeal.mEffect[j].meTurn = [ref().value, ref().value]
+                    }
+                }catch (error) {
                     newFesIdol.MemoryAppeal.mEffect[j].meTurn = [ref().value, ref().value]
                 }
-            }catch (error) {
-                newFesIdol.MemoryAppeal.mEffect[j].meTurn = [ref().value, ref().value]
+                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTime !== "number") {
+                    newFesIdol.MemoryAppeal.mEffect[j].meTime = ref().value
+                }
+                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meValue !== "number") {
+                    newFesIdol.MemoryAppeal.mEffect[j].meValue = ref().value
+                }
+                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meNote !== "string") {
+                    newFesIdol.MemoryAppeal.mEffect[j].meNote = ref().value
+                }
             }
-            if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTime !== "number") {
-                newFesIdol.MemoryAppeal.mEffect[j].meTime = ref().value
+            for(let j = 0; j < newFesIdol.MemoryAppeal.mLink.mlAppeal.length; j++) {
+                if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID !== "number") {
+                    newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID = ref(1).value
+                }
+                if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue !== "number") {
+                    newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue = ref().value
+                }
+                if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute !== "string") {
+                    newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute = ref().value
+                }
             }
-            if (typeof newFesIdol.MemoryAppeal.mEffect[j].meValue !== "number") {
-                newFesIdol.MemoryAppeal.mEffect[j].meValue = ref().value
-            }
-            if (typeof newFesIdol.MemoryAppeal.mEffect[j].meNote !== "string") {
-                newFesIdol.MemoryAppeal.mEffect[j].meNote = ref().value
-            }
+            fesIdols.push(newFesIdol)
         }
-        for(let j = 0; j < newFesIdol.MemoryAppeal.mLink.mlAppeal.length; j++) {
-            if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID !== "number") {
-                newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID = ref(1).value
-            }
-            if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue !== "number") {
-                newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue = ref().value
-            }
-            if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute !== "string") {
-                newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute = ref().value
-            }
+        // 詳細設定
+        detailSetting = {
+            damage: data.detail.damage ?? ref(231).value,
+            damageStrong: data.detail.damageStrong ?? ref(0).value,
+            damageWeak: data.detail.damageWeak ?? ref(0).value,
+            count: data.detail.count ?? ref(1).value,
+            omonouDPlus: data.detail.omonouDPlus ?? ref(0).value,
+            omonouPlus: data.detail.omonouPlus ?? ref(0).value,
+            omonoukakin: data.detail.omonoukakin ?? ref(0).value,
+            centerOfAttention: data.detail.centerOfAttention ?? ref(0).value,
+            noAttention: data.detail.noAttention ?? ref(0).value,
+            liveSkillRandom: data.detail.liveSkillRandom ?? ref(false).value
         }
-        fesIdols.push(newFesIdol)
-    }
-    // 詳細設定
-    detailSetting = {
-        damage: data.detail.damage ?? ref(231).value,
-        damageStrong: data.detail.damageStrong ?? ref(0).value,
-        damageWeak: data.detail.damageWeak ?? ref(0).value,
-        count: data.detail.count ?? ref(1).value,
-        omonouDPlus: data.detail.omonouDPlus ?? ref(0).value,
-        omonouPlus: data.detail.omonouPlus ?? ref(0).value,
-        omonoukakin: data.detail.omonoukakin ?? ref(0).value,
-        centerOfAttention: data.detail.centerOfAttention ?? ref(0).value,
-        noAttention: data.detail.noAttention ?? ref(0).value,
-        liveSkillRandom: data.detail.liveSkillRandom ?? ref(false).value
     }
 }
 
@@ -873,6 +974,11 @@ const makeJson = () => {
             for(let n = 0; n < fesIdols[i].LiveSkill[j].Effect.length; n++) {
                 if(fesIdols[i].LiveSkill[j].Effect[n].eID == 1) {
                     fesIdols[i].LiveSkill[j].Effect.splice(n,1)
+                }
+            }
+            for(let n = 0; n < fesIdols[i].LiveSkill[j].Link.lTrigger.ltList.length; n++) {
+                if(fesIdols[i].LiveSkill[j].Link.lTrigger.ltList[n].ltID == 1 && n > 0) {
+                    fesIdols[i].LiveSkill[j].Link.lTrigger.ltList.splice(n,1)
                 }
             }
             for(let n = 0; n < fesIdols[i].LiveSkill[j].Link.lAppeal.length; n++) {
@@ -1100,6 +1206,16 @@ const setIdolList = () => {
                         eNote: ref().value
                     }],
                     Link: {
+                        lType: ref().value,
+                        lTrigger: {
+                            ltBefore: ref().value,
+                            ltAfter: ref().value,
+                            ltList: [{
+                                ltID: ref().value,
+                                ltX: ref().value,
+                                ltHis: [ref().value]
+                            }]
+                        },
                         lAppeal: [{
                             laID: ref(1).value,
                             laValue: ref().value,
@@ -1130,6 +1246,16 @@ const setIdolList = () => {
                         eNote: ref().value
                     }],
                     Link: {
+                        lType: ref().value,
+                        lTrigger: {
+                            ltBefore: ref().value,
+                            ltAfter: ref().value,
+                            ltList: [{
+                                ltID: ref().value,
+                                ltX: ref().value,
+                                ltHis: [ref().value]
+                            }]
+                        },
                         lAppeal: [{
                             laID: ref(1).value,
                             laValue: ref().value,
@@ -1269,6 +1395,32 @@ const plusLinkEffect = (index: number, linkIndex: number) => {
     displayUpdate()
 }
 
+// Plus条件追加ボタン
+const plusPAppealTrigger = (idolIndex: number, LSkillIndex: number) => {
+    fesIdols[idolIndex].LiveSkill[LSkillIndex].Link.lTrigger.ltList.push({
+        ltID: ref(1).value,
+        ltX: ref().value,
+        ltHis: [ref().value]
+    });
+    displayUpdate();
+}
+
+// Plus履歴クリアボタン
+const clearPAppealHistry = (idolIndex: number, LSkillIndex: number, PlusIndex: number) => {
+    fesIdols[idolIndex].LiveSkill[LSkillIndex].Link.lTrigger.ltList[PlusIndex].ltHis = [
+        ref().value
+    ];
+    displayUpdate();
+}
+
+// Plus履歴追加ボタン
+const plusPAppealHistory = (idolIndex: number, LSkillIndex: number, PlusIndex: number) => {
+    fesIdols[idolIndex].LiveSkill[LSkillIndex].Link.lTrigger.ltList[PlusIndex].ltHis.push(
+        ref().value
+    );
+    displayUpdate();
+}
+
 const plusMemory = (plusType:'appeal' | 'effect' | 'link') => {
     if(plusType == 'appeal') {
         fesIdols[4].MemoryAppeal.mAppeal.push({
@@ -1352,7 +1504,13 @@ const outputSetting = () => {
     link.click();
 }
 
-const openFile = () => {
+let inputFileType = 0;
+const openFile = (type:'passive' | 'all') => {
+    if(type == 'passive') {
+        inputFileType = 1;
+    }else {
+        inputFileType = 0;
+    }
     var obj = document.getElementById('inputFile');
     obj?.click();
 }
@@ -1369,6 +1527,11 @@ const inputSetting = (event: Event) => {
             let data = JSON.parse(reader.result)
             setData(data)
             displayUpdate()
+            // @ts-ignore
+            document.getElementById('inputFile')!.value = '';
+            if(mobileView.value) {
+                snavBtnActive();
+            }
         }
     } catch {
         console.log("input errer")
@@ -1593,13 +1756,13 @@ input[type="number"] {
     background-color: rgba(3, 182, 57, 0.9);
 }
 
-#inputBtn {
+#inputBtn,#inputPassiveBtn,#inputAllBtn {
     margin-left: 10px;
     color: aliceblue;
     background-color: rgba(3, 155, 182, 0.658);
 }
 
-#inputBtn:hover {
+#inputBtn:hover,#inputPassiveBtn:hover,#inputAllBtn:hover {
     cursor: pointer;
     background-color: rgba(3, 155, 182, 0.9);
 }

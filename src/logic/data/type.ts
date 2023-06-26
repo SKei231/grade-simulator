@@ -52,6 +52,16 @@ export type fesIdol = {
             eNote: string
         }],
         Link: {
+            lType: "Link" | "Plus" | "Change",
+            lTrigger: {
+                ltBefore: number,
+                ltAfter: number,
+                ltList: [{
+                    ltID: number,
+                    ltX: number,
+                    ltHis: number[]
+                }]
+            },
             lAppeal: [{
                 laID: number,
                 laValue: number,
@@ -81,6 +91,16 @@ export type fesIdol = {
             eNote: string
         }],
         Link: {
+            lType: "link" | "plus" | "change",
+            lTrigger: {
+                ltBefore: number,
+                ltAfter: number,
+                ltList: [{
+                    ltID: number,
+                    ltX: number,
+                    ltHis: number[]
+                }]
+            },
             lAppeal: [{
                 laID: number,
                 laValue: number,

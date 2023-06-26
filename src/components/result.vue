@@ -205,7 +205,7 @@ import { onMounted, ref } from 'vue';
 import * as vault from '../logic/event/vault';
 import { Chart, registerables } from 'chart.js';
 import router from '../router/router';
-import { triggerList, findByTriggerID } from '../logic/data/passiveTrigger';
+import { triggerList, findByTriggerID } from '../logic/data/skillTrigger';
 import { idolList, findByIdolID } from '../logic/data/idolList';
 import { liveSkillAppeal, findByAppealID, liveSkillEffect, findByLiveEffectID } from '../logic/data/skillEffect';
 

@@ -1,6 +1,6 @@
 // 入力データの確認
 
-import { findByTriggerID, triggerList } from "../data/passiveTrigger"
+import { findByTriggerID, triggerList } from "../data/skillTrigger"
 import { findByLiveEffectID, findByPassiveID, liveSkillEffect, passiveEffect } from "../data/skillEffect"
 import { detail, fesIdol, passive } from "../data/type"
 
@@ -190,6 +190,37 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
                 if(liveSkillEffect[findByLiveEffectID(fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leID)].existAttribute) {
                     if(!fesIdol[i].LiveSkill[j].Link.lEffect[leIndex].leNote) {
                         errerMessage.push(fesIdol[i].Position + ' のLink効果の属性を入力してください');
+                    }
+                }
+            }
+            // plus trigger
+            if(fesIdol[i].LiveSkill[j].Link.lType == 'Plus') {
+                // ltBefore ltAfter
+                if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltBefore || !fesIdol[i].LiveSkill[j].Link.lTrigger.ltAfter) {
+                    errerMessage.push(fesIdol[i].Position + ' のPlusアピールの条件ターンを入力してください');
+                }
+                for(let plusI = 0; plusI < fesIdol[i].LiveSkill[j].Link.lTrigger.ltList.length; plusI++) {
+                    // ltID
+                    if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID) {
+                        errerMessage.push(fesIdol[i].Position + ' のPlusアピールの発動条件を選択してください');
+                    }
+                    // ltX
+                    if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltX && triggerList[findByTriggerID(fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID)].existX) {
+                        errerMessage.push(fesIdol[i].Position + ' のPlusアピールの【X】を入力してください');
+                    }
+                    // ltHis
+                    if(fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID == 2 || fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID == 13) {
+                        for(let k = 0; k < fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltHis.length; k++) {
+                            if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltHis[k]) {
+                                let index = k + 1;
+                                errerMessage.push(fesIdol[i].Position + ' のPlusアピール条件の' + index +'つ目の履歴を選択してください');
+                            }
+                        }
+                    }
+                    if(fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID == 18) {
+                        if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltHis[0]) {
+                            errerMessage.push(fesIdol[i].Position + ' のPlusアピール条件のユニットを選択してください');
+                        }
                     }
                 }
             }

@@ -427,12 +427,19 @@
                                     <p>パッシブスキル</p>
                                     <div>
                                         <ul style="padding-left: 0;">
-                                            <li v-for="(ps, pasIndex) in fesIdols[index].PassiveIndex" style="border-radius: 5px; margin: 2px; padding: 2px;" v-bind:class="passiveClass(index, pasIndex)">
-                                                <select v-model="fesIdols[index].PassiveIndex[pasIndex].index" @change="displayUpdate()">
-                                                    <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
-                                                </select>
-                                                <div class="btn" style="font-size: 12px; padding: 1px 10px;" @click="unsetPassive(index, pasIndex)">削除</div>
-                                            </li>
+                                            <draggable v-model="fesIdols[index].PassiveIndex" item-key="no" :options="{handle: '.dragHandle'}">
+                                                <li v-for="(ps, pasIndex) in fesIdols[index].PassiveIndex" style="border-radius: 5px; margin: 2px; padding: 2px;" v-bind:class="passiveClass(index, pasIndex)">
+                                                    <select v-model="fesIdols[index].PassiveIndex[pasIndex].index" @change="displayUpdate()">
+                                                        <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
+                                                    </select>
+                                                    <div style="display: flex;">
+                                                        <div class="btn" style="font-size: 12px; padding: 1px 10px; margin-right: 20px;" @click="unsetPassive(index, pasIndex)">削除</div>
+                                                        <div class="dragHandle" style="width: 50px; height: 20px; position: relative;">
+                                                            <span style="display: block; position: absolute; top: 50%; left: 50%; margin: -4px 0 0 -10px; width: 20px; height: 4px; border-top: 2px rgba(0, 0, 0, .4) solid; border-bottom: 2px rgba(0, 0, 0, .4) solid; "></span>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </draggable>
                                         </ul>
                                         <div @click="setPassive(index)" class="btn" style="font-size: 11px; margin-top: 5px;">パッシブスキルを追加</div>
                                     </div>
@@ -537,6 +544,7 @@ import * as skill_effect from '../logic/data/skillEffect'
 import * as idol_list from '../logic/data/idolList'
 import * as vault from '../logic/event/vault'
 import * as types from '../logic/data/type'
+import draggable from 'vuedraggable'
 import Help from './help.vue'
 import Simulation from './simulation.vue'
 import Header from './header.vue'
@@ -1468,6 +1476,17 @@ const passiveClass = (index: number, pasIndex: number) => {
     } else {
         console.log(passiveSkills[fesIdols[index].PassiveIndex[pasIndex].index])
         return "white"
+    }
+}
+
+// パッシブ入れ替え
+const dragPassive = (type: 'start' | 'enter', index: number) => {
+    if(type == 'start') {
+        console.log("drag start. index:" + index);
+    }else if(type == 'enter'){
+        console.log("drag enter. index" + index);
+    }else {
+        console.log("drag type error");
     }
 }
 

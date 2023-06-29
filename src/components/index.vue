@@ -102,6 +102,7 @@
                                 <button class="passiveDelBtn"><img src="../assets/trashCan.png" alt="消去" @click="deletePassive(index)"></button>
                             </li>
                             <div class="btn" @click="plusPassive()">パッシブを追加</div>
+                            <div class="btn" @click="passiveTemp.open()">テンプレートから追加</div>
                         </ul>
                     </div>
                 </section>
@@ -428,18 +429,18 @@
                                     <div>
                                         <ul style="padding-left: 0;">
                                             <draggable v-model="fesIdols[index].PassiveIndex" item-key="no" :options="{handle: '.dragHandle'}">
-                                                <li v-for="(ps, pasIndex) in fesIdols[index].PassiveIndex" style="border-radius: 5px; margin: 2px; padding: 2px;" v-bind:class="passiveClass(index, pasIndex)">
-                                                    <select v-model="fesIdols[index].PassiveIndex[pasIndex].index" @change="displayUpdate()">
-                                                        <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
-                                                    </select>
-                                                    <div style="display: flex;">
-                                                        <div class="btn" style="font-size: 12px; padding: 1px 10px; margin-right: 20px;" @click="unsetPassive(index, pasIndex)">削除</div>
-                                                        <div class="dragHandle" style="width: 50px; height: 20px; position: relative;">
-                                                            <span style="display: block; position: absolute; top: 50%; left: 50%; margin: -4px 0 0 -10px; width: 20px; height: 4px; border-top: 2px rgba(0, 0, 0, .4) solid; border-bottom: 2px rgba(0, 0, 0, .4) solid; "></span>
-                                                        </div>
-                                                    </div>
-                                                </li>
                                             </draggable>
+                                            <li v-for="(ps, pasIndex) in fesIdols[index].PassiveIndex" style="border-radius: 5px; margin: 2px; padding: 2px;" v-bind:class="passiveClass(index, pasIndex)">
+                                                <select v-model="fesIdols[index].PassiveIndex[pasIndex].index" @change="displayUpdate()">
+                                                    <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
+                                                </select>
+                                                <div style="display: flex;">
+                                                    <div class="btn" style="font-size: 12px; padding: 1px 10px; margin-right: 20px;" @click="unsetPassive(index, pasIndex)">削除</div>
+                                                    <div class="dragHandle" style="width: 50px; height: 20px; position: relative;">
+                                                        <span style="display: block; position: absolute; top: 50%; left: 50%; margin: -4px 0 0 -10px; width: 20px; height: 4px; border-top: 2px rgba(0, 0, 0, .4) solid; border-bottom: 2px rgba(0, 0, 0, .4) solid; "></span>
+                                                    </div>
+                                                </div>
+                                            </li>
                                         </ul>
                                         <div @click="setPassive(index)" class="btn" style="font-size: 11px; margin-top: 5px;">パッシブスキルを追加</div>
                                     </div>
@@ -531,6 +532,7 @@
         </div>
         <input type="file" id="inputFile" style="display: none;" @change="inputSetting">
         <Simulation ref="simulationReady"></Simulation>
+        <PassiveTemplate ref="passiveTemp" @childEmit="setTemplatePassive"></PassiveTemplate>
         <div v-if="displayUpdateData">
             <!-- displayUpdate() の為の空要素 -->
         </div>
@@ -548,6 +550,7 @@ import draggable from 'vuedraggable'
 import Help from './help.vue'
 import Simulation from './simulation.vue'
 import Header from './header.vue'
+import PassiveTemplate from './passiveTemplate.vue'
 
 // localStorage から読み込み
 const loadLocalStorage = () => {
@@ -1152,6 +1155,13 @@ const deletePassive = (index: number) => {
     displayUpdate();
 }
 
+// パッシブテンプレート
+const passiveTemp = ref();
+const setTemplatePassive = (passive:types.passive) => {
+    passiveSkills.push(passive);
+    displayUpdate();
+}
+
 // 金パッシブラベルID発行
 const goldID = (index: number) => {
     return "gold" + index;
@@ -1476,17 +1486,6 @@ const passiveClass = (index: number, pasIndex: number) => {
     } else {
         console.log(passiveSkills[fesIdols[index].PassiveIndex[pasIndex].index])
         return "white"
-    }
-}
-
-// パッシブ入れ替え
-const dragPassive = (type: 'start' | 'enter', index: number) => {
-    if(type == 'start') {
-        console.log("drag start. index:" + index);
-    }else if(type == 'enter'){
-        console.log("drag enter. index" + index);
-    }else {
-        console.log("drag type error");
     }
 }
 

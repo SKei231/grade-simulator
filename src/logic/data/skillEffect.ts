@@ -145,7 +145,7 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "なし",
         ID: 1,
         variable: false,
-        value: function () {
+        value: function (value:number, ratio:number) {
             return 0;
         }
     },

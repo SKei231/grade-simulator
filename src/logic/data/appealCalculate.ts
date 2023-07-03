@@ -16,20 +16,21 @@ export const appealCalculation = (
     ID: number,
     Value: number,
     Attribute: "Vo" | "Da" | "Vi" | "Excellent",
-    Mode: "Bad" | "Normal" | "Good" | "Perfect",
+    Mode: 'Bad' | 'Normal' | 'Good' | 'Perfect',
     Ratio: number,
     Buff: {
         Vo: number,
         Da: number,
         Vi: number,
         Passive: {
-            pVo: number,
-            pDa: number,
-            pVi: number
+            Vo: number,
+            Da: number,
+            Vi: number
         }
     },
     AppealUp: number,
-    isMemory: boolean
+    isMemory: boolean,
+    isExtra: boolean
     ): {Vo:number, Da:number, Vi:number} => {
     let buffs = Buff
     let result: [{ Vo: number, Da: number, Vi: number }];
@@ -92,27 +93,29 @@ export const appealCalculation = (
         let memoryVi = Math.floor(Math.floor(Math.floor(basicStatus.Vi * (1 + (buffs.Vi + AppealUp) / 100) * mode) * basicRatio) * othersMLevelRatio);
         return pushResult((memoryVo * 2) + memoryDa + memoryVi, memoryVo + (memoryDa * 2) + memoryVi, memoryVo + memoryDa + (memoryVi * 2));
     }else {
-        // バフのみ起動
-        for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mEffect.length; i++) {
-            if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 18 || vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 19 || vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 21) {
-                if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vo') {
-                    buffs.Vo += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
-                }
-                if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Da') {
-                    buffs.Da += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
-                }
-                if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vi') {
-                    buffs.Vi += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
-                }
-            }else if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 20) {
-                if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vo') {
-                    buffs.Vo -= vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
-                }
-                if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Da') {
-                    buffs.Da -= vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
-                }
-                if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vi') {
-                    buffs.Vi -= vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+        if(isExtra) {
+            // バフのみ仮起動
+            for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mEffect.length; i++) {
+                if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 18 || vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 19 || vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 21) {
+                    if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vo') {
+                        buffs.Vo += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+                    }
+                    if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Da') {
+                        buffs.Da += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+                    }
+                    if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vi') {
+                        buffs.Vi += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+                    }
+                }else if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 20) {
+                    if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vo') {
+                        buffs.Vo -= vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+                    }
+                    if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Da') {
+                        buffs.Da -= vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+                    }
+                    if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vi') {
+                        buffs.Vi -= vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
+                    }
                 }
             }
         }
@@ -122,19 +125,19 @@ export const appealCalculation = (
         if(Attribute == 'Vo') {
             let basicFactor = calcBasicFactor(basicStatus.Vo, buffs.Vo);
             if(ID == 10) {
-                basicFactor = calcBasicFactor(basicStatus.Vo, buffs.Vo - buffs.Passive.pVo);
+                basicFactor = calcBasicFactor(basicStatus.Vo, buffs.Vo - buffs.Passive.Vo);
             }
             return pushResult(Math.floor(basicFactor * value) * 2, Math.floor(basicFactor * value), Math.floor(basicFactor * value));
         }else if(Attribute == 'Da') {
             let basicFactor = calcBasicFactor(basicStatus.Da, buffs.Da);
             if(ID == 10) {
-                basicFactor = calcBasicFactor(basicStatus.Da, buffs.Da - buffs.Passive.pDa);
+                basicFactor = calcBasicFactor(basicStatus.Da, buffs.Da - buffs.Passive.Da);
             }
             return pushResult(Math.floor(basicFactor * value), Math.floor(basicFactor * value) * 2, Math.floor(basicFactor * value));
         }else if(Attribute == 'Vi') {
             let basicFactor = calcBasicFactor(basicStatus.Vi, buffs.Vi);
             if(ID == 10) {
-                basicFactor = calcBasicFactor(basicStatus.Vi, buffs.Vi - buffs.Passive.pVi);
+                basicFactor = calcBasicFactor(basicStatus.Vi, buffs.Vi - buffs.Passive.Vi);
             }
             return pushResult(Math.floor(basicFactor * value), Math.floor(basicFactor * value), Math.floor(basicFactor * value) * 2);
         }else if(Attribute == 'Excellent') {

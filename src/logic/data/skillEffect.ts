@@ -145,6 +145,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "なし",
         ID: 1,
         variable: false,
+        ratioLabel: "",
+        init: 0,
         value: function (value:number, ratio:number) {
             return 0;
         }
@@ -153,6 +155,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール【N】倍",
         ID: 2,
         variable: false,
+        ratioLabel: "",
+        init: 0,
         value: function (value:number, ratio:number) {
             return value
         }
@@ -161,6 +165,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(メンタルが多いほど)【N】倍",
         ID: 3,
         variable: true,
+        ratioLabel: "Me(実数)",
+        init: 1000,
         value: function (value:number, ratio:number) {
             return value;
         }
@@ -169,6 +175,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(メンタルが少ないほど)【N】倍",
         ID: 4,
         variable: true,
+        ratioLabel: "Me(実数)",
+        init: 1,
         value: function (value:number, ratio:number) {
             return value;
         }
@@ -177,6 +185,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(思い出ゲージが多いほど)【N】倍",
         ID: 5,
         variable: true,
+        ratioLabel: "思い出ゲージ(%)",
+        init: 100,
         value: function (value:number, ratio:number) {
             return value;
         }
@@ -185,6 +195,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(注目度が高いほど)【N】倍",
         ID: 6,
         variable: true,
+        ratioLabel: "注目度(%)",
+        init: 200,
         value: function (value:number, ratio:number) {
             return value;
         }
@@ -193,6 +205,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(注目度が低いほど)【N】倍",
         ID: 7,
         variable: true,
+        ratioLabel: "注目度(%)",
+        init: -100,
         value: function (value:number, ratio:number) {
             return value;
         }
@@ -201,6 +215,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(回復回数が多いほど)【N】倍",
         ID: 8,
         variable: true,
+        ratioLabel: "回復回数(回)",
+        init: 8,
         value: function (value:number, ratio:number) {
             return value;
         }
@@ -209,6 +225,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(UP消去)【N】倍",
         ID: 9,
         variable: true,
+        ratioLabel: "アピールUP(個)",
+        init: 4,
         value: function (value:number, ratio:number) {
             return value;
         }
@@ -217,6 +235,8 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(DOWN消去)【N】倍",
         ID: 11,
         variable: true,
+        ratioLabel: "アピールDOWN(個)",
+        init: 4,
         value: function (value:number, ratio:number) {
             return value;
         }
@@ -225,6 +245,18 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール(強化)【N】倍",
         ID: 10,
         variable: false,
+        ratioLabel: "",
+        init: 0,
+        value: function (value:number, ratio:number) {
+            return value;
+        }
+    },
+    {
+        label: "アピール(回避率が高いほど)【N】倍",
+        ID: 12,
+        variable: true,
+        ratioLabel: "回避率(%)",
+        init: 0,
         value: function (value:number, ratio:number) {
             return value;
         }

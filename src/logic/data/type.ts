@@ -185,9 +185,11 @@ export type pEffect = {
 
 // ライブスキルアピール
 export type sAppeal = {
-    label:string,
+    label: string,
     ID: number,
     variable: boolean,
+    ratioLabel: string,
+    init: number,
     value: Function
 }
 

@@ -427,23 +427,34 @@
                                     </div>
                                     <p>パッシブスキル</p>
                                     <div>
-                                        <ul style="padding-left: 0;">
-                                            <div v-for="(ps, pasIndex) in fesIdols[index].PassiveIndex">
-                                                <div v-if="pasIndex == dragIndexes[index][1] && dragIndexes[index][0] > dragIndexes[index][1]" style="width: 100%; height: 3px; background-color: rgba(168, 39, 0, 0.8); border-radius: 2px;"></div>
-                                                <li style="border-radius: 5px; margin: 2px; padding: 2px;" v-bind:class="passiveClass(index, pasIndex)" :draggable="true" @dragstart="dragPassive('start', index, pasIndex)" @dragenter="dragPassive('enter', index, pasIndex)" @dragend="dragPassive('end', index, pasIndex)">
-                                                    <select v-model="fesIdols[index].PassiveIndex[pasIndex].index" @change="displayUpdate()">
-                                                        <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
-                                                    </select>
-                                                    <div style="display: flex;">
-                                                        <div class="btn" style="font-size: 12px; padding: 1px 10px; margin-right: 20px;" @click="unsetPassive(index, pasIndex)">削除</div>
-                                                        <div class="dragHandle" style="width: 50px; height: 20px; position: relative;">
-                                                            <span style="display: block; position: absolute; top: 50%; left: 50%; margin: -4px 0 0 -10px; width: 20px; height: 4px; border-top: 2px rgba(0, 0, 0, .4) solid; border-bottom: 2px rgba(0, 0, 0, .4) solid; "></span>
+                                        <draggable v-model="fesIdols[index].PassiveIndex" item-key="no" handle=".dragHandle" @end="displayUpdate()" animation="100">
+                                            <template #item="{ element, index }" :fesIndex="index">
+                                                <ul style="padding-left: 0;">
+                                                    <li v-if="!mobileView" style="border-radius: 5px; margin: 2px; padding: 2px;" v-bind:class="passiveClass(element.fesIdolIndex, index)">
+                                                        <select v-model="element.index" @change="displayUpdate()">
+                                                            <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
+                                                        </select>
+                                                        <div style="display: flex;">
+                                                            <div class="btn" style="font-size: 12px; padding: 1px 10px; margin-right: 20px; user-select: none;" @click="unsetPassive(element.fesIdolIndex, index)">削除</div>
+                                                            <div class="dragHandle">
+                                                                <span></span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </li>
-                                                <div v-if="pasIndex == dragIndexes[index][1] && dragIndexes[index][0] < dragIndexes[index][1]" style="width: 100%; height: 3px; background-color: rgba(168, 39, 0, 0.8); border-radius: 2px;"></div>
-                                            </div>
-                                        </ul>
+                                                    </li>
+                                                    <li v-if="mobileView" style="border-radius: 5px; margin: 2px; padding: 2px; justify-content: space-between;" v-bind:class="passiveClass(element.fesIdolIndex, index)">
+                                                        <div v-if="mobileView" class="btn" style="font-size: 12px; padding: 1px 5px; margin: 0 5px; user-select: none;" @click="unsetPassive(element.fesIdolIndex, index)">削除</div>
+                                                        <select v-model="element.index" @change="displayUpdate()" style="width: 45vw;">
+                                                            <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
+                                                        </select>
+                                                        <div style="display: flex;">
+                                                        </div>
+                                                        <div class="dragHandle">
+                                                            <span></span>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </template>
+                                        </draggable>
                                         <div @click="setPassive(index)" class="btn" style="font-size: 11px; margin-top: 5px;">パッシブスキルを追加</div>
                                     </div>
                                 </div>
@@ -552,6 +563,8 @@ import Help from './help.vue'
 import Simulation from './simulation.vue'
 import Header from './header.vue'
 import PassiveTemplate from './passiveTemplate.vue'
+import draggable from 'vuedraggable'
+import { elements } from 'chart.js'
 
 
 // localStorage から読み込み
@@ -894,7 +907,19 @@ const setData = (data: {
                 if (typeof newFesIdol.PassiveIndex[j].index !== "number") {
                     newFesIdol.PassiveIndex[j] = {
                         index: ref(0).value,
-                        times: ref().value
+                        times: ref().value,
+                        fesIdolIndex: i
+                    }
+                }
+                try {
+                    if(typeof newFesIdol.PassiveIndex[j].fesIdolIndex !== "number") {
+                        newFesIdol.PassiveIndex[j].fesIdolIndex = i;
+                    }
+                } catch (error) {
+                    newFesIdol.PassiveIndex[j] = {
+                        index: ref(newFesIdol.PassiveIndex[j].index).value,
+                        times: ref().value,
+                        fesIdolIndex: i
                     }
                 }
             }
@@ -1294,7 +1319,8 @@ const setIdolList = () => {
             ],
             PassiveIndex: [{
                 index: ref(0).value,
-                times: ref().value
+                times: ref().value,
+                fesIdolIndex: i
             }],
             MemoryAppeal: {
                 mAppeal: [{
@@ -1470,7 +1496,8 @@ const plusMemory = (plusType:'appeal' | 'effect' | 'link') => {
 const setPassive = (index: number) => {
     fesIdols[index].PassiveIndex.push({
         index: ref(0).value,
-        times: ref().value
+        times: ref().value,
+        fesIdolIndex: index
     })
     displayUpdate();
 }
@@ -1481,25 +1508,6 @@ const unsetPassive = (index: number, deleteIndex: number) => {
     displayUpdate();
 }
 
-// パッシブ入れ替え
-let dragIndexes = [[-1,-1],[-1,-1],[-1,-1],[-1,-1],[-1,-1]];
-const dragPassive = (type: 'start' | 'enter' | 'end', index: number, pasIndex:number) => {
-    if (type == 'start') {
-        dragIndexes[index][0] = pasIndex;
-    }else if(type == 'enter') {
-        dragIndexes[index][1] = pasIndex;
-    }else if(type == 'end') {
-        if(dragIndexes[index][0] != dragIndexes[index][1]) {
-            const passive = fesIdols[index].PassiveIndex[dragIndexes[index][0]];
-            fesIdols[index].PassiveIndex.splice(dragIndexes[index][0], 1);
-            fesIdols[index].PassiveIndex.splice(dragIndexes[index][1], 0, passive);
-        }
-        dragIndexes[index][0] = -1;
-        dragIndexes[index][1] = -1;
-    }
-    displayUpdate();
-}
-
 // パッシブのクラス
 const passiveClass = (index: number, pasIndex: number) => {
     let returnColor;
@@ -1507,9 +1515,6 @@ const passiveClass = (index: number, pasIndex: number) => {
         returnColor = passiveSkills[fesIdols[index].PassiveIndex[pasIndex].index].Color;
     } else {
         returnColor = "white"
-    }
-    if(dragIndexes[index][0] == pasIndex) {
-        returnColor = returnColor + " dragging"
     }
     return returnColor;
 }
@@ -1631,6 +1636,7 @@ const simulationOpen = () => {
 }
 
 loadLocalStorage()
+console.log(fesIdols)
 </script>
 
 <style scoped>
@@ -1980,9 +1986,22 @@ input[type="number"] {
     background-color: rgba(0, 0, 0, 0.2);
 }
 
-.dragging {
-  background-color: #d4d4d4;
-  border-color: rgb(44, 254, 229);
+.dragHandle {
+    width: 50px;
+    height: 20px;
+    position: relative;
+}
+
+.dragHandle>span {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -4px 0 0 -10px;
+    width: 20px;
+    height: 4px;
+    border-top: 2px rgba(0, 0, 0, .4) solid;
+    border-bottom: 2px rgba(0, 0, 0, .4) solid;
 }
 
 #Leader {
@@ -2015,13 +2034,20 @@ input[type="number"] {
     select {
         max-width: 60vw;
     }
+    .accBtn {
+        text-align: center;
+    }
+
+    .accBox {
+        margin: 0 1% 1% 1%;
+    }
 
     .accBox ul {
         padding-right: 0;
     }
-
-    .accBtn {
-        text-align: center;
+    
+    .accBox ul>li, .accBox ul div>li {
+        padding: 6px;
     }
 
     .accBox>ul>li>div {
@@ -2039,5 +2065,23 @@ input[type="number"] {
     .passiveDelBtn>img {
         width: 30px;
         height: auto;
+    }
+    
+    .dragHandle {
+        width: 40px;
+        height: 20px;
+        position: relative;
+    }
+
+    .dragHandle>span {
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -4px 0 0 -7px;
+        width: 14px;
+        height: 4px;
+        border-top: 2px rgba(0, 0, 0, .4) solid;
+        border-bottom: 2px rgba(0, 0, 0, .4) solid;
     }
 }</style>

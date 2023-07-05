@@ -174,21 +174,21 @@
                     <option value="Perfect">Perfect</option>
                   </select>
                 </div>
-                <li style="border: none; margin: 5px 0 0 0;">
+                <div style="padding-left: 10px;">
+                  <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">合計アピール値</p>
+                    <div style="font-size: 1.2rem;">Vo:{{ Math.floor(appealSum.Vo * interest) }}</div>
+                    <div style="font-size: 1.2rem;">Da:{{ Math.floor(appealSum.Da * interest) }}</div>
+                    <div style="font-size: 1.2rem;">Vi :{{ Math.floor(appealSum.Vi * interest) }}</div>
+                </div>
+                <li style="border: none;">
                   <div>アピール</div>
                   <div style="padding-left: 10px;" v-if="(appeals.normalAppeal.length == 0)">なし</div>
                   <div style="padding-left: 10px;" v-if="(appeals.normalAppeal.length > 0)">
-                    <div>
-                      <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">合計アピール値</p>
-                        <div style="font-size: 1.2rem;">Vo:{{ Math.floor(appealSum.Vo * interest) }}</div>
-                        <div style="font-size: 1.2rem;">Da:{{ Math.floor(appealSum.Da * interest) }}</div>
-                        <div style="font-size: 1.2rem;">Vi :{{ Math.floor(appealSum.Vi * interest) }}</div>
-                    </div>
                     <ul>
                       <li v-for="(appeal, apIndex) in appeals.normalAppeal">
-                        <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.normalAppeal[apIndex].Label }}<input type="number" style="width: 50px;" v-model="appeals.normalAppeal[apIndex].Value" @change="appealCalc()">倍</p>
+                        <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.normalAppeal[apIndex].Label }}<input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.normalAppeal[apIndex].Value" @change="appealCalc()">倍</p>
                         <div v-if="appeals.normalAppeal[apIndex].Variable">
-                          {{ appeals.normalAppeal[apIndex].RatioLabel }}: <input type="number" style="width: 50px;" v-model="appeals.normalAppeal[apIndex].Ratio" @change="appealCalc()">
+                          {{ appeals.normalAppeal[apIndex].RatioLabel }}: <input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.normalAppeal[apIndex].Ratio" @change="appealCalc()">
                         </div>
                         <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">
                           Vo:{{ Math.floor(appeals.normalAppeal[apIndex].Result.Vo * interest) }}, 
@@ -198,33 +198,26 @@
                       </li>
                     </ul>
                   </div>
-                  <div style="padding-left: 10px;" v-if="(appeals.extraAppeal.length > 0)">
+                  <div v-if="(appeals.extraAppeal.length > 0)">
                     <div v-if="liveSkillIndex != 2">{{ vault.fesIdols[appealIdol].LiveSkill[liveSkillIndex].Link.lType }}アピール</div>
-                    <div v-if="liveSkillIndex == 2">Linkアピール</div>
-                    <div v-for="(extraAppeal, exIndex) in appeals.extraAppeal">
-                      <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.extraAppeal[exIndex] }}</p>
+                    <div style="padding-left: 10px;">
+                      <div v-if="liveSkillIndex == 2">Linkアピール</div>
+                      <ul>
+                        <li v-for="(exappeal, exIndex) in appeals.extraAppeal">
+                          <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.extraAppeal[exIndex].Label }}<input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.extraAppeal[exIndex].Value" @change="appealCalc()">倍</p>
+                          <div v-if="appeals.extraAppeal[exIndex].Variable">
+                            {{ appeals.extraAppeal[exIndex].RatioLabel }}: <input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.extraAppeal[exIndex].Ratio" @change="appealCalc()">
+                          </div>
+                          <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">
+                            Vo:{{ Math.floor(appeals.extraAppeal[exIndex].Result.Vo * interest) }}, 
+                            Da:{{ Math.floor(appeals.extraAppeal[exIndex].Result.Da * interest) }}, 
+                            Vi :{{ Math.floor(appeals.extraAppeal[exIndex].Result.Vi * interest) }}
+                          </p>
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </li>
-                <!-- <li style="border: none; margin: 5px 0 0 0;" v-if="liveSkillIndex == 2">
-                  <div>思い出アピール</div>
-                  <div style="padding-left: 10px;">
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(2, 'memoryAppeal', 0)">{{ appealLabel(2, 'memoryAppeal', 0) }}</p>
-                  </div>
-                  <div v-if="appealLabel(2, 'memoryLink', 0)">思い出Link</div>
-                  <div style="padding-left: 10px;">
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(2, 'memoryLink', 0)">{{ appealLabel(2, 'memoryLink', 0) }}</p>
-                  </div>
-                  <p>※現在、変動するアピール倍率において、倍率が最大の場合で計算を行っています。</p>
-                </li> -->
-                <!-- <li style="border: none; margin: 5px 0 0 0;">
-                  <div style="padding-top: 20px;">アピール値</div>
-                  <div style="padding: 10px 0 0 10px;">
-                    <div style="font-size: 1.2rem;">Vo:{{ Math.floor(VoAppeal * interest) }}</div>
-                    <div style="font-size: 1.2rem;">Da:{{ Math.floor(DaAppeal * interest) }}</div>
-                    <div style="font-size: 1.2rem;">Vi :{{ Math.floor(ViAppeal * interest) }}</div>
-                  </div>
-                </li> -->
               </ul> 
             </div>
           </section>
@@ -1450,7 +1443,7 @@ onMounted(() => {
     font-size: .8rem;
   }
   #listArea {
-    margin: 5vh 0 0 5vw;
+    margin: 2vh 0 0 2vw;
   }
   .bigBtn {
     padding: 5px;
@@ -1461,15 +1454,19 @@ onMounted(() => {
     margin-right: 5vw;
   }
   .accBox ul {
-        padding-right: 0;
-    }
+    padding: 0;
+  }
+  
+  .accBox ul>li {
+    padding: 10px 5px;
+  }
 
-    .accBtn {
-        text-align: center;
-    }
+  .accBtn {
+    text-align: center;
+  }
 
-    .accBox>ul>li>div {
-        min-width: 70vw;
-    }
+  .accBox>ul>li>div {
+    min-width: 70vw;
+  }
 }
 </style>

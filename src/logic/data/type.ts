@@ -118,7 +118,8 @@ export type fesIdol = {
     }],
     PassiveIndex: [{
         index: number,
-        times: number
+        times: number,
+        fesIdolIndex: number
     }],
     MemoryAppeal: {
         mAppeal: [{

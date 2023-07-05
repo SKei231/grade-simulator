@@ -161,12 +161,12 @@
                     </select>
                   </div>
                 </li>
-                <div>
+                <div style="padding-left: 10px;">
                   表示データ: 
                   <select v-model="appealDataMode" @change="getBuff(); appealCalc();">
                     <option v-for="DataMode in dataMode" v-bind:value="DataMode.ModeID">{{ DataMode.Name }}</option>
                   </select>
-                  判定: 
+                  <br v-if="mobileView">判定: 
                   <select v-model="appealModeSelected" @change="appealCalc()">
                     <option value="Bad">Bad</option>
                     <option value="Normal">Normal</option>
@@ -175,18 +175,28 @@
                   </select>
                 </div>
                 <li style="border: none; margin: 5px 0 0 0;">
+                  <div>アピール</div>
+                  <div style="padding-left: 10px;" v-if="(appeals.normalAppeal.length == 0)">なし</div>
                   <div style="padding-left: 10px;" v-if="(appeals.normalAppeal.length > 0)">
-                    <div>アピール</div>
-                    <div v-for="(appeal, apIndex) in appeals.normalAppeal">
-                      <!-- <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.normalAppeal[apIndex] }}</p> -->
-                      <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.normalAppeal[apIndex].Label }}<input type="number" style="width: 50px;" v-model="appeals.normalAppeal[apIndex].Value" @change="appealCalc()">倍</p>
-                      <div v-if="appeals.normalAppeal[apIndex].Variable">
-                        {{ appeals.normalAppeal[apIndex].RatioLabel }}: <input type="number" style="width: 50px;" v-model="appeals.normalAppeal[apIndex].Ratio" @change="appealCalc()">
-                      </div>
-                      <div style="font-size: 1.2rem;">Vo:{{ Math.floor(appeals.normalAppeal[apIndex].Result.Vo * interest) }}</div>
-                      <div style="font-size: 1.2rem;">Da:{{ Math.floor(appeals.normalAppeal[apIndex].Result.Da * interest) }}</div>
-                      <div style="font-size: 1.2rem;">Vi :{{ Math.floor(appeals.normalAppeal[apIndex].Result.Vi * interest) }}</div>
+                    <div>
+                      <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">合計アピール値</p>
+                        <div style="font-size: 1.2rem;">Vo:{{ Math.floor(appealSum.Vo * interest) }}</div>
+                        <div style="font-size: 1.2rem;">Da:{{ Math.floor(appealSum.Da * interest) }}</div>
+                        <div style="font-size: 1.2rem;">Vi :{{ Math.floor(appealSum.Vi * interest) }}</div>
                     </div>
+                    <ul>
+                      <li v-for="(appeal, apIndex) in appeals.normalAppeal">
+                        <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.normalAppeal[apIndex].Label }}<input type="number" style="width: 50px;" v-model="appeals.normalAppeal[apIndex].Value" @change="appealCalc()">倍</p>
+                        <div v-if="appeals.normalAppeal[apIndex].Variable">
+                          {{ appeals.normalAppeal[apIndex].RatioLabel }}: <input type="number" style="width: 50px;" v-model="appeals.normalAppeal[apIndex].Ratio" @change="appealCalc()">
+                        </div>
+                        <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">
+                          Vo:{{ Math.floor(appeals.normalAppeal[apIndex].Result.Vo * interest) }}, 
+                          Da:{{ Math.floor(appeals.normalAppeal[apIndex].Result.Da * interest) }}, 
+                          Vi :{{ Math.floor(appeals.normalAppeal[apIndex].Result.Vi * interest) }}
+                        </p>
+                      </li>
+                    </ul>
                   </div>
                   <div style="padding-left: 10px;" v-if="(appeals.extraAppeal.length > 0)">
                     <div v-if="liveSkillIndex != 2">{{ vault.fesIdols[appealIdol].LiveSkill[liveSkillIndex].Link.lType }}アピール</div>
@@ -227,7 +237,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import * as vault from '../logic/event/vault';
 import { Chart, registerables } from 'chart.js';
 import router from '../router/router';
@@ -918,7 +928,11 @@ const createTriggerList = () => {
 // アピールラベル
 const appealLabel = (lsindex:number, mode: 'appeal' | 'effect', elseIndex:number) => {
   if(mode == 'appeal') {
-    return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aValue));
+    if(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal.length > 0) {
+      return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aValue));
+    }else {
+      return "アピール無し"
+    }
   }else if(mode == 'effect') {
     let str = "";
     if(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect.length > 0) {
@@ -938,12 +952,10 @@ const appealIdol = ref(0);
 const liveSkillIndex = ref(0);
 let appealModeSelected:'Bad' | 'Normal' | 'Good' | 'Perfect' = 'Perfect';
 let appeals:{
-  normalAppeal: [{Label: string, Value: number, Variable: boolean, RatioLabel: string, Ratio: number, Result: {Vo: number, Da: number, Vi: number}}],
-  extraAppeal: [{Label: string, Value: number, Variable: boolean, RatioLabel: string, Ratio: number, Result: {Vo: number, Da: number, Vi: number}}],
+  normalAppeal: {Label: string, Value: number, Variable: boolean, RatioLabel: string, Ratio: number, Result: {Vo: number, Da: number, Vi: number}}[],
+  extraAppeal: {Label: string, Value: number, Variable: boolean, RatioLabel: string, Ratio: number, Result: {Vo: number, Da: number, Vi: number}}[],
 } = {
-  //@ts-ignore
   normalAppeal: [],
-  //@ts-ignore
   extraAppeal: []
 };
 
@@ -954,7 +966,22 @@ const memoryHigh = ref(0); // 思い出高
 const memoryLow = ref(0) // 思い出低
 const perfectly = ref(0); // パーフェクトリィ
 const appealUp = ref(0); // その他アピールUP
-const appealDataMode = ref(1);
+const appealDataMode = ref(1); // アピール判定 Perfect, Badなど
+let appealSum = {Vo: 0, Da: 0, Vi: 0}; // アピール合計値
+const calcAppealSum = () => {
+  let sum = {Vo: 0, Da: 0, Vi: 0};
+  appeals.normalAppeal.forEach((nAppeal) => {
+    sum.Vo += nAppeal.Result.Vo;
+    sum.Da += nAppeal.Result.Da;
+    sum.Vi += nAppeal.Result.Vi;
+  })
+  appeals.extraAppeal.forEach((eAppeal) => {
+    sum.Vo += eAppeal.Result.Vo;
+    sum.Da += eAppeal.Result.Da;
+    sum.Vi += eAppeal.Result.Vi;
+  })
+  appealSum = sum;
+}
 let buff = {
   Vo: 0,
   Da: 0,
@@ -1014,9 +1041,7 @@ const getBuff = () => {
   }
 }
 const appealCalcInit = () => {
-  //@ts-ignore
   appeals.normalAppeal = [];
-  //@ts-ignore
   appeals.extraAppeal = [];
 
   const appealUpTotal = (slowStart.value * (4 + 16 / 9 * (graphTurn.value - 1))) + (startDash.value * (10 - 8 / 9 * (graphTurn.value - 1))) + ((memoryHigh.value * memory * 8 / 1000) + 2)+(memoryLow.value * (20 - 16 * (memory / 1000))) + perfectly.value * 10 + appealUp.value;
@@ -1137,6 +1162,7 @@ const appealCalcInit = () => {
       appeals.extraAppeal.push(appealResult);
     }
   }
+  calcAppealSum();
   displayUpdate();
 }
 const appealCalc = () => {
@@ -1189,11 +1215,9 @@ const appealCalc = () => {
       false
     )
   }
+  calcAppealSum();
   displayUpdate();
 }
-const VoAppeal = ref(0);
-const DaAppeal = ref(0);
-const ViAppeal = ref(0);
 
 // ステータス詳細画面
 const statusDetailClass = ref("accBtn close")

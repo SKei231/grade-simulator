@@ -90,50 +90,13 @@
             <h2 v-bind:class="appealDetailClass" @click="toggleAccBtn('appealDetail', displayAppealDetail)">アピール値の計算</h2>
             <div class="accBox" v-if="displayAppealDetail">
               <ul>
-                <li style="border: none; margin: 0; padding-bottom: 0;">
-                  <div>アピールアイドル</div>
-                  <div style="padding-left: 10px;">
-                    <select v-model="appealIdol" @change="appealCalculation()">
-                      <option v-for="(appealIdols, idolIndex) in vault.fesIdols" v-bind:value="idolIndex">{{ idolList[findByIdolID(appealIdols.Idol)].Name }}: {{ appealIdols.Position }}</option>
-                    </select><br>
-                    <select v-model="liveSkillIndex" @change="appealCalculation()">
-                      <option v-for="(liveskills, lsIndex) in vault.fesIdols[appealIdol].LiveSkill" v-bind:value="lsIndex">{{ appealLabel(lsIndex, 'appeal', 0) }}, {{ appealLabel(lsIndex, 'effect', 0) }}</option>
-                      <option v-if="appealIdol == 4" value="2">思い出アピール</option>
-                    </select>
-                  </div>
-                </li>
-                <li style="border: none; margin: 5px 0 0 0;" v-if="liveSkillIndex != 2">
-                  <div>アピール</div>
-                  <div style="padding-left: 10px;">
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(liveSkillIndex, 'allAppeal', 0)">{{ appealLabel(liveSkillIndex, 'allAppeal', 0) }}</p>
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(liveSkillIndex, 'allEffect', 0)">{{ appealLabel(liveSkillIndex, 'allEffect', 0) }}</p>
-                  </div>
-                  <div v-if="appealLabel(liveSkillIndex, 'allLinkAppeal', 0) || appealLabel(liveSkillIndex, 'allLinkEffect', 0)">Linkアピール</div>
-                  <div style="padding-left: 10px;">
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(liveSkillIndex, 'allLinkAppeal', 0)">{{ appealLabel(liveSkillIndex, 'allLinkAppeal', 0) }}</p>
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(liveSkillIndex, 'allLinkEffect', 0)">{{ appealLabel(liveSkillIndex, 'allLinkEffect', 0) }}</p>
-                  </div>
-                </li>
-                <li style="border: none; margin: 5px 0 0 0;" v-if="liveSkillIndex == 2">
-                  <div>思い出アピール</div>
-                  <div style="padding-left: 10px;">
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(2, 'memoryAppeal', 0)">{{ appealLabel(2, 'memoryAppeal', 0) }}</p>
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(2, 'memoryEffect', 0)">{{ appealLabel(2, 'memoryEffect', 0) }}</p>
-                  </div>
-                  <div v-if="appealLabel(2, 'memoryLink', 0)">思い出Link</div>
-                  <div style="padding-left: 10px;">
-                    <p style="padding: 0; margin: 1px 0 0 0;" v-if="appealLabel(2, 'memoryLink', 0)">{{ appealLabel(2, 'memoryLink', 0) }}</p>
-                  </div>
-                  <p>※現在、変動するアピール倍率において、倍率が最大の場合で計算を行っています。</p>
-                </li>
-                <li style="border: none; margin: 5px 0 0 0;">
-                  <section style="margin: 0;">
+                <section style="margin: 10px;">
                     <h2 v-bind:class="appealUPClass" @click="toggleAccBtn('appealUP', displayAppealUP)" style="margin: 2px 0;">アピールUP系</h2>
                     <div class="accBox" v-if="displayAppealUP">
                       <ul>
-                        <div>興味:<input type="number" v-model="interest" style="width: 50px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">倍</div>
+                        <div>興味:<input type="number" v-model="interest" style="width: 50px; padding: 1px 5px; margin-left: 10px;" @change="appealCalc()">倍</div>
                         <div>スロースターター:
-                          <select v-model="slowStart" @change="appealCalculation()">
+                          <select v-model="slowStart" @change="appealCalc()">
                             <option value="0">なし</option>
                             <option value="1">1人</option>
                             <option value="2">2人</option>
@@ -143,7 +106,7 @@
                           </select>
                         </div>
                         <div>スタートダッシュ:
-                          <select v-model="startDash" @change="appealCalculation()">
+                          <select v-model="startDash" @change="appealCalc()">
                             <option value="0">なし</option>
                             <option value="1">1人</option>
                             <option value="2">2人</option>
@@ -153,7 +116,7 @@
                           </select>
                         </div>
                         <div>アピールUP(思い出高):
-                          <select v-model="memoryHigh" @change="appealCalculation()">
+                          <select v-model="memoryHigh" @change="appealCalc()">
                             <option value="0">なし</option>
                             <option value="1">1人</option>
                             <option value="2">2人</option>
@@ -163,7 +126,7 @@
                           </select>
                         </div>
                         <div>アピールUP(思い出低):
-                          <select v-model="memoryLow" @change="appealCalculation()">
+                          <select v-model="memoryLow" @change="appealCalc()">
                             <option value="0">なし</option>
                             <option value="1">1人</option>
                             <option value="2">2人</option>
@@ -172,21 +135,89 @@
                             <option value="5">5人</option>
                           </select>
                         </div>
-                        <div>その他アピールUP:<input type="number" v-model="appealUp" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalculation()">%</div>
+                        <div>パーフェクトリィ:
+                          <select v-model="perfectly" @change="appealCalc()">
+                            <option value="0">なし</option>
+                            <option value="1">1人</option>
+                            <option value="2">2人</option>
+                            <option value="3">3人</option>
+                            <option value="4">4人</option>
+                            <option value="5">5人</option>
+                          </select>
+                        </div>
+                        <div>その他アピールUP:<input type="number" v-model="appealUp" style="width: 30px; padding: 1px 5px; margin-left: 10px;" @change="appealCalc()">%</div>
                       </ul>
                     </div>
-                  </section>
-                  <div style="padding-top: 20px;">アピール値</div>
-                  <div>
-                    表示データ: 
-                    <select v-model="appealDataMode" @change="getBuff(); appealCalculation();">
-                      <option v-for="DataMode in dataMode" v-bind:value="DataMode.ModeID">{{ DataMode.Name }}</option>
+                </section>
+                <li style="border: none; margin: 0; padding-bottom: 0;">
+                  <div>アピールアイドル</div>
+                  <div style="padding-left: 10px;">
+                    <select v-model="appealIdol" @change="appealCalcInit()">
+                      <option v-for="(appealIdols, idolIndex) in vault.fesIdols" v-bind:value="idolIndex">{{ idolList[findByIdolID(appealIdols.Idol)].Name }}: {{ appealIdols.Position }}</option>
+                    </select><br>
+                    <select v-model="liveSkillIndex" @change="appealCalcInit()">
+                      <option v-for="(liveskills, lsIndex) in vault.fesIdols[appealIdol].LiveSkill" v-bind:value="lsIndex">{{ appealLabel(lsIndex, 'appeal', 0) }}, {{ appealLabel(lsIndex, 'effect', 0) }}</option>
+                      <option v-if="appealIdol == 4" value="2">思い出アピール</option>
                     </select>
                   </div>
-                  <div style="padding: 10px 0 0 10px;">
-                    <div style="font-size: 1.2rem;">Vo:{{ Math.floor(VoAppeal * interest) }}</div>
-                    <div style="font-size: 1.2rem;">Da:{{ Math.floor(DaAppeal * interest) }}</div>
-                    <div style="font-size: 1.2rem;">Vi :{{ Math.floor(ViAppeal * interest) }}</div>
+                </li>
+                <div style="padding-left: 10px;">
+                  表示データ: 
+                  <select v-model="appealDataMode" @change="getBuff(); appealCalc();">
+                    <option v-for="DataMode in dataMode" v-bind:value="DataMode.ModeID">{{ DataMode.Name }}</option>
+                  </select>
+                  <span v-if="liveSkillIndex != 2">
+                    <br v-if="mobileView">判定: 
+                    <select v-model="appealModeSelected" @change="appealCalc()">
+                      <option value="Bad">Bad</option>
+                      <option value="Normal">Normal</option>
+                      <option value="Good">Good</option>
+                      <option value="Perfect">Perfect</option>
+                    </select>
+                  </span>
+                </div>
+                <div style="padding-left: 10px;">
+                  <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">合計アピール値</p>
+                    <div style="font-size: 1.2rem;">Vo:{{ Math.floor(appealSum.Vo * interest) }}</div>
+                    <div style="font-size: 1.2rem;">Da:{{ Math.floor(appealSum.Da * interest) }}</div>
+                    <div style="font-size: 1.2rem;">Vi :{{ Math.floor(appealSum.Vi * interest) }}</div>
+                </div>
+                <li style="border: none;">
+                  <div>アピール</div>
+                  <div style="padding-left: 10px;" v-if="(appeals.normalAppeal.length == 0)">なし</div>
+                  <div style="padding-left: 10px;" v-if="(appeals.normalAppeal.length > 0)">
+                    <ul>
+                      <li v-for="(appeal, apIndex) in appeals.normalAppeal">
+                        <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.normalAppeal[apIndex].Label }}<input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.normalAppeal[apIndex].Value" @change="appealCalc()">倍</p>
+                        <div v-if="appeals.normalAppeal[apIndex].Variable">
+                          {{ appeals.normalAppeal[apIndex].RatioLabel }}: <input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.normalAppeal[apIndex].Ratio" @change="appealCalc()">
+                        </div>
+                        <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">
+                          Vo:{{ Math.floor(appeals.normalAppeal[apIndex].Result.Vo * interest) }}, 
+                          Da:{{ Math.floor(appeals.normalAppeal[apIndex].Result.Da * interest) }}, 
+                          Vi :{{ Math.floor(appeals.normalAppeal[apIndex].Result.Vi * interest) }}
+                        </p>
+                      </li>
+                    </ul>
+                  </div>
+                  <div v-if="(appeals.extraAppeal.length > 0)">
+                    <div v-if="liveSkillIndex != 2">{{ vault.fesIdols[appealIdol].LiveSkill[liveSkillIndex].Link.lType }}アピール</div>
+                    <div style="padding-left: 10px;">
+                      <div v-if="liveSkillIndex == 2">Linkアピール</div>
+                      <ul>
+                        <li v-for="(exappeal, exIndex) in appeals.extraAppeal">
+                          <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.extraAppeal[exIndex].Label }}<input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.extraAppeal[exIndex].Value" @change="appealCalc()">倍</p>
+                          <div v-if="appeals.extraAppeal[exIndex].Variable">
+                            {{ appeals.extraAppeal[exIndex].RatioLabel }}: <input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.extraAppeal[exIndex].Ratio" @change="appealCalc()">
+                          </div>
+                          <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">
+                            Vo:{{ Math.floor(appeals.extraAppeal[exIndex].Result.Vo * interest) }}, 
+                            Da:{{ Math.floor(appeals.extraAppeal[exIndex].Result.Da * interest) }}, 
+                            Vi :{{ Math.floor(appeals.extraAppeal[exIndex].Result.Vi * interest) }}
+                          </p>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </li>
               </ul> 
@@ -196,8 +227,12 @@
       </ul>
     </div>
   </div>
+  <div v-if="logErrer" class="bigBtn" @click="(router.go(-1))" style="margin: auto; margin-top: 50px;">入力画面に戻る</div>
+  <div v-if="!logErrer" style="display: flex; justify-content: space-between; margin: 0 20vw 0 20vw;">
+    <div class="bigBtn" @click="(router.go(-1))">入力画面に戻る</div>
+    <div class="bigBtn" @click="outputResult()">結果を出力する</div>
+  </div>
   <div v-if="display"></div>
-  <div class="bigBtn" @click="(router.go(-1))">入力画面に戻る</div>
 </template>
 
 <script setup lang="ts">
@@ -205,9 +240,10 @@ import { onMounted, ref } from 'vue';
 import * as vault from '../logic/event/vault';
 import { Chart, registerables } from 'chart.js';
 import router from '../router/router';
-import { triggerList, findByTriggerID } from '../logic/data/passiveTrigger';
+import { triggerList, findByTriggerID } from '../logic/data/skillTrigger';
 import { idolList, findByIdolID } from '../logic/data/idolList';
 import { liveSkillAppeal, findByAppealID, liveSkillEffect, findByLiveEffectID } from '../logic/data/skillEffect';
+import { appealCalculation } from '../logic/data/appealCalculate'
 
 Chart.register(...registerables);
 
@@ -253,7 +289,7 @@ const selectedDataMode = ref(1); // グラフの表示データ
 const selectedVo = ref(true); // Vo の選択
 const selectedDa = ref(true); // Ds の選択
 const selectedVi = ref(true); // Vi の選択
-const labelDiscription = ref("aaa") // ラベルの説明文
+const labelDiscription = ref("") // ラベルの説明文
 
 // グラフの描写
 const resultGraph = ref<HTMLCanvasElement | null>(null);
@@ -888,124 +924,63 @@ const createTriggerList = () => {
   }
 }
 
-// アピール計算
-const appealIdol = ref(0);
-const liveSkillIndex = ref(0);
-const appealLabel = (lsindex:number, mode:'appeal' | 'effect' | 'allAppeal' | 'allEffect' | 'allLinkAppeal' | 'allLinkEffect' | 'memoryAppeal' | 'memoryEffect' | 'memoryLink', elseIndex:number):string => {
-  const linkLabel = (linkIndex:number, linkMode:'appeal' | 'effect'):string => {
-    if(linkMode == 'appeal') {
-      return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lAppeal[linkIndex].laAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lAppeal[linkIndex].laID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lAppeal[linkIndex].laValue))
-    }else {
-      let str = liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leValue));
-      str =  str.replace('【M】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leTurn[1]));
-      if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leID)].existAttribute) {
-        return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect[linkIndex].leNote + str;
-      }
-      return str;
-    }
-  }
+// アピールラベル
+const appealLabel = (lsindex:number, mode: 'appeal' | 'effect', elseIndex:number) => {
   if(mode == 'appeal') {
-    try {
+    if(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal.length > 0) {
       return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal[elseIndex].aValue));
-    } catch (error) {
-      return '';
+    }else {
+      return "アピール無し"
     }
   }else if(mode == 'effect') {
-    try {
-      let str = liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eValue));
+    let str = "";
+    if(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect.length > 0) {
+      str = liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eID)].label.replace('【N】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eValue));
       str =  str.replace('【M】', String(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eTurn[1]));
       if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eID)].existAttribute) {
         return vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect[elseIndex].eNote + str;
       }
-      return str;
-    } catch (error) {
-      return '';
-    }
-  }else if(mode == 'allAppeal') {
-    try {
-      let str = appealLabel(lsindex, 'appeal', 0)
-      for(let i = 1; i < vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Appeal.length; i++) {
-        str = appealLabel(lsindex, 'appeal', i) + '、' + str;
-      }
-      return str;
-    } catch (error) {
-      return '';
-    }
-  }else if(mode == 'allEffect') {
-    try {
-      let str = appealLabel(lsindex, 'effect', 0)
-      for(let i = 1; i < vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Effect.length; i++) {
-        str = appealLabel(lsindex, 'effect', i) + '、' + str;
-      }
-      return str;
-    } catch (error) {
-      return '';
-    }
-  }else if(mode == 'allLinkAppeal') {
-    try {
-      let str = linkLabel(0, 'appeal')
-      for(let i = 1; i < vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lAppeal.length; i++) {
-        str = linkLabel(i, 'appeal') + '、' + str;
-      }
-      return str;
-    } catch (error) {
-      return '';
-    }
-  }else if(mode == 'allLinkEffect') {
-    try {
-      let str = linkLabel(0, 'effect')
-      for(let i = 1; i < vault.fesIdols[appealIdol.value].LiveSkill[lsindex].Link.lEffect.length; i++) {
-        str = linkLabel(i, 'effect') + '、' + str;
-      }
-      return str;
-    } catch (error) {
-      return '';
-    }
-  }else if(mode == 'memoryAppeal') {
-    try {
-      let str = '';
-      for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mAppeal.length; i++) {
-        str = vault.fesIdols[4].MemoryAppeal.mAppeal[elseIndex].maAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[elseIndex].maID)].label.replace('【N】', String(vault.fesIdols[4].MemoryAppeal.mAppeal[elseIndex].maValue)) + '、' + str;
-      }
-      return str;
-    } catch (error) {
-      return '';
-    }
-  }else if(mode == 'memoryEffect') {
-    try {
-      let str = '';
-      for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mEffect.length; i++) {
-        let string = liveSkillEffect[findByLiveEffectID(vault.fesIdols[4].MemoryAppeal.mEffect[elseIndex].meID)].label.replace('【N】', String(vault.fesIdols[4].MemoryAppeal.mEffect[elseIndex].meValue));
-        string =  string.replace('【M】', String(vault.fesIdols[4].MemoryAppeal.mEffect[elseIndex].meTurn[1]))
-        str = string + '、' + str;
-      }
-      return str;
-    } catch (error) {
-      return '';
-    }
-  }else if(mode == 'memoryLink') {
-    try {
-      let str = '';
-      for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal.length; i++) {
-        str = vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaID)].label.replace('【N】', String(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaValue)) + '、' + str;
-      }
-      return str;
-    } catch (error) {
-      return '';
     }
   }else {
-    console.log('mode is not found')
+    console.log("appeal label error");
     return '';
   }
 }
+
+const appealIdol = ref(0);
+const liveSkillIndex = ref(0);
+let appealModeSelected:'Bad' | 'Normal' | 'Good' | 'Perfect' = 'Perfect';
+let appeals:{
+  normalAppeal: {Label: string, Value: number, Variable: boolean, RatioLabel: string, Ratio: number, Result: {Vo: number, Da: number, Vi: number}}[],
+  extraAppeal: {Label: string, Value: number, Variable: boolean, RatioLabel: string, Ratio: number, Result: {Vo: number, Da: number, Vi: number}}[],
+} = {
+  normalAppeal: [],
+  extraAppeal: []
+};
+
 const interest = ref(1); // 興味値
 const slowStart = ref(0); // スロースターター
 const startDash = ref(0); // スタートダッシュ
 const memoryHigh = ref(0); // 思い出高
 const memoryLow = ref(0) // 思い出低
+const perfectly = ref(0); // パーフェクトリィ
 const appealUp = ref(0); // その他アピールUP
-const appealRatio = ref(0); // アピールの変数
-const appealDataMode = ref(1);
+const appealDataMode = ref(1); // アピール判定 Perfect, Badなど
+let appealSum = {Vo: 0, Da: 0, Vi: 0}; // アピール合計値
+const calcAppealSum = () => {
+  let sum = {Vo: 0, Da: 0, Vi: 0};
+  appeals.normalAppeal.forEach((nAppeal) => {
+    sum.Vo += nAppeal.Result.Vo;
+    sum.Da += nAppeal.Result.Da;
+    sum.Vi += nAppeal.Result.Vi;
+  })
+  appeals.extraAppeal.forEach((eAppeal) => {
+    sum.Vo += eAppeal.Result.Vo;
+    sum.Da += eAppeal.Result.Da;
+    sum.Vi += eAppeal.Result.Vi;
+  })
+  appealSum = sum;
+}
 let buff = {
   Vo: 0,
   Da: 0,
@@ -1064,223 +1039,184 @@ const getBuff = () => {
     memory = vault.log[graphTurn.value - 1].MemoryGauge[vault.detailSetting.count * 750 - 1];
   }
 }
-const appealCalculation = () => {
-  let Buff = buff;
-  VoAppeal.value = 0;
-  DaAppeal.value = 0;
-  ViAppeal.value = 0;
-  const perfect = 1.5;
-  const appealUP = (slowStart.value * (4 + 16 / 9 * (graphTurn.value - 1))) + (startDash.value * (10 - 8 / 9 * (graphTurn.value - 1))) + ((memoryHigh.value * memory * 8 / 1000) + 2)+(memoryLow.value * (20 - 16 * (memory / 1000))) + appealUp.value;
-  const calcBasicFactor = (status:number, buff:number) => {
-    return Math.floor(status * (1 + ((buff + appealUP) / 100)) * perfect);
-  } 
-  if(liveSkillIndex.value != 2) {
-    for(let i = 0; i < vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal.length; i++) {
-      let value = liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID)].value(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aValue, appealRatio.value);
-      if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute == 'Vo') {
-        const basicStatus = vault.fesIdols[appealIdol.value].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
-        let basicFactor = calcBasicFactor(basicStatus, Buff.Vo);
-        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
-          basicFactor = calcBasicFactor(basicStatus, Buff.Vo - Buff.Passive.Vo);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value) * 2;
-        DaAppeal.value += Math.floor(basicFactor * value);
-        ViAppeal.value += Math.floor(basicFactor * value);
-      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute == 'Da') {
-        const basicStatus = vault.fesIdols[appealIdol.value].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
-        let basicFactor = calcBasicFactor(basicStatus, Buff.Da);
-        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
-          basicFactor = calcBasicFactor(basicStatus, Buff.Da - Buff.Passive.Da);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value);
-        DaAppeal.value += Math.floor(basicFactor * value) * 2;
-        ViAppeal.value += Math.floor(basicFactor * value);
-      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute == 'Vi') {
-        const basicStatus = vault.fesIdols[appealIdol.value].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
-        let basicFactor = calcBasicFactor(basicStatus, Buff.Vi);
-        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
-          basicFactor = calcBasicFactor(basicStatus, Buff.Vi - Buff.Passive.Vi);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value);
-        DaAppeal.value += Math.floor(basicFactor * value);
-        ViAppeal.value += Math.floor(basicFactor * value) * 2;
-      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute == 'Excellent') {
-        let basicStatus = vault.fesIdols[appealIdol.value].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
-        let basicFactor = calcBasicFactor(basicStatus, Buff.Vo);
-        VoAppeal.value += Math.floor(basicFactor * value) * 2;
-        basicStatus = vault.fesIdols[appealIdol.value].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
-        basicFactor = calcBasicFactor(basicStatus, Buff.Da);
-        DaAppeal.value += Math.floor(basicFactor * value) * 2;
-        basicStatus = vault.fesIdols[appealIdol.value].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
-        basicFactor = calcBasicFactor(basicStatus, Buff.Vi);
-        ViAppeal.value += Math.floor(basicFactor * value) * 2;
-      }
+const appealCalcInit = () => {
+  appeals.normalAppeal = [];
+  appeals.extraAppeal = [];
+
+  const appealUpTotal = (slowStart.value * (4 + 16 / 9 * (graphTurn.value - 1))) + (startDash.value * (10 - 8 / 9 * (graphTurn.value - 1))) + ((memoryHigh.value * memory * 8 / 1000) + 2)+(memoryLow.value * (20 - 16 * (memory / 1000))) + perfectly.value * 10 + appealUp.value;
+
+  // ラベル作成
+  let appealResult: {Label: string, Value: number, Variable: boolean, RatioLabel: string, Ratio: number, Result: {Vo: number, Da: number, Vi: number}} = {Label: "", Value: 0, Variable: false, RatioLabel: "", Ratio: 0, Result: {Vo: 0, Da: 0, Vi: 0}}
+  const appealResultInit = () => {
+    appealResult = {Label: "", Value: 0, Variable: false, RatioLabel: "", Ratio: 0, Result: {Vo: 0, Da: 0, Vi: 0}};
+  }
+  if(liveSkillIndex.value == 2) {
+    appealResultInit();
+    // 本体
+    appealResult.Label = "思い出本体";
+    appealResult.Value = 0;
+    appealResult.Variable = false;
+    appealResult.RatioLabel = "";
+    appealResult.Ratio = 0;
+    appealResult.Result = appealCalculation(
+      appealIdol.value,
+      1,
+      appealResult.Value,
+      'Excellent',
+      appealModeSelected,
+      appealResult.Ratio,
+      buff,
+      appealUpTotal,
+      true,
+      false
+    );
+    appeals.normalAppeal.push(appealResult);
+    // normal appeal
+    for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mAppeal.length; i++) {
+      appealResultInit();
+      appealResult.Label = vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID)].label.replace('【N】倍', '');
+      appealResult.Value = vault.fesIdols[4].MemoryAppeal.mAppeal[i].maValue;
+      appealResult.Variable = liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID)].variable;
+      appealResult.RatioLabel = liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID)].ratioLabel;
+      appealResult.Ratio = ref(liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID)].init).value;
+      appealResult.Result = appealCalculation(
+        appealIdol.value,
+        vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID,
+        appealResult.Value,
+        vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute,
+        appealModeSelected,
+        appealResult.Ratio,
+        buff,
+        appealUpTotal,
+        false,
+        false
+      );
+      appeals.normalAppeal.push(appealResult);
     }
-    for(let i = 0; i < vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal.length; i++) {
-      let value = liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laID)].value(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laValue, appealRatio.value);
-      if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute == 'Vo') {
-        const basicStatus = vault.fesIdols[appealIdol.value].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
-        let basicFactor = calcBasicFactor(basicStatus, Buff.Vo);
-        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
-          basicFactor = calcBasicFactor(basicStatus, Buff.Vo - Buff.Passive.Vo);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value) * 2;
-        DaAppeal.value += Math.floor(basicFactor * value);
-        ViAppeal.value += Math.floor(basicFactor * value);
-      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute == 'Da') {
-        const basicStatus = vault.fesIdols[appealIdol.value].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
-        let basicFactor = calcBasicFactor(basicStatus, Buff.Da);
-        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
-          basicFactor = calcBasicFactor(basicStatus, Buff.Da - Buff.Passive.Da);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value);
-        DaAppeal.value += Math.floor(basicFactor * value) * 2;
-        ViAppeal.value += Math.floor(basicFactor * value);
-      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute == 'Vi') {
-        const basicStatus = vault.fesIdols[appealIdol.value].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
-        let basicFactor = calcBasicFactor(basicStatus, Buff.Vi);
-        if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID == 10) {
-          basicFactor = calcBasicFactor(basicStatus, Buff.Vi - Buff.Passive.Vi);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value);
-        DaAppeal.value += Math.floor(basicFactor * value);
-        ViAppeal.value += Math.floor(basicFactor * value) * 2;
-      }else if(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute == 'Excellent') {
-        let basicStatus = vault.fesIdols[appealIdol.value].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
-        let basicFactor = calcBasicFactor(basicStatus, Buff.Vo);
-        VoAppeal.value += Math.floor(basicFactor * value) * 2;
-        basicStatus = vault.fesIdols[appealIdol.value].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
-        basicFactor = calcBasicFactor(basicStatus, Buff.Da);
-        DaAppeal.value += Math.floor(basicFactor * value) * 2;
-        basicStatus = vault.fesIdols[appealIdol.value].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
-        basicFactor = calcBasicFactor(basicStatus, Buff.Vi);
-        ViAppeal.value += Math.floor(basicFactor * value) * 2;
-      }
+    // extra appeal
+    for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal.length; i++) {
+      appealResultInit();
+      appealResult.Label = vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaID)].label.replace('【N】倍', '');
+      appealResult.Value = vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaValue;
+      appealResult.Variable = liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaID)].variable;
+      appealResult.RatioLabel = liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID)].ratioLabel;
+      appealResult.Ratio = ref(liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaID)].init).value;
+      appealResult.Result = appealCalculation(
+        appealIdol.value,
+        vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaID,
+        appealResult.Value,
+        vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute,
+        appealModeSelected,
+        appealResult.Ratio,
+        buff,
+        appealUpTotal,
+        false,
+        true
+      );
+      appeals.extraAppeal.push(appealResult);
     }
   }else {
-    const basicStatus = {
-      Vo: vault.fesIdols[4].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5,
-      Da: vault.fesIdols[4].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5,
-      Vi: vault.fesIdols[4].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5
+    // normal appeal
+    for(let i = 0; i < vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal.length; i++) {
+      appealResultInit();
+      appealResult.Label = vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID)].label.replace('【N】倍', '');
+      appealResult.Value = vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aValue;
+      appealResult.Variable = liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID)].variable;
+      appealResult.RatioLabel = liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID)].ratioLabel;
+      appealResult.Ratio = ref(liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID)].init).value;
+      appealResult.Result = appealCalculation(
+        appealIdol.value,
+        vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID,
+        appealResult.Value,
+        vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute,
+        appealModeSelected,
+        appealResult.Ratio,
+        buff,
+        appealUpTotal,
+        false,
+        false
+      );
+      appeals.normalAppeal.push(appealResult);
     }
-    let basicRatio = 0;
-    if(vault.fesIdols[4].MemorieLevel == 5) {
-      basicRatio = 2;
-    }else if(vault.fesIdols[4].MemorieLevel == 4) {
-      basicRatio = 1.4;
-    }else if(vault.fesIdols[4].MemorieLevel == 3) {
-      basicRatio = 1.2;
-    }else if(vault.fesIdols[4].MemorieLevel == 2) {
-      basicRatio = 1;
-    }else if(vault.fesIdols[4].MemorieLevel == 1) {
-      basicRatio = 0.8;
-    }
-    let othersMLevelRatio = 0;
-    for(let i = 0; i < 4; i++) {
-      if(vault.fesIdols[i].MemorieLevel == 5) {
-        othersMLevelRatio += 0.075;
-      }else if(vault.fesIdols[i].MemorieLevel == 4) {
-        othersMLevelRatio += 0.05;
-      }else if(vault.fesIdols[i].MemorieLevel == 3) {
-        othersMLevelRatio += 0.03;
-      }else if(vault.fesIdols[i].MemorieLevel == 2) {
-        othersMLevelRatio += 0.02;
-      }
-    }
-    // 本体アピール
-    let memoryVo = Math.floor(Math.floor(Math.floor(basicStatus.Vo * (1 + (Buff.Vo + appealUP) / 100) * perfect) * basicRatio) * othersMLevelRatio);
-    let memoryDa = Math.floor(Math.floor(Math.floor(basicStatus.Da * (1 + (Buff.Da + appealUP) / 100) * perfect) * basicRatio) * othersMLevelRatio);
-    let memoryVi = Math.floor(Math.floor(Math.floor(basicStatus.Vi * (1 + (Buff.Vi + appealUP) / 100) * perfect) * basicRatio) * othersMLevelRatio);
-    VoAppeal.value += (memoryVo * 2) + memoryDa + memoryVi;
-    DaAppeal.value += memoryVo + (memoryDa * 2) + memoryVi;
-    ViAppeal.value += memoryVo + memoryDa + (memoryVi * 2);
-    // バフのみ起動
-    for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mEffect.length; i++) {
-      if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meID == 18) {
-        if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vo') {
-          Buff.Vo += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
-        }
-        if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Da') {
-          Buff.Da += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
-        }
-        if(vault.fesIdols[4].MemoryAppeal.mEffect[i].meNote == 'Vi') {
-          Buff.Vi += vault.fesIdols[4].MemoryAppeal.mEffect[i].meValue;
-        }
-      }
-    }
-    // 追撃
-    for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mAppeal.length; i++) {
-      let value = liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID)].value(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maValue, appealRatio.value);
-      if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute == 'Vo') {
-        let basicFactor = calcBasicFactor(basicStatus.Vo, Buff.Vo);
-        if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID == 10) {
-          basicFactor = calcBasicFactor(basicStatus.Vo, Buff.Vo - Buff.Passive.Vo);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value) * 2;
-        DaAppeal.value += Math.floor(basicFactor * value);
-        ViAppeal.value += Math.floor(basicFactor * value);
-      }else if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute == 'Da') {
-        let basicFactor = calcBasicFactor(basicStatus.Da, Buff.Da);
-        if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID == 10) {
-          basicFactor = calcBasicFactor(basicStatus.Da, Buff.Da - Buff.Passive.Da);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value);
-        DaAppeal.value += Math.floor(basicFactor * value) * 2;
-        ViAppeal.value += Math.floor(basicFactor * value);
-      }else if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute == 'Vi') {
-        let basicFactor = calcBasicFactor(basicStatus.Vi, Buff.Vi);
-        if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maID == 10) {
-          basicFactor = calcBasicFactor(basicStatus.Vi, Buff.Vi - Buff.Passive.Vi);
-        }
-        VoAppeal.value += Math.floor(basicFactor * value);
-        DaAppeal.value += Math.floor(basicFactor * value);
-        ViAppeal.value += Math.floor(basicFactor * value) * 2;
-      }else if(vault.fesIdols[4].MemoryAppeal.mAppeal[i].maAttribute == 'Excellent') {
-        let basicFactor = Math.floor(basicStatus.Vo * (1 + ((Buff.Vo + appealUP) / 100)) * perfect);
-        VoAppeal.value += Math.floor(basicFactor * value) * 2;
-        basicFactor = Math.floor(basicStatus.Da * (1 + ((Buff.Da + appealUP) / 100)) * perfect);
-        DaAppeal.value += Math.floor(basicFactor * value) * 2;
-        basicFactor = Math.floor(basicStatus.Vi * (1 + ((Buff.Vi + appealUP) / 100)) * perfect);
-        ViAppeal.value += Math.floor(basicFactor * value) * 2;
-      }
-    }
-    for(let i = 0; i < vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal.length; i++) {
-      let value = liveSkillAppeal[findByAppealID(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaID)].value(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaValue, appealRatio.value);
-      if(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute == 'Vo') {
-        const basicStatus = vault.fesIdols[4].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
-        const basicFactor = Math.floor(basicStatus * (1 + ((Buff.Vo + appealUP) / 100)) * perfect);
-        VoAppeal.value += Math.floor(basicFactor * value) * 2;
-        DaAppeal.value += Math.floor(basicFactor * value);
-        ViAppeal.value += Math.floor(basicFactor * value);
-      }else if(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute == 'Da') {
-        const basicStatus = vault.fesIdols[4].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
-        const basicFactor = Math.floor(basicStatus * (1 + ((Buff.Da + appealUP) / 100)) * perfect);
-        VoAppeal.value += Math.floor(basicFactor * value);
-        DaAppeal.value += Math.floor(basicFactor * value) * 2;
-        ViAppeal.value += Math.floor(basicFactor * value);
-      }else if(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute == 'Vi') {
-        const basicStatus = vault.fesIdols[4].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
-        const basicFactor = Math.floor(basicStatus * (1 + ((Buff.Vi + appealUP) / 100)) * perfect);
-        VoAppeal.value += Math.floor(basicFactor * value);
-        DaAppeal.value += Math.floor(basicFactor * value);
-        ViAppeal.value += Math.floor(basicFactor * value) * 2;
-      }else if(vault.fesIdols[4].MemoryAppeal.mLink.mlAppeal[i].mlaAttribute == 'Excellent') {
-        let basicStatus = vault.fesIdols[4].Status.VoValue * 1.5 + vault.staticStatus.Vo * 0.5;
-        let basicFactor = Math.floor(basicStatus * (1 + ((Buff.Vo + appealUP) / 100)) * perfect);
-        VoAppeal.value += Math.floor(basicFactor * value) * 2;
-        basicStatus = vault.fesIdols[4].Status.DaValue * 1.5 + vault.staticStatus.Da * 0.5;
-        basicFactor = Math.floor(basicStatus * (1 + ((Buff.Da + appealUP) / 100)) * perfect);
-        DaAppeal.value += Math.floor(basicFactor * value) * 2;
-        basicStatus = vault.fesIdols[4].Status.ViValue * 1.5 + vault.staticStatus.Vi * 0.5;
-        basicFactor = Math.floor(basicStatus * (1 + ((Buff.Vi + appealUP) / 100)) * perfect);
-        ViAppeal.value += Math.floor(basicFactor * value) * 2;
-      }
+    // extra appeal
+    for(let i = 0; i < vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal.length; i++) {
+      appealResultInit();
+      appealResult.Label = vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute + liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laID)].label.replace('【N】倍', '');
+      appealResult.Value = vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laValue;
+      appealResult.Variable = liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laID)].variable;
+      appealResult.RatioLabel = liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laID)].ratioLabel;
+      appealResult.Ratio = ref(liveSkillAppeal[findByAppealID(vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laID)].init).value;
+      appealResult.Result = appealCalculation(
+        appealIdol.value,
+        vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laID,
+        appealResult.Value,
+        vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute,
+        appealModeSelected,
+        appealResult.Ratio,
+        buff,
+        appealUpTotal,
+        false,
+        true
+      );
+      appeals.extraAppeal.push(appealResult);
     }
   }
+  calcAppealSum();
+  displayUpdate();
 }
-const VoAppeal = ref(0);
-const DaAppeal = ref(0);
-const ViAppeal = ref(0);
+const appealCalc = () => {
+  const appealUpTotal = (slowStart.value * (4 + 16 / 9 * (graphTurn.value - 1))) + (startDash.value * (10 - 8 / 9 * (graphTurn.value - 1))) + ((memoryHigh.value * memory * 8 / 1000) + 2)+(memoryLow.value * (20 - 16 * (memory / 1000))) + perfectly.value * 10 + appealUp.value;
+
+  let normalIndex = 0;
+  // 思い出本体
+  if(liveSkillIndex.value == 2) {
+    appeals.normalAppeal[0].Result = appealCalculation(
+      appealIdol.value,
+      1,
+      appeals.normalAppeal[0].Value,
+      'Excellent',
+      appealModeSelected,
+      appeals.normalAppeal[0].Ratio,
+      buff,
+      appealUpTotal,
+      true,
+      false
+    )
+    normalIndex = 1;
+  }
+  // 通常アピール
+  for(let i = normalIndex; i < appeals.normalAppeal.length; i++) {
+    appeals.normalAppeal[i].Result = appealCalculation(
+      appealIdol.value,
+      vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aID,
+      appeals.normalAppeal[i].Value,
+      vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Appeal[i].aAttribute,
+      appealModeSelected,
+      appeals.normalAppeal[i].Ratio,
+      buff,
+      appealUpTotal,
+      false,
+      false
+    )
+  }
+  // Link, Plusアピール
+  for(let i = 0; i < appeals.extraAppeal.length; i++) {
+    appeals.extraAppeal[i].Result = appealCalculation(
+      appealIdol.value,
+      vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laID,
+      appeals.extraAppeal[i].Value,
+      vault.fesIdols[appealIdol.value].LiveSkill[liveSkillIndex.value].Link.lAppeal[i].laAttribute,
+      appealModeSelected,
+      appeals.extraAppeal[i].Ratio,
+      buff,
+      appealUpTotal,
+      false,
+      false
+    )
+  }
+  calcAppealSum();
+  displayUpdate();
+}
 
 // ステータス詳細画面
 const statusDetailClass = ref("accBtn close")
@@ -1339,7 +1275,7 @@ const toggleAccBtn = (eleClass: string, isBoxDisplay: boolean) => {
 const changeTurn = () => {
   if(graphTurn.value != 0) {
     getBuff();
-    appealCalculation();
+    appealCalcInit();
   }
   createCharts();
 }
@@ -1349,6 +1285,43 @@ const display = ref(false);
 const displayUpdate = () => {
   display.value = true;
   display.value = false;
+}
+
+// 結果のcsv出力
+const outputResult = () => {
+  const makeCSV = () => {
+    let str = ",";
+    const newLine = () => {
+      str = str + "\n";
+    }
+    // ターン
+    for(let i = 1; i <= vault.log.length; i++) {
+      str = str + String(i) + "ターン目,,,,,,,,,,";
+    }
+    newLine();
+    // ラベル
+    str = str + ",";
+    for(let i = 1; i <= vault.log.length; i++) {
+      str = str + "Vo,Vo(Passive),Da,Da(Passive),Vi,Vi(Passive),Mental,注目度,回復回数,思い出ゲージ,"
+    }
+    newLine();
+    // データ
+    for(let i = 0; i < (vault.detailSetting.count * 1000) ; i++) {
+      str = str + String(i+1) + ",";
+      for(let j = 0; j < vault.log.length; j++) {
+        str = str + String(vault.log[j].Buff.Total.tVo[i]) + "," + String(vault.log[j].Buff.Passive.pVo[i]) + "," + String(vault.log[j].Buff.Total.tDa[i]) + "," + String(vault.log[j].Buff.Passive.pDa[i]) + "," + String(vault.log[j].Buff.Total.tVi[i]) + "," + String(vault.log[j].Buff.Passive.pVi[i]) + "," + String(vault.log[j].Mental[i]) + "," + String(vault.log[j].Attention[i])+ "," + String(vault.log[j].RecoveryTimes[i]) + "," + String(vault.log[j].MemoryGauge[i] / 10) + ",";
+      }
+      newLine();
+    }
+    return str;
+  }
+  
+  const bom = new Uint8Array([0xef, 0xbb, 0xbf])
+  let blob = new Blob([bom,makeCSV()], { type: "text/csv" });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'FS-Result.csv';
+  link.click();
 }
 
 // モバイル切り替え
@@ -1399,7 +1372,7 @@ onMounted(() => {
   color: aliceblue;
   background-color: rgba(3, 36, 182, 0.658);
   margin: auto;
-  margin-top: 10vh;
+  margin: 30px 0;
 }
 .bigBtn:hover {
   cursor: pointer;
@@ -1513,7 +1486,7 @@ onMounted(() => {
     font-size: .8rem;
   }
   #listArea {
-    margin: 5vh 0 0 5vw;
+    margin: 2vh 0 0 2vw;
   }
   .bigBtn {
     padding: 5px;
@@ -1524,15 +1497,19 @@ onMounted(() => {
     margin-right: 5vw;
   }
   .accBox ul {
-        padding-right: 0;
-    }
+    padding: 0;
+  }
+  
+  .accBox ul>li {
+    padding: 10px 5px;
+  }
 
-    .accBtn {
-        text-align: center;
-    }
+  .accBtn {
+    text-align: center;
+  }
 
-    .accBox>ul>li>div {
-        min-width: 70vw;
-    }
+  .accBox>ul>li>div {
+    min-width: 70vw;
+  }
 }
 </style>

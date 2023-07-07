@@ -2,7 +2,7 @@
 import * as vault from './vault'
 import * as types from '../data/type'
 import { findByBuffID, buffList } from '../data/visibleBuff'
-import { findByTriggerID, triggerList } from '../data/passiveTrigger'
+import { findByTriggerID, triggerList } from '../data/skillTrigger'
 import { findByLiveEffectID, findByPassiveID, passiveEffect, liveSkillEffect } from '../data/skillEffect'
 import { findByIdolID, idolList } from '../data/idolList'
 
@@ -118,6 +118,9 @@ const statusUpdate = () => {
     if (vault.detailSetting.omonoukakin > 0) {
         defaultStatus.MemoryRatio *= 0.02 * vault.detailSetting.omonoukakin + 1;
     }
+    if (vault.detailSetting.omonouElse > 0) {
+        defaultStatus.MemoryRatio *= (vault.detailSetting.omonouElse / 100) + 1;
+    }
     if (vault.detailSetting.centerOfAttention > 0) {
         defaultStatus.Attention += 10 * vault.detailSetting.centerOfAttention;
     }
@@ -186,7 +189,6 @@ const memoryGaugeIncrease = () => {
     }else if(status.Mental > 0) {
         status.MemoryGauge += Math.floor(10000 * status.MemoryRatio)
     }else {
-        console.log("mental 0")
     }
 
     // スキルによる増加
@@ -266,12 +268,23 @@ const passiveSkillActivate = (turn:number) => {
      * @returns true: 発動
      */
     const passiveAct = (index:number, position:number):boolean => {
-        if(triggerList[findByTriggerID(vault.passiveSkills[index].Trigger.tID)].value(turn, index)) { // 発動可能かどうか
-            // 発動するかどうか
-            if(position == 0) { // Le
-                return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability * 1.9 + status.TriggerRateIncreases)
-            }else {
-                return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability + status.TriggerRateIncreases)
+        if(vault.passiveSkills[index].Trigger.tID == 2 || vault.passiveSkills[index].Trigger.tID == 3 || vault.passiveSkills[index].Trigger.tID == 18) {
+            if(triggerList[findByTriggerID(vault.passiveSkills[index].Trigger.tID)].value(turn, vault.passiveSkills[index].Trigger.tX, vault.passiveSkills[index].ActiveTurn.before, vault.passiveSkills[index].ActiveTurn.after, vault.passiveSkills[index].Trigger.tHis)) { // 発動可能かどうか
+                // 発動するかどうか
+                if(position == 0) { // Le
+                    return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability * 1.9 + status.TriggerRateIncreases)
+                }else {
+                    return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability + status.TriggerRateIncreases)
+                }
+            }
+        }else {
+            if(triggerList[findByTriggerID(vault.passiveSkills[index].Trigger.tID)].value(turn, vault.passiveSkills[index].Trigger.tX, vault.passiveSkills[index].ActiveTurn.before, vault.passiveSkills[index].ActiveTurn.after)) { // 発動可能かどうか
+                // 発動するかどうか
+                if(position == 0) { // Le
+                    return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability * 1.9 + status.TriggerRateIncreases)
+                }else {
+                    return Math.floor(Math.random() * 100) < (vault.passiveSkills[index].Probability + status.TriggerRateIncreases)
+                }
             }
         }
         return false
@@ -365,35 +378,55 @@ const liveSkillAppeal = (turn:number) => {
         status.AppealLIst.splice(select.index,1)
         return select.priority
     }
-    // Linkの発動有無 
-    // @ts-ignore
-    const linkAct = (idolID:number, LinkTrigger:number[]):boolean => {
-        let linkList = idolList[findByIdolID(idolID)].Unit;
-        if(idolID >= 20 && idolID <= 23) {
-            linkList = LinkTrigger;
-        }
-        let checker = true;
-        let scanningIndex = 0;
-        while(checker) {
-            for(let i = 0; i < status.AppealLog.length; i++) {
-                if(status.AppealLog[i] == linkList[scanningIndex]) {
-                    scanningIndex++;
-                    checker = false;
-                }
-            }
-            if(checker) { // 履歴のヒットがなかった場合
-                return false;
-            }else if(scanningIndex == linkList.length){ // 履歴全てがヒットした場合
-                return true;
-            }else {
-                checker = true;
-            }
-        }
-    }
 
     const lin = searchLiveSkill(selectLiveSkill());
 
     if(lin) {
+        // Linkの発動有無 
+        // @ts-ignore
+        const linkAct = (idolID:number, LinkTrigger:number[]):boolean => {
+            if(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lType == 'Link') {
+                let linkList = idolList[findByIdolID(idolID)].Unit;
+                if(idolID >= 20 && idolID <= 23) {
+                    linkList = LinkTrigger;
+                }
+                let checker = true;
+                let scanningIndex = 0;
+                while(checker) {
+                    for(let i = 0; i < status.AppealLog.length; i++) {
+                        if(status.AppealLog[i] == linkList[scanningIndex]) {
+                            scanningIndex++;
+                            checker = false;
+                        }
+                    }
+                    if(checker) { // 履歴のヒットがなかった場合
+                        return false;
+                    }else if(scanningIndex == linkList.length){ // 履歴全てがヒットした場合
+                        return true;
+                    }else {
+                        checker = true;
+                    }
+                }
+            }else if(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lType == 'Plus') {
+                let checker = true;
+                for(let i = 0; i < vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltList.length; i++) {
+                    const link = vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltList[i];
+                    if(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltList[i].ltID == 2 || vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltList[i].ltID == 3 || vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltList[i].ltID == 18) {
+                        if(checker && triggerList[findByTriggerID(link.ltID)].value(turn, link.ltX, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltBefore, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltAfter, link.ltHis)) {
+                        }else {
+                            checker = false;
+                        }
+                    }else {
+                        if(checker && triggerList[findByTriggerID(link.ltID)].value(turn, link.ltX, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltBefore, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lTrigger.ltAfter)) {
+                        }else {
+                            checker = false;
+                        }
+                    }
+                }
+                return checker;
+            }
+        }
+
         // 履歴への挿入
         appealLogPush(vault.fesIdols[lin[0]].Idol)
         // スキル効果の発動
@@ -420,7 +453,7 @@ const liveSkillAppeal = (turn:number) => {
                 liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[0]);
             }
         }
-        // Linkの発動
+        // Link, Plusの発動
         if(linkAct(vault.fesIdols[lin[0]].Idol, vault.fesIdols[lin[0]].LiveSkill[lin[1]].LinkTrigger)) {
             for(let i = 0; i < vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect.length; i++) {
                 if(liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].existAttribute) {

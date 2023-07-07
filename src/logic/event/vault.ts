@@ -122,76 +122,76 @@ export const logPush = (status:types.status, turn:number) => {
         }
     }());
     // 可視 + パッシブバフ
-        // Voバフ倍率
-        (function() {
-            const tVo = status.Buff.Visible.vVo + status.Buff.Passive.pVo
-            const tVoIndex = indexSeaech(tVo, log[turn].Buff.Total.tVo)
-            if(tVoIndex == "push") {
-                log[turn].Buff.Total.tVo.push(tVo)
-            }else if(typeof tVoIndex === "number"){
-                log[turn].Buff.Total.tVo.splice(tVoIndex, 0, tVo)
-            }else {
-                console.log("totalVo insert errer")
-            }
-        }());
-        // Daバフ倍率
-        (function() {
-            const tDa = status.Buff.Visible.vDa + status.Buff.Passive.pDa
-            const tDaIndex = indexSeaech(tDa, log[turn].Buff.Total.tDa)
-            if(tDaIndex == "push") {
-                log[turn].Buff.Total.tDa.push(tDa)
-            }else if(typeof tDaIndex === "number"){
-                log[turn].Buff.Total.tDa.splice(tDaIndex, 0, tDa)
-            }else {
-                console.log("totalDa insert errer")
-            }
-        }());
-        // Viバフ倍率
-        (function() {
-            const tVi = status.Buff.Visible.vVi + status.Buff.Passive.pVi
-            const tViIndex = indexSeaech(tVi, log[turn].Buff.Total.tVi)
-            if(tViIndex == "push") {
-                log[turn].Buff.Total.tVi.push(tVi)
-            }else if(typeof tViIndex === "number"){
-                log[turn].Buff.Total.tVi.splice(tViIndex, 0, tVi)
-            }else {
-                console.log("totalDa insert errer")
-            }
-        }());
+    // Voバフ倍率
+    (function() {
+        const tVo = status.Buff.Visible.vVo + status.Buff.Passive.pVo
+        const tVoIndex = indexSeaech(tVo, log[turn].Buff.Total.tVo)
+        if(tVoIndex == "push") {
+            log[turn].Buff.Total.tVo.push(tVo)
+        }else if(typeof tVoIndex === "number"){
+            log[turn].Buff.Total.tVo.splice(tVoIndex, 0, tVo)
+        }else {
+            console.log("totalVo insert errer")
+        }
+    }());
+    // Daバフ倍率
+    (function() {
+        const tDa = status.Buff.Visible.vDa + status.Buff.Passive.pDa
+        const tDaIndex = indexSeaech(tDa, log[turn].Buff.Total.tDa)
+        if(tDaIndex == "push") {
+            log[turn].Buff.Total.tDa.push(tDa)
+        }else if(typeof tDaIndex === "number"){
+            log[turn].Buff.Total.tDa.splice(tDaIndex, 0, tDa)
+        }else {
+            console.log("totalDa insert errer")
+        }
+    }());
+    // Viバフ倍率
+    (function() {
+        const tVi = status.Buff.Visible.vVi + status.Buff.Passive.pVi
+        const tViIndex = indexSeaech(tVi, log[turn].Buff.Total.tVi)
+        if(tViIndex == "push") {
+            log[turn].Buff.Total.tVi.push(tVi)
+        }else if(typeof tViIndex === "number"){
+            log[turn].Buff.Total.tVi.splice(tViIndex, 0, tVi)
+        }else {
+            console.log("totalDa insert errer")
+        }
+    }());
     // パッシブ
-        // Voバフ倍率
-        (function() {
-            const tVoIndex = indexSeaech(status.Buff.Passive.pVo, log[turn].Buff.Passive.pVo)
-            if(tVoIndex == "push") {
-                log[turn].Buff.Passive.pVo.push(status.Buff.Passive.pVo)
-            }else if(typeof tVoIndex === "number"){
-                log[turn].Buff.Passive.pVo.splice(tVoIndex, 0, status.Buff.Passive.pVo)
-            }else {
-                console.log("totalVo insert errer")
-            }
-        }());
-        // Daバフ倍率
-        (function() {
-            const tDaIndex = indexSeaech(status.Buff.Passive.pDa, log[turn].Buff.Passive.pDa)
-            if(tDaIndex == "push") {
-                log[turn].Buff.Passive.pDa.push(status.Buff.Passive.pDa)
-            }else if(typeof tDaIndex === "number"){
-                log[turn].Buff.Passive.pDa.splice(tDaIndex, 0, status.Buff.Passive.pDa)
-            }else {
-                console.log("totalDa insert errer")
-            }
-        }());
-        // Viバフ倍率
-        (function() {
-            const tViIndex = indexSeaech(status.Buff.Passive.pVi, log[turn].Buff.Passive.pVi)
-            if(tViIndex == "push") {
-                log[turn].Buff.Passive.pVi.push(status.Buff.Passive.pVi)
-            }else if(typeof tViIndex === "number"){
-                log[turn].Buff.Passive.pVi.splice(tViIndex, 0, status.Buff.Passive.pVi)
-            }else {
-                console.log("totalDa insert errer")
-            }
-        }());
+    // Voバフ倍率
+    (function() {
+        const tVoIndex = indexSeaech(status.Buff.Passive.pVo, log[turn].Buff.Passive.pVo)
+        if(tVoIndex == "push") {
+            log[turn].Buff.Passive.pVo.push(status.Buff.Passive.pVo)
+        }else if(typeof tVoIndex === "number"){
+            log[turn].Buff.Passive.pVo.splice(tVoIndex, 0, status.Buff.Passive.pVo)
+        }else {
+            console.log("totalVo insert errer")
+        }
+    }());
+    // Daバフ倍率
+    (function() {
+        const tDaIndex = indexSeaech(status.Buff.Passive.pDa, log[turn].Buff.Passive.pDa)
+        if(tDaIndex == "push") {
+            log[turn].Buff.Passive.pDa.push(status.Buff.Passive.pDa)
+        }else if(typeof tDaIndex === "number"){
+            log[turn].Buff.Passive.pDa.splice(tDaIndex, 0, status.Buff.Passive.pDa)
+        }else {
+            console.log("totalDa insert errer")
+        }
+    }());
+    // Viバフ倍率
+    (function() {
+        const tViIndex = indexSeaech(status.Buff.Passive.pVi, log[turn].Buff.Passive.pVi)
+        if(tViIndex == "push") {
+            log[turn].Buff.Passive.pVi.push(status.Buff.Passive.pVi)
+        }else if(typeof tViIndex === "number"){
+            log[turn].Buff.Passive.pVi.splice(tViIndex, 0, status.Buff.Passive.pVi)
+        }else {
+            console.log("totalDa insert errer")
+        }
+    }());
 }
 
 const indexSeaech = (data:number, array:number[]):number | string => {

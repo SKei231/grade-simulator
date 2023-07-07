@@ -52,6 +52,16 @@ export type fesIdol = {
             eNote: string
         }],
         Link: {
+            lType: "Link" | "Plus" | "Change",
+            lTrigger: {
+                ltBefore: number,
+                ltAfter: number,
+                ltList: [{
+                    ltID: number,
+                    ltX: number,
+                    ltHis: number[]
+                }]
+            },
             lAppeal: [{
                 laID: number,
                 laValue: number,
@@ -81,6 +91,16 @@ export type fesIdol = {
             eNote: string
         }],
         Link: {
+            lType: "link" | "plus" | "change",
+            lTrigger: {
+                ltBefore: number,
+                ltAfter: number,
+                ltList: [{
+                    ltID: number,
+                    ltX: number,
+                    ltHis: number[]
+                }]
+            },
             lAppeal: [{
                 laID: number,
                 laValue: number,
@@ -98,7 +118,8 @@ export type fesIdol = {
     }],
     PassiveIndex: [{
         index: number,
-        times: number
+        times: number,
+        fesIdolIndex: number
     }],
     MemoryAppeal: {
         mAppeal: [{
@@ -139,6 +160,8 @@ export type detail = {
     omonouPlus: number,
     // 思い出増加+2%
     omonoukakin: number,
+    // その他思い出加速
+    omonouElse: number,
     // 注目の的
     centerOfAttention: number,
     // ひかえめ
@@ -165,9 +188,11 @@ export type pEffect = {
 
 // ライブスキルアピール
 export type sAppeal = {
-    label:string,
+    label: string,
     ID: number,
     variable: boolean,
+    ratioLabel: string,
+    init: number,
     value: Function
 }
 

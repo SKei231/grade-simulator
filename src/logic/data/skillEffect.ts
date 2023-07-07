@@ -5,6 +5,7 @@ import { pEffect, sEffect, sAppeal } from "./type";
 import { status, defaultStatus, pushVisibleBuff, appealLogPush } from "../event/simulate";
 import * as visivleBuff from './visibleBuff'
 import { duetList, getUnitMember, idolList } from './idolList'
+import * as vault from '../event/vault'
 
 visivleBuff.buffListCheck()
 
@@ -145,7 +146,9 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "なし",
         ID: 1,
         variable: false,
-        value: function () {
+        ratioLabel: "",
+        init: 0,
+        value: function (value:number, ratio:number) {
             return 0;
         }
     },
@@ -153,80 +156,180 @@ export const liveSkillAppeal: sAppeal[] = [
         label: "アピール【N】倍",
         ID: 2,
         variable: false,
+        ratioLabel: "",
+        init: 0,
         value: function (value:number, ratio:number) {
-            return value
+            return value;
+        }
+    },
+    {
+        label: "スキル履歴が多いほど【N】倍",
+        ID: 13,
+        variable: true,
+        ratioLabel: "履歴人数(人)",
+        init: 5,
+        value: function (value:number, ratio:number) {
+            let returnValue = value * (0.2 * (ratio - 1) + 0.2);
+            if(returnValue > value) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(メンタルが多いほど)【N】倍",
         ID: 3,
         variable: true,
+        ratioLabel: "Me(実数)",
+        init: 1000,
         value: function (value:number, ratio:number) {
-            return value;
+            let returnValue = value * (1.6 * (ratio / vault.staticStatus.Me) - 0.6);
+            if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(メンタルが少ないほど)【N】倍",
         ID: 4,
         variable: true,
+        ratioLabel: "Me(実数)",
+        init: 1,
         value: function (value:number, ratio:number) {
-            return value;
+            let returnValue = value * (-0.8 * (ratio / vault.staticStatus.Me) + 1);
+            if(ratio == 1) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(思い出ゲージが多いほど)【N】倍",
         ID: 5,
         variable: true,
+        ratioLabel: "思い出ゲージ(%)",
+        init: 100,
         value: function (value:number, ratio:number) {
-            return value;
+            let returnValue = value * (0.8 * (ratio / 100) + 0.2);
+            if(returnValue > value) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(注目度が高いほど)【N】倍",
         ID: 6,
         variable: true,
+        ratioLabel: "注目度(%)",
+        init: 200,
         value: function (value:number, ratio:number) {
-            return value;
+            let returnValue = value * (0.4 * (ratio / 100) + 0.2);
+            if(returnValue > value) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(注目度が低いほど)【N】倍",
         ID: 7,
         variable: true,
+        ratioLabel: "注目度(%)",
+        init: -50,
         value: function (value:number, ratio:number) {
-            return value;
+            let returnValue = value * (-0.8 * (ratio / 100) + 0.2);
+            if(returnValue > value) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(回復回数が多いほど)【N】倍",
         ID: 8,
         variable: true,
+        ratioLabel: "回復回数(回)",
+        init: 8,
         value: function (value:number, ratio:number) {
-            return value;
+            let returnValue = value * 0.2 * (1 + ratio);
+            if(returnValue > value) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(UP消去)【N】倍",
         ID: 9,
         variable: true,
+        ratioLabel: "アピールUP(個)",
+        init: 4,
         value: function (value:number, ratio:number) {
-            return value;
+            let returnValue = value * (0.2 * ratio + 0.2);
+            if(returnValue > value) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(DOWN消去)【N】倍",
         ID: 11,
         variable: true,
+        ratioLabel: "アピールDOWN(個)",
+        init: 4,
         value: function (value:number, ratio:number) {
-            return value;
+            let returnValue = value * (0.2 * ratio + 0.2);
+            if(returnValue > value) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
     {
         label: "アピール(強化)【N】倍",
         ID: 10,
         variable: false,
+        ratioLabel: "",
+        init: 0,
         value: function (value:number, ratio:number) {
             return value;
+        }
+    },
+    {
+        label: "アピール(回避率が高いほど)【N】倍",
+        ID: 12,
+        variable: true,
+        ratioLabel: "回避率(%)",
+        init: 0,
+        value: function (value:number, ratio:number) {
+            let returnValue = value * (0.8 * (ratio / 100) + 0.2);
+            if(returnValue > value) {
+                returnValue = value;
+            }else if(returnValue < value * 0.2) {
+                returnValue = value * 0.2;
+            }
+            return returnValue;
         }
     },
 ]

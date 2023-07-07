@@ -2,7 +2,7 @@
     <div id="userHelp" v-if="displayBool">
         <div id="helpInfo">
             <h1>使い方</h1>
-            <p style="padding-top: 100vh; padding-bottom: 100vh;">aaa</p>
+            <p style="padding-top: 100vh; padding-bottom: 100vh;"></p>
         </div>
     </div>
     <div id="UHCloseBtn" v-if="displayBool" @click="close()">とじる </div>
@@ -11,7 +11,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const version = '1.0.9'
+const version = '1.1.0'
+
 console.log(version)
 
 const displayBool = ref(false);

@@ -12,6 +12,7 @@
 import { ref } from 'vue';
 
 const version = '1.1.0'
+
 console.log(version)
 
 const displayBool = ref(false);

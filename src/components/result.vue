@@ -166,13 +166,15 @@
                   <select v-model="appealDataMode" @change="getBuff(); appealCalc();">
                     <option v-for="DataMode in dataMode" v-bind:value="DataMode.ModeID">{{ DataMode.Name }}</option>
                   </select>
-                  <br v-if="mobileView">判定: 
-                  <select v-model="appealModeSelected" @change="appealCalc()">
-                    <option value="Bad">Bad</option>
-                    <option value="Normal">Normal</option>
-                    <option value="Good">Good</option>
-                    <option value="Perfect">Perfect</option>
-                  </select>
+                  <span v-if="liveSkillIndex != 2">
+                    <br v-if="mobileView">判定: 
+                    <select v-model="appealModeSelected" @change="appealCalc()">
+                      <option value="Bad">Bad</option>
+                      <option value="Normal">Normal</option>
+                      <option value="Good">Good</option>
+                      <option value="Perfect">Perfect</option>
+                    </select>
+                  </span>
                 </div>
                 <div style="padding-left: 10px;">
                   <p style="margin-block-start: 5px; margin-block-end: 5px; font-size: 1.1rem;">合計アピール値</p>
@@ -225,12 +227,16 @@
       </ul>
     </div>
   </div>
+  <div v-if="logErrer" class="bigBtn" @click="(router.go(-1))" style="margin: auto; margin-top: 50px;">入力画面に戻る</div>
+  <div v-if="!logErrer" style="display: flex; justify-content: space-between; margin: 0 20vw 0 20vw;">
+    <div class="bigBtn" @click="(router.go(-1))">入力画面に戻る</div>
+    <div class="bigBtn" @click="outputResult()">結果を出力する</div>
+  </div>
   <div v-if="display"></div>
-  <div class="bigBtn" @click="(router.go(-1))">入力画面に戻る</div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import * as vault from '../logic/event/vault';
 import { Chart, registerables } from 'chart.js';
 import router from '../router/router';
@@ -1281,6 +1287,43 @@ const displayUpdate = () => {
   display.value = false;
 }
 
+// 結果のcsv出力
+const outputResult = () => {
+  const makeCSV = () => {
+    let str = ",";
+    const newLine = () => {
+      str = str + "\n";
+    }
+    // ターン
+    for(let i = 1; i <= vault.log.length; i++) {
+      str = str + String(i) + "ターン目,,,,,,,,,,";
+    }
+    newLine();
+    // ラベル
+    str = str + ",";
+    for(let i = 1; i <= vault.log.length; i++) {
+      str = str + "Vo,Vo(Passive),Da,Da(Passive),Vi,Vi(Passive),Mental,注目度,回復回数,思い出ゲージ,"
+    }
+    newLine();
+    // データ
+    for(let i = 0; i < (vault.detailSetting.count * 1000) ; i++) {
+      str = str + String(i+1) + ",";
+      for(let j = 0; j < vault.log.length; j++) {
+        str = str + String(vault.log[j].Buff.Total.tVo[i]) + "," + String(vault.log[j].Buff.Passive.pVo[i]) + "," + String(vault.log[j].Buff.Total.tDa[i]) + "," + String(vault.log[j].Buff.Passive.pDa[i]) + "," + String(vault.log[j].Buff.Total.tVi[i]) + "," + String(vault.log[j].Buff.Passive.pVi[i]) + "," + String(vault.log[j].Mental[i]) + "," + String(vault.log[j].Attention[i])+ "," + String(vault.log[j].RecoveryTimes[i]) + "," + String(vault.log[j].MemoryGauge[i] / 10) + ",";
+      }
+      newLine();
+    }
+    return str;
+  }
+  
+  const bom = new Uint8Array([0xef, 0xbb, 0xbf])
+  let blob = new Blob([bom,makeCSV()], { type: "text/csv" });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'FS-Result.csv';
+  link.click();
+}
+
 // モバイル切り替え
 const mobileView = ref(false);
 const watchWindowSize = () => {
@@ -1329,7 +1372,7 @@ onMounted(() => {
   color: aliceblue;
   background-color: rgba(3, 36, 182, 0.658);
   margin: auto;
-  margin-top: 10vh;
+  margin: 30px 0;
 }
 .bigBtn:hover {
   cursor: pointer;

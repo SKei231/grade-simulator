@@ -310,6 +310,9 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
     if(!detail.omonoukakin && detail.omonoukakin !== 0) {
         errerMessage.push('思い出増加量 +2% を取得した人数を入力してください（0 ~ 5）');
     }
+    if(!detail.omonouElse && detail.omonouElse !== 0) {
+        errerMessage.push('その他の思い出加速の数値を入力してください');
+    }
     if(!detail.centerOfAttention && detail.centerOfAttention !== 0) {
         errerMessage.push('注目の的を取得した人数を入力してください（0 ~ 5）');
     }

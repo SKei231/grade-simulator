@@ -118,6 +118,9 @@ const statusUpdate = () => {
     if (vault.detailSetting.omonoukakin > 0) {
         defaultStatus.MemoryRatio *= 0.02 * vault.detailSetting.omonoukakin + 1;
     }
+    if (vault.detailSetting.omonouElse > 0) {
+        defaultStatus.MemoryRatio *= (vault.detailSetting.omonouElse / 100) + 1;
+    }
     if (vault.detailSetting.centerOfAttention > 0) {
         defaultStatus.Attention += 10 * vault.detailSetting.centerOfAttention;
     }
@@ -186,7 +189,6 @@ const memoryGaugeIncrease = () => {
     }else if(status.Mental > 0) {
         status.MemoryGauge += Math.floor(10000 * status.MemoryRatio)
     }else {
-        console.log("mental 0")
     }
 
     // スキルによる増加

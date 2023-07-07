@@ -160,6 +160,8 @@ export type detail = {
     omonouPlus: number,
     // 思い出増加+2%
     omonoukakin: number,
+    // その他思い出加速
+    omonouElse: number,
     // 注目の的
     centerOfAttention: number,
     // ひかえめ

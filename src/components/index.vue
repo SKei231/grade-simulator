@@ -11,13 +11,31 @@
             <ul id="snavMain">
                 <li @click="simulationOpen()">次へ</li>
                 <li @click="userHelp()">使い方</li>
+                <li @click="(deleteConfirm = true),displayUpdate()">設定を初期化</li>
                 <li @click="setLocalStorage()">設定を保存</li>
+                <!-- <li @click="snavNext('inputSetting')">設定を入力</li> -->
                 <li @click="openFile('all')">設定をすべて入力</li>
                 <li @click="openFile('passive')">パッシブのみ入力</li>
                 <li @click="outputSetting()">設定を出力</li>
             </ul>
+            <!-- <ul id="inputSetting">
+                <li @click="openFile('all')">設定をすべて入力</li>
+                <li @click="openFile('passive')">パッシブのみ入力</li>
+            </ul> -->
         </div>
-        <div v-if="!mobileView" id="saveBtn" class="bigBtn" @click="setLocalStorage()">設定を保存</div>
+        <div class="smallnav" v-if="deleteConfirm">
+            <ul style="height: 30%; padding-left: 0; background-color: rgba(255, 255, 255, 0.9); border-radius: 20px; min-width: 300px;">
+                <p style="margin: auto; text-align: center;">本当に削除（初期化）しますか？</p>
+                <div style="display: flex; justify-content: space-between; min-width: 30vw; margin: auto; margin-left: 10vw; margin-right: 10vw;">
+                    <div class="bigBtn deleteConfBtn" style="width: 90px;" @click="deleteData(),(deleteConfirm = false)">はい</div>
+                    <div class="bigBtn deleteConfBtn" style="width: 90px;" @click="(deleteConfirm = false),displayUpdate()">いいえ</div>
+                </div>
+            </ul>
+        </div>
+        <div v-if="!mobileView" style="display: flex; justify-content: space-between; padding-left: 40px;">
+            <div id="deleteBtn" class="bigBtn" @click="(deleteConfirm = true),displayUpdate()">入力を初期化</div>
+            <div id="saveBtn" class="bigBtn" @click="setLocalStorage()">設定を保存</div>
+        </div>
         <ul class="accArea">
             <li>
                 <section>
@@ -507,6 +525,12 @@
                             </li>
                             <li>
                                 <div>
+                                    <label for="">その他の思い出加速（%）</label>
+                                    <input type="number" id="omonouElse" v-model="detailSetting.omonouElse">
+                                </div>
+                            </li>
+                            <li>
+                                <div>
                                     <label for="">注目の的 を取得した人数</label>
                                     <input type="number" id="centerOfAttention" v-model="detailSetting.centerOfAttention" max="5">
                                 </div>
@@ -564,7 +588,6 @@ import Simulation from './simulation.vue'
 import Header from './header.vue'
 import PassiveTemplate from './passiveTemplate.vue'
 import draggable from 'vuedraggable'
-import { elements } from 'chart.js'
 
 
 // localStorage から読み込み
@@ -977,6 +1000,7 @@ const setData = (data: {
             omonouDPlus: data.detail.omonouDPlus ?? ref(0).value,
             omonouPlus: data.detail.omonouPlus ?? ref(0).value,
             omonoukakin: data.detail.omonoukakin ?? ref(0).value,
+            omonouElse: data.detail.omonouElse ?? ref(0).value,
             centerOfAttention: data.detail.centerOfAttention ?? ref(0).value,
             noAttention: data.detail.noAttention ?? ref(0).value,
             liveSkillRandom: data.detail.liveSkillRandom ?? ref(false).value
@@ -1054,6 +1078,42 @@ const makeJson = () => {
         detail: detailSetting
     }
     return JSON.stringify(data);
+}
+
+const deleteConfirm = ref(false);
+// データの削除
+const deleteData = () => {
+    // パッシブ
+    passiveSkills.length = 0;
+    plusPassive();
+    // 編成
+    fesIdols.length = 0;
+    setIdolList();
+    // 詳細
+    detailSetting = {
+        // 審査員ダメージ
+        damage: ref(231).value,
+        // 打たれ強い
+        damageStrong: ref(0).value,
+        // 打たれ弱い
+        damageWeak: ref(0).value,
+        // 試行回数
+        count: ref(1).value,
+        // 思い出++
+        omonouDPlus: ref(0).value,
+        // 思い出+
+        omonouPlus: ref(0).value,
+        // 思い出増加+2%
+        omonoukakin: ref(0).value,
+        // その他思い出加速
+        omonouElse: ref(0).value,
+        // 注目の的
+        centerOfAttention: ref(0).value,
+        // ひかえめ
+        noAttention: ref(0).value,
+        // ライブスキルのランダム
+        liveSkillRandom: ref(false).value
+    }
 }
 
 // パッシブスキルの入力画面
@@ -1535,6 +1595,8 @@ let detailSetting: types.detail = {
     omonouPlus: ref(0).value,
     // 思い出増加+2%
     omonoukakin: ref(0).value,
+    // その他思い出加速
+    omonouElse: ref(0).value,
     // 注目の的
     centerOfAttention: ref(0).value,
     // ひかえめ
@@ -1566,6 +1628,7 @@ const openFile = (type:'passive' | 'all') => {
 // 設定の入力
 const inputSetting = (event: Event) => {
     try {
+        deleteData();
         // @ts-ignore
         let inputFile = event.target!.files[0]
         let reader = new FileReader();
@@ -1587,17 +1650,6 @@ const inputSetting = (event: Event) => {
 
 }
 
-// モバイル切り替え
-const mobileView = ref(false);
-const watchWindowSize = () => {
-    if (window.innerWidth < 1000) {
-        mobileView.value = true;
-    } else {
-        mobileView.value = false;
-    }
-}
-watchWindowSize()
-window.addEventListener('resize', watchWindowSize)
 
 // ハンバーガーメニュー
 const smallnavbtn = ref("smallnav-btn")
@@ -1619,6 +1671,19 @@ const userHelp = () => {
     // displayUserHelp.value.open()
 }
 
+// モバイル切り替え
+const mobileView = ref(false);
+const watchWindowSize = () => {
+    if (window.innerWidth <= 1030) {
+        mobileView.value = true;
+    } else {
+        mobileView.value = false;
+        smallnavDisplay.value = false;
+    }
+}
+watchWindowSize()
+window.addEventListener('resize', watchWindowSize)
+
 // シミュレーション準備画面表示
 const simulationReady = ref()
 const simulationOpen = () => {
@@ -1636,7 +1701,6 @@ const simulationOpen = () => {
 }
 
 loadLocalStorage()
-console.log(fesIdols)
 </script>
 
 <style scoped>
@@ -1784,9 +1848,31 @@ input[type="number"] {
     user-select: none;
 }
 
+.deleteConfBtn {
+    color: aliceblue;
+    background-color: #4e4e4e;
+}
+
+.deleteConfBtn:hover {
+    cursor: pointer;
+    color: #000000;
+    background-color: rgb(185, 185, 185);
+}
+
+#deleteBtn {
+    color: aliceblue;
+    width: 110px;
+    background-color: rgba(169, 212, 11, 0.658);
+}
+
+#deleteBtn:hover {
+    cursor: pointer;
+    background-color: rgba(169, 212, 11, 0.9);
+}
+
+
 #saveBtn {
     color: aliceblue;
-    margin-left: 85%;
     background-color: rgba(3, 182, 57, 0.658);
 }
 
@@ -1947,6 +2033,7 @@ input[type="number"] {
 #omonouDPlus,
 #omonouPlus,
 #omonoukakin,
+#omonouElse,
 #centerOfAttention,
 #noAttention {
     width: 100px;

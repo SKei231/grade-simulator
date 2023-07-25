@@ -188,7 +188,7 @@
                   <div style="padding-left: 10px;" v-if="(appeals.normalAppeal.length > 0)">
                     <ul>
                       <li v-for="(appeal, apIndex) in appeals.normalAppeal">
-                        <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.normalAppeal[apIndex].Label }}<input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.normalAppeal[apIndex].Value" @change="appealCalc()">倍</p>
+                        <p style="padding: 0; margin: 1px 0 0 0;">{{ appeals.normalAppeal[apIndex].Label }}<span v-if="appeals.normalAppeal[apIndex].Label != '思い出本体'"><input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.normalAppeal[apIndex].Value" @change="appealCalc()">倍</span></p>
                         <div v-if="appeals.normalAppeal[apIndex].Variable">
                           {{ appeals.normalAppeal[apIndex].RatioLabel }}: <input type="number" style="width: 40px; margin-left: 5px;" v-model="appeals.normalAppeal[apIndex].Ratio" @change="appealCalc()">
                         </div>

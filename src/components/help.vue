@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const version = '1.1.0'
+const version = '1.1.1'
 
 console.log(version)
 

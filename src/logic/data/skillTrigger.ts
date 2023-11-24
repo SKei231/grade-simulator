@@ -41,7 +41,8 @@ export const triggerList: trigger[] = [
         label: "なし・達成済",
         ID: 1,
         existX: false,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             return turnCheck(turn, before, after);
         }
     },
@@ -49,7 +50,8 @@ export const triggerList: trigger[] = [
         label: "履歴〇〇がある場合",
         ID: 2,
         existX: false,
-        value: function (turn:number, tx:number, before:number, after:number, tHis:number[]) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number, tHis:number[]) {
             if(status.AppealLog.length == 0) {
                 console.log("0");
                 return false;
@@ -78,8 +80,9 @@ export const triggerList: trigger[] = [
         label: "履歴〇〇または【X】ターン以降",
         ID: 3,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number, tHis:number[]) {
-            if(status.AppealLog.length < tx) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number, tHis:number[]) {
+            if(status.AppealLog.length < tx[0]) {
                 return false;
             }else {
                 return triggerList[findByTriggerID(2)].value(turn, tx, before, after, tHis);
@@ -90,10 +93,11 @@ export const triggerList: trigger[] = [
         label: "履歴に【X】人以上ある場合",
         ID: 18,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number, tHis:number[]) {
-            if(status.AppealLog.length < tx) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number, tHis:number[]) {
+            if(status.AppealLog.length < tx[0]) {
                 return false;
-            }else if(tHis[0] == 1 && tx <= status.AppealLog.length) {
+            }else if(tHis[0] == 1 && tx[0] <= status.AppealLog.length) {
                 return turnCheck(turn, before, after);
             }else {
                 let unit:number[] = getUnitMember(tHis[0]);
@@ -105,7 +109,7 @@ export const triggerList: trigger[] = [
                         }
                     }
                 }
-                if(hitTimes >= tx) {
+                if(hitTimes >= tx[0]) {
                     return turnCheck(turn, before, after);
                 }else {
                     return false;
@@ -117,73 +121,89 @@ export const triggerList: trigger[] = [
         label: "メンタル【X】％以上",
         ID: 4,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {// 小数点第二位の四捨五入（以上のみ）
-            return Math.round((status.Mental / defaultStatus.Mental) * 1000) / 10 >= tx && turnCheck(turn, before, after);;
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {// 小数点第二位の四捨五入（以上のみ）
+            return Math.round((status.Mental / defaultStatus.Mental) * 1000) / 10 >= tx[0] && turnCheck(turn, before, after);;
         }
     },
     {
         label: "メンタル【X】％以下",
         ID: 5,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {
-            return ((status.Mental / defaultStatus.Mental) * 100 <= tx) && turnCheck(turn, before, after);;
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
+            return ((status.Mental / defaultStatus.Mental) * 100 <= tx[0]) && turnCheck(turn, before, after);;
+        }
+    },
+    {
+        label: "メンタル【X】％以上【Y】％以下",
+        ID: 19,
+        existX: true,
+        existY: true,
+        value: function (turn:number, tx:number[], before:number, after:number) {
+            return (triggerList[findByTriggerID(4)].value(turn, tx, before, after)) && (triggerList[findByTriggerID(5)].value(turn, [tx[1], 0], before, after)) && turnCheck(turn, before, after);;
         }
     },
     {
         label: "回復回数【X】回以上",
         ID: 6,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {
-            return status.RecoveryTimes >= tx && turnCheck(turn, before, after);;
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
+            return status.RecoveryTimes >= tx[0] && turnCheck(turn, before, after);;
         }
     },
     {
         label: "Vocal UP【X】個以上付与時",
         ID: 7,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             let numberOfBuff = 0;
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 1) {
                     numberOfBuff++;
                 }
             }
-            return numberOfBuff >= tx && turnCheck(turn, before, after);;
+            return numberOfBuff >= tx[0] && turnCheck(turn, before, after);;
         }
     },
     {
         label: "Dance UP【X】個以上付与時",
         ID: 8,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             let numberOfBuff = 0;
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 2) {
                     numberOfBuff++;
                 }
             }
-            return numberOfBuff >= tx && turnCheck(turn, before, after);;
+            return numberOfBuff >= tx[0] && turnCheck(turn, before, after);;
         }
     },
     {
         label: "Visual UP【X】個以上付与時",
         ID: 9,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             let numberOfBuff = 0;
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 3) {
                     numberOfBuff++;
                 }
             }
-            return numberOfBuff >= tx && turnCheck(turn, before, after);;
+            return numberOfBuff >= tx[0] && turnCheck(turn, before, after);;
         }
     },
     {
         label: "VoDaVi 全て付与時",
         ID: 10,
         existX: false,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             let existVoBuff = false;
             let existDaBuff = false;
             let existViBuff = false;
@@ -209,7 +229,8 @@ export const triggerList: trigger[] = [
         label: "メンタルダメージカット付与時",
         ID: 11,
         existX: false,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 4) {
                     return turnCheck(turn, before, after);;
@@ -222,7 +243,8 @@ export const triggerList: trigger[] = [
         label: "パッシブスキル発動率UP付与時",
         ID: 17,
         existX: false,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 8) {
                     return turnCheck(turn, before, after);;
@@ -235,7 +257,8 @@ export const triggerList: trigger[] = [
         label: "メランコリー付与時",
         ID: 12,
         existX: false,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 9) {
                     return turnCheck(turn, before, after);;
@@ -248,7 +271,8 @@ export const triggerList: trigger[] = [
         label: "リラックス付与時",
         ID: 13,
         existX: false,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 10) {
                     return turnCheck(turn, before, after);;
@@ -261,42 +285,45 @@ export const triggerList: trigger[] = [
         label: "注目度 UP【X】個以上付与時",
         ID: 14,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             let numberOfBuff = 0;
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 6) {
                     numberOfBuff++;
                 }
             }
-            return numberOfBuff >= tx && turnCheck(turn, before, after);;
+            return numberOfBuff >= tx[0] && turnCheck(turn, before, after);;
         }
     },
     {
         label: "注目度 DOWN【X】個以上付与時",
         ID: 15,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             let numberOfBuff = 0;
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 7) {
                     numberOfBuff++;
                 }
             }
-            return numberOfBuff >= tx && turnCheck(turn, before, after);;
+            return numberOfBuff >= tx[0] && turnCheck(turn, before, after);;
         }
     },
     {
         label: "リアクション回避【X】個以上付与時",
         ID: 16,
         existX: true,
-        value: function (turn:number, tx:number, before:number, after:number) {
+        existY: false,
+        value: function (turn:number, tx:number[], before:number, after:number) {
             let numberOfBuff = 0;
             for(let i = 0; i < status.VisibleBuffs.length; i++) {
                 if(status.VisibleBuffs[i].BuffID == 11) {
                     numberOfBuff++;
                 }
             }
-            return numberOfBuff >= tx && turnCheck(turn, before, after);;
+            return numberOfBuff >= tx[0] && turnCheck(turn, before, after);;
         }
     }
 ]

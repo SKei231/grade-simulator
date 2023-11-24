@@ -10,7 +10,8 @@ const alstroemeria = [14, 15, 16];
 const straylight = [17, 18, 19];
 const noctchill = [20, 21, 22, 23];
 const shiis = [24, 25];
-const ruka = [33];
+const cometik = [33, 34, 35];
+const bkomathi = [36, 37];
 
 export const getUnitMember = (index:number):number[] => {
     if(index == 2) {
@@ -27,6 +28,8 @@ export const getUnitMember = (index:number):number[] => {
         return noctchill;
     }else if(index == 8) {
         return shiis;
+    }else if(index == 9) {
+        return cometik;
     }else {
         console.log("getUnitMember index errer");
         return [0];
@@ -188,7 +191,27 @@ export const idolList: idol[] = [
     {
         Name: "斑鳩ルカ",
         ID: 33,
-        Unit: ruka
+        Unit: cometik
+    },
+    {
+        Name: "鈴木羽那",
+        ID: 34,
+        Unit: cometik
+    },
+    {
+        Name: "郁田はるき",
+        ID: 35,
+        Unit: cometik
+    },
+    {
+        Name: "ルビー",
+        ID: 36,
+        Unit: bkomathi
+    },
+    {
+        Name: "有馬かな",
+        ID: 37,
+        Unit: bkomathi
     },
 ]
 
@@ -233,6 +256,16 @@ const makeDuetList = () => {
             Name: "シーズ",
             ID: 32,
             Unit: shiis
+        },
+        {
+            Name: "シーズ",
+            ID: 32,
+            Unit: shiis
+        },
+        {
+            Name: "コメティック",
+            ID: 38,
+            Unit: cometik
         },
     )
 }

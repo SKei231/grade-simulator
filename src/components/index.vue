@@ -67,7 +67,11 @@
                                         </select>
                                         <!-- X の入力 -->
                                         <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].existX" style="padding-left: 10px;"> X:
-                                            <input type="number" style="width: 30px;" v-model="passiveSkills[index].Trigger.tX">
+                                            <input type="number" style="width: 30px;" v-model="passiveSkills[index].Trigger.tX[0]">
+                                        </span>
+                                        <!-- Y の入力 -->
+                                        <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].existY" style="padding-left: 10px;"> Y:
+                                            <input type="number" style="width: 30px;" v-model="passiveSkills[index].Trigger.tX[1]">
                                         </span>
                                     </div>
                                     <div class="passiveSettingArea"
@@ -95,6 +99,7 @@
                                                 <option value="6">ストレイ</option>
                                                 <option value="7">ノクチル</option>
                                                 <option value="8">シーズ</option>
+                                                <option value="9">コメティック</option>
                                             </select>
                                         </span>
                                     </div>
@@ -617,7 +622,7 @@ const setData = (data: {
             Gold: data.passive[i].Gold ?? ref(false).value,
             Trigger: {
                 tID: data.passive[i].Trigger.tID ?? ref(1).value,
-                tX: data.passive[i].Trigger.tX ?? ref().value,
+                tX: data.passive[i].Trigger.tX ?? [ref().value, ref().value],
                 tHis: data.passive[i].Trigger.tHis ?? [ref().value]
             },
             ActiveTurn: {
@@ -640,6 +645,9 @@ const setData = (data: {
             if (typeof newPassive.Effect[j].eValue !== "number") {
                 newPassive.Effect[j].eValue = ref().value
             }
+        }
+        if(newPassive.Trigger.tX.length != 2) {
+            newPassive.Trigger.tX = [ref().value, ref().value];
         }
         passiveSkills.push(newPassive);
     }
@@ -1205,7 +1213,7 @@ const plusPassive = () => {
         Gold: ref(false).value,
         Trigger: {
             tID: ref(1).value,
-            tX: ref().value,
+            tX: [ref().value, ref().value],
             tHis: [ref().value]
         },
         ActiveTurn: {

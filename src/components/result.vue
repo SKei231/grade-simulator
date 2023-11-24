@@ -908,7 +908,7 @@ const createTriggerList = () => {
       attribute: vault.passiveSkills[i].Attribute,
       color: vault.passiveSkills[i].Color,
       value: vault.passiveSkills[i].Value,
-      trigger: triggerList[findByTriggerID(vault.passiveSkills[i].Trigger.tID)].label.replace('【X】', String(vault.passiveSkills[i].Trigger.tX)),
+      trigger: triggerList[findByTriggerID(vault.passiveSkills[i].Trigger.tID)].label.replace('【X】', String(vault.passiveSkills[i].Trigger.tX[0])).replace('【Y】', String(vault.passiveSkills[i].Trigger.tX[1])),
       rate: Math.floor((vault.log[Turn].PassiveActTime[i] / (vault.detailSetting.count * 1000)) * 10000) / 100
     })
   }

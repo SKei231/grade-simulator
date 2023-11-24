@@ -31,10 +31,15 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
                 }
             }
         }
-        // trigger tN
+        // trigger tX
         if(triggerList[findByTriggerID(passive[i].Trigger.tID)].existX) {
-            if(!passive[i].Trigger.tX) {
+            if(!passive[i].Trigger.tX[0]) {
                 errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動条件の【X】を入力してください');
+            }
+        }
+        if(triggerList[findByTriggerID(passive[i].Trigger.tID)].existY) {
+            if(!passive[i].Trigger.tX[1]) {
+                errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動条件の【Y】を入力してください');
             }
         }
         // activeturn

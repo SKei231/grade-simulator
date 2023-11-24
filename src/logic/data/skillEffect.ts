@@ -361,7 +361,12 @@ export const liveSkillEffect: sEffect[] = [
             if(value < 26 || value == 33) {
                 appealLogPush(value);
             }else {
-                let unitList = getUnitMember(value - 24);
+                let unitList:number[];
+                if(value == 38) { // コメティック専用
+                    unitList = getUnitMember(9);
+                }else {
+                    unitList = getUnitMember(value - 24);
+                }
                 appealLogPush(unitList[Math.floor(Math.random() * unitList.length)]);
             }
         }

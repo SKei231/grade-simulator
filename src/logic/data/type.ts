@@ -9,7 +9,7 @@ export type passive = {
     Gold: boolean,
     Trigger: {
         tID: number,
-        tX: number,
+        tX: number[],
         tHis: number[]
     },
     ActiveTurn: {
@@ -175,6 +175,7 @@ export type trigger = {
     label: string,
     ID: number,
     existX: boolean,
+    existY: boolean,
     value: Function
 }
 

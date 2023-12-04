@@ -10,7 +10,7 @@
         <div class="smallnav" v-if="smallnavDisplay">
             <ul id="snavMain">
                 <li @click="simulationOpen()">次へ</li>
-                <li @click="userHelp()">使い方</li>
+                <li @click="userHelp()">ヘルプ</li>
                 <li @click="(deleteConfirm = true),displayUpdate()">設定を初期化</li>
                 <li @click="setLocalStorage()">設定を保存</li>
                 <!-- <li @click="snavNext('inputSetting')">設定を入力</li> -->
@@ -646,8 +646,8 @@ const setData = (data: {
                 newPassive.Effect[j].eValue = ref().value
             }
         }
-        if(newPassive.Trigger.tX.length != 2) {
-            newPassive.Trigger.tX = [ref().value, ref().value];
+        if(typeof data.passive[i].Trigger.tX === "number") {
+            newPassive.Trigger.tX = [ref(data.passive[i].Trigger.tX).value, ref().value];
         }
         passiveSkills.push(newPassive);
     }
@@ -1675,8 +1675,8 @@ const snavBtnActive = () => {
 }
 const displayUserHelp = ref()
 const userHelp = () => {
-    location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
-    // displayUserHelp.value.open()
+    // location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
+    displayUserHelp.value.open()
 }
 
 // モバイル切り替え

@@ -1,7 +1,7 @@
 <template>
     <div id="Header">
         <h1>Fes-Simulator</h1>
-        <div id="usehelp" @click="toggleDisplayUserHelp()"><p>使い方</p></div>
+        <div id="usehelp" @click="toggleDisplayUserHelp()"><p>ヘルプ</p></div>
     </div>
     <Help ref="displayUserHelp"></Help>
 </template>
@@ -13,8 +13,8 @@ import Help from './help.vue'
 const displayUserHelp = ref();
 
 const toggleDisplayUserHelp = () => {
-    location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
-    // displayUserHelp.value.open();
+    // location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
+    displayUserHelp.value.open();
 }
 
 </script>

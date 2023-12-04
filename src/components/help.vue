@@ -1,8 +1,12 @@
 <template>
     <div id="userHelp" v-if="displayBool">
         <div id="helpInfo">
-            <h1>使い方</h1>
-            <p style="padding-top: 100vh; padding-bottom: 100vh;"></p>
+            <h1>このページについて</h1>
+            <h3>グレードフェス用の非公式シミュレーターです</h3>
+            <p>シミュレーターの使い方は<a href="https://note.com/tunakan_yt212/n/na0cd640b09b5">こちら</a><br><span style="font-size: .8rem;">※外部リンク</span></p>
+            <div style="padding-top: 10vh;"></div>
+            <p>シミュレーターに関するご意見・ご要望は<a href="https://www.twitter.com/messages/compose?recipient_id=1341019207417221122">こちら</a><br><span style="font-size: .8rem;">※管理者のX(Twitter)のDMへ移ります</span></p>
+            <div style="padding-top: 10vh;"></div>
         </div>
     </div>
     <div id="UHCloseBtn" v-if="displayBool" @click="close()">とじる </div>
@@ -47,10 +51,19 @@ defineExpose({
 }
 #helpInfo h1 {
     text-align: center;
-    margin-top: 5%;
+    margin: 5%;
+}
+#helpInfo h3 {
+    text-align: center;
+    margin: 5%;
+}
+#helpInfo p {
+    text-align: center;
+    margin-top: 2%;
 }
 #UHCloseBtn {
     position: fixed;
+    cursor: pointer;
     top: 5%;
     right: 5%;
     font-size: 20px;

@@ -2,8 +2,19 @@
 import * as types from '../data/type'
 import { defaultStatus } from './simulate';
 
+// version
+export const version = '1.2.0';
+console.log("ver." + version);
+
 // 最大ターン
 export let maxTurn = 10;
+export let turns:number[] = [];
+const createTurns = () => {
+    for(let i = 1; i <= maxTurn; i++) {
+        turns.push(i);
+    }
+}
+createTurns();
 
 // 総合ステータス
 export let staticStatus = {

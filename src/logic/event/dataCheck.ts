@@ -34,12 +34,12 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
         // trigger tX
         if(triggerList[findByTriggerID(passive[i].Trigger.tID)].existX) {
             if(!passive[i].Trigger.tX[0]) {
-                errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動条件の【X】を入力してください');
+                errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動条件の数値を入力してください');
             }
         }
         if(triggerList[findByTriggerID(passive[i].Trigger.tID)].existY) {
             if(!passive[i].Trigger.tX[1]) {
-                errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動条件の【Y】を入力してください');
+                errerMessage.push('パッシブスキル "' + passive[i].Name + '" の発動条件の数値を入力してください');
             }
         }
         // activeturn
@@ -75,19 +75,19 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
             errerMessage.push(fesIdol[i].Position + ' の思い出レベルを選択してください');
         }
         // status vo
-        if(!fesIdol[i].Status.VoValue) {
+        if(!fesIdol[i].Status.VoValue && fesIdol[i].Status.VoValue !== 0) {
             errerMessage.push(fesIdol[i].Position + ' の Vo ステータスを入力してください');
         }
         // status da
-        if(!fesIdol[i].Status.DaValue) {
+        if(!fesIdol[i].Status.DaValue && fesIdol[i].Status.DaValue !== 0) {
             errerMessage.push(fesIdol[i].Position + ' の Da ステータスを入力してください');
         }
         // status vi
-        if(!fesIdol[i].Status.ViValue) {
+        if(!fesIdol[i].Status.ViValue && fesIdol[i].Status.ViValue !== 0) {
             errerMessage.push(fesIdol[i].Position + ' の Vi ステータスを入力してください');
         }
         // status me
-        if(!fesIdol[i].Status.MeValue) {
+        if(!fesIdol[i].Status.MeValue && fesIdol[i].Status.MeValue !== 0) {
             errerMessage.push(fesIdol[i].Position + ' の Me ステータスを入力してください');
         }
         // liveskill
@@ -211,7 +211,7 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
                     }
                     // ltX
                     if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltX && triggerList[findByTriggerID(fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID)].existX) {
-                        errerMessage.push(fesIdol[i].Position + ' のPlusアピールの【X】を入力してください');
+                        errerMessage.push(fesIdol[i].Position + ' のPlusアピールの発動条件の数値を入力してください');
                     }
                     // ltHis
                     if(fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID == 2 || fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID == 13) {

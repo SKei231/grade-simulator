@@ -5,7 +5,7 @@ export type passive = {
     Name: string,
     Attribute: string,
     Value: number,
-    Color: "white" | "gold" | "rainbow",
+    Class: ["white" | "gold" | "rainbow", string],
     Gold: boolean,
     Trigger: {
         tID: number,
@@ -13,6 +13,7 @@ export type passive = {
         tHis: number[]
     },
     ActiveTurn: {
+        turnModel: number,
         after: number,
         before: number
     },
@@ -91,7 +92,7 @@ export type fesIdol = {
             eNote: string
         }],
         Link: {
-            lType: "link" | "plus" | "change",
+            lType: "Link" | "Plus" | "Change",
             lTrigger: {
                 ltBefore: number,
                 ltAfter: number,
@@ -173,6 +174,7 @@ export type detail = {
 // パッシブの発動条件
 export type trigger = {
     label: string,
+    parsedLabel: string[],
     ID: number,
     existX: boolean,
     existY: boolean,
@@ -182,6 +184,7 @@ export type trigger = {
 // パッシブスキル効果
 export type pEffect = {
     label: string,
+    parsedLabel: string[],
     ID: number,
     existN: boolean,
     value: Function
@@ -190,6 +193,7 @@ export type pEffect = {
 // ライブスキルアピール
 export type sAppeal = {
     label: string,
+    parsedLabel: string[],
     ID: number,
     variable: boolean,
     ratioLabel: string,
@@ -200,6 +204,7 @@ export type sAppeal = {
 // ライブスキル効果
 export type sEffect = {
     label: string,
+    parsedLabel: string[],
     ID: number,
     existN: boolean,
     existM: boolean,
@@ -223,7 +228,7 @@ export type status = {
     Damage: number, // 影響力
     DamageRatio: number, // ダメージ倍率
     MentalEffect: number, // ライブスキル発動後のメンタル変動値
-    Attention: number, // 注目度 100％→100
+    Attention: number, // 注目度 100%→100
     RecoveryTimes: number, // 回復回数
     RecoveryTimesIncreases: number, // 回復回数の増加量
     MemoryGauge: number, // 思い出ゲージ
@@ -269,7 +274,7 @@ export type visibleBuff = {
 export type log = {
     Turn: number, // ターン
     Mental: number[], // メンタル
-    Attention: number[], // 注目度 100％→100
+    Attention: number[], // 注目度 100%→100
     RecoveryTimes: number[], // 回復回数
     MemoryGauge: number[], // 思い出ゲージ
     Buff: {

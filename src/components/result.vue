@@ -891,14 +891,7 @@ type pActiveList = {
   trigger: string,
   rate: number
 }
-let passiveActiveList:pActiveList[] = [{
-  label: 'test',
-  attribute: '',
-  color: 'white',
-  value: 0,
-  trigger: 'test',
-  rate: 0
-}]
+let passiveActiveList:pActiveList[] = []
 const createTriggerList = () => {
   passiveActiveList.length = 0;
   const Turn = graphTurn.value - 1;
@@ -906,9 +899,9 @@ const createTriggerList = () => {
     passiveActiveList.push({
       label: vault.passiveSkills[i].Name,
       attribute: vault.passiveSkills[i].Attribute,
-      color: vault.passiveSkills[i].Color,
+      color: vault.passiveSkills[i].Class[0],
       value: vault.passiveSkills[i].Value,
-      trigger: triggerList[findByTriggerID(vault.passiveSkills[i].Trigger.tID)].label.replace('【X】', String(vault.passiveSkills[i].Trigger.tX[0])).replace('【Y】', String(vault.passiveSkills[i].Trigger.tX[1])),
+      trigger: triggerList[findByTriggerID(vault.passiveSkills[i].Trigger.tID)].label.replace('〇', String(vault.passiveSkills[i].Trigger.tX[0])).replace('△', String(vault.passiveSkills[i].Trigger.tX[1])),
       rate: Math.floor((vault.log[Turn].PassiveActTime[i] / (vault.detailSetting.count * 1000)) * 10000) / 100
     })
   }

@@ -44,7 +44,7 @@ export let status: types.status = {
     Damage: 0, // 影響力
     DamageRatio: 1, // ダメージ倍率
     MentalEffect: 0, // ライブスキル発動後のメンタル変動値
-    Attention: 100, // 注目度 100％→100
+    Attention: 100, // 注目度 100%→100
     RecoveryTimes: 0, // 回復回数
     RecoveryTimesIncreases: 0, // 回復回数増加量
     MemoryGauge: 0, // 思い出ゲージ
@@ -297,7 +297,7 @@ const passiveSkillActivate = (turn:number) => {
     const passiveActivate = (rainbowMode:boolean) => {
         for(let i = 0; i < 5; i++) {
             for(let j = 0; j < vault.fesIdols[order[i]].PassiveIndex.length; j++) {
-                const passiveClass = (vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Color == "rainbow")
+                const passiveClass = (vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Class[0] == "rainbow")
                 if(rainbowMode == passiveClass){
                     if(status.PassiveActTimes[order[i]][j] > 0 && passiveActTime < 6) {
                         if(passiveAct(vault.fesIdols[order[i]].PassiveIndex[j].index, i)) {

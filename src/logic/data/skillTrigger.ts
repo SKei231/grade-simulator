@@ -11,11 +11,11 @@ export const triggerCheck = (ID: number) => {
 export const findByTriggerID = (id: number): number => {
     let seaechIndex = 0;
     while (true) {
-        if (triggerList[seaechIndex].ID == id) {
-            return seaechIndex;
-        } else if (seaechIndex == triggerList.length) {
+        if(seaechIndex == triggerList.length) {
             console.log("No such passiveTrigger ID:" + id)
             return 0
+        }else if (triggerList[seaechIndex].ID == id) {
+            return seaechIndex;
         }
         seaechIndex++;
     }
@@ -38,7 +38,8 @@ export const findByTriggerID = (id: number): number => {
  */
 export const triggerList: trigger[] = [
     {
-        label: "なし・達成済",
+        label: "ターンのみ・達成済",
+        parsedLabel: ["ターンのみ・達成済"],
         ID: 1,
         existX: false,
         existY: false,
@@ -47,7 +48,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "履歴〇〇がある場合",
+        label: "履歴に〇〇がある場合",
+        parsedLabel: ["履歴に","がある場合"],
         ID: 2,
         existX: false,
         existY: false,
@@ -77,7 +79,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "履歴〇〇または【X】ターン以降",
+        label: "履歴に〇〇又は〇ターン以降",
+        parsedLabel: ["履歴に","又は","ターン以降"],
         ID: 3,
         existX: true,
         existY: false,
@@ -90,7 +93,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "履歴に【X】人以上ある場合",
+        label: "履歴に(ユニット)が〇人以上ある場合",
+        parsedLabel: ["履歴に","が","人以上ある場合"],
         ID: 18,
         existX: true,
         existY: false,
@@ -118,7 +122,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "メンタル【X】％以上",
+        label: "メンタル〇%以上",
+        parsedLabel: ["メンタル","%以上"],
         ID: 4,
         existX: true,
         existY: false,
@@ -127,7 +132,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "メンタル【X】％以下",
+        label: "メンタル〇%以下",
+        parsedLabel: ["メンタル","%以下"],
         ID: 5,
         existX: true,
         existY: false,
@@ -136,7 +142,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "メンタル【X】％以上【Y】％以下",
+        label: "メンタル〇%以上△%以下",
+        parsedLabel: ["メンタル","%以上","%以下"],
         ID: 19,
         existX: true,
         existY: true,
@@ -145,7 +152,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "回復回数【X】回以上",
+        label: "回復回数〇回以上",
+        parsedLabel: ["回復回数","回以上"],
         ID: 6,
         existX: true,
         existY: false,
@@ -154,7 +162,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "Vocal UP【X】個以上付与時",
+        label: "Vocal UP〇個以上付与時",
+        parsedLabel: ["Vocal UP","個以上付与時"],
         ID: 7,
         existX: true,
         existY: false,
@@ -169,7 +178,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "Dance UP【X】個以上付与時",
+        label: "Dance UP〇個以上付与時",
+        parsedLabel: ["Dance UP","個以上付与時"],
         ID: 8,
         existX: true,
         existY: false,
@@ -184,7 +194,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "Visual UP【X】個以上付与時",
+        label: "Visual UP〇個以上付与時",
+        parsedLabel: ["Visual UP","個以上付与時"],
         ID: 9,
         existX: true,
         existY: false,
@@ -199,7 +210,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "VoDaVi 全て付与時",
+        label: "VoDaViUP 全て付与時",
+        parsedLabel: ["VoDaViUP 全て付与時"],
         ID: 10,
         existX: false,
         existY: false,
@@ -227,6 +239,7 @@ export const triggerList: trigger[] = [
     },
     {
         label: "メンタルダメージカット付与時",
+        parsedLabel: ["メンタルダメージカット付与時"],
         ID: 11,
         existX: false,
         existY: false,
@@ -241,6 +254,7 @@ export const triggerList: trigger[] = [
     },
     {
         label: "パッシブスキル発動率UP付与時",
+        parsedLabel: ["パッシブスキル発動率UP付与時"],
         ID: 17,
         existX: false,
         existY: false,
@@ -255,6 +269,7 @@ export const triggerList: trigger[] = [
     },
     {
         label: "メランコリー付与時",
+        parsedLabel: ["メランコリー付与時"],
         ID: 12,
         existX: false,
         existY: false,
@@ -269,6 +284,7 @@ export const triggerList: trigger[] = [
     },
     {
         label: "リラックス付与時",
+        parsedLabel: ["リラックス付与時"],
         ID: 13,
         existX: false,
         existY: false,
@@ -282,7 +298,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "注目度 UP【X】個以上付与時",
+        label: "注目度 UP〇個以上付与時",
+        parsedLabel: ["注目度 UP","個以上付与時"],
         ID: 14,
         existX: true,
         existY: false,
@@ -297,7 +314,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "注目度 DOWN【X】個以上付与時",
+        label: "注目度 DOWN〇個以上付与時",
+        parsedLabel: ["注目度 DOWN","個以上付与時"],
         ID: 15,
         existX: true,
         existY: false,
@@ -312,7 +330,8 @@ export const triggerList: trigger[] = [
         }
     },
     {
-        label: "リアクション回避【X】個以上付与時",
+        label: "リアクション回避〇個以上付与時",
+        parsedLabel: ["リアクション回避","個以上付与時"],
         ID: 16,
         existX: true,
         existY: false,

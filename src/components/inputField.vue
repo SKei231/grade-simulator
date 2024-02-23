@@ -6,22 +6,16 @@
                 <p></p>
             </div>
         </div>
-        <Help ref="displayUserHelp"></Help>
         <div class="smallnav" v-if="smallnavDisplay">
             <ul id="snavMain">
                 <li @click="simulationOpen()">次へ</li>
-                <li @click="userHelp()">ヘルプ</li>
+                <li @click="userHelp()">使い方</li>
                 <li @click="(deleteConfirm = true),displayUpdate()">設定を初期化</li>
                 <li @click="setLocalStorage()">設定を保存</li>
-                <!-- <li @click="snavNext('inputSetting')">設定を入力</li> -->
                 <li @click="openFile('all')">設定をすべて入力</li>
                 <li @click="openFile('passive')">パッシブのみ入力</li>
                 <li @click="outputSetting()">設定を出力</li>
             </ul>
-            <!-- <ul id="inputSetting">
-                <li @click="openFile('all')">設定をすべて入力</li>
-                <li @click="openFile('passive')">パッシブのみ入力</li>
-            </ul> -->
         </div>
         <div class="smallnav" v-if="deleteConfirm">
             <ul style="height: 30%; padding-left: 0; background-color: rgba(255, 255, 255, 0.9); border-radius: 20px; min-width: 300px;">
@@ -39,446 +33,502 @@
         <ul class="accArea">
             <li>
                 <section>
-                    <h2 v-bind:class="passiveSettingClass" @click="toggleAccBtn('passiveSetting', displayPassiveSetting)">パッシブスキルのセット</h2>
-                    <div class="accBox" v-if="displayPassiveSetting" @click="">
+                    <h2 v-bind:class="accAreaDisplay.passive.class" @click="toggleAccBtn('passiveSetting', 0)">パッシブスキル</h2>
+                    <div class="accBox" v-if="accAreaDisplay.passive.boolean">
                         <ul>
                             <li v-for="(ps, index) in passiveSkills">
-                                <div v-bind:class="passiveSkills[index].Color">
+                                <div v-bind:class="passiveSkills[index].Class[0]" style="position: relative;">
                                     <div class="passiveSettingArea">
                                         パッシブ名:
-                                        <input type="text" v-model="passiveSkills[index].Name" style="margin-right: 20px;" placeholder="パッシブの呼び名を入力" @change="displayUpdate()"><br v-if="mobileView">
-                                        バフ:
-                                        <select v-model="passiveSkills[index].Attribute">
-                                            <option value="Vo">Vo</option>
-                                            <option value="Da">Da</option>
-                                            <option value="Vi">Vi</option>
-                                            <option value="VoDa">Vo&Da</option>
-                                            <option value="DaVi">Da&Vi</option>
-                                            <option value="ViVo">Vi&Vo</option>
-                                            <option value="All">All</option>
-                                        </select>
-                                        <input type="number" v-model="passiveSkills[index].Value" v-on:change="passiveColorCheck(index, passiveSkills[index].Gold)" style="width: 50px; margin-left: 10px;">%up<br v-if="mobileView">
+                                        <input type="text" v-model="passiveSkills[index].Name" style="margin-right: 20px;" placeholder="パッシブの名前を入力" @change="displayUpdate()"><br v-if="mobileView">
                                         <input type="checkbox" v-bind:id="goldID(index)" style="margin-left: 10px;" v-model="passiveSkills[index].Gold" @change="passiveColorCheck(index, passiveSkills[index].Gold)"><label v-bind:for="goldID(index)">金パッシブ</label>
                                     </div>
                                     <div class="passiveSettingArea">
-                                        発動条件:
-                                        <select v-model="passiveSkills[index].Trigger.tID" @change="clearHistry(index)">
-                                            <option v-for="passiveTrigers in passive_trigger.triggerList" v-bind:value="passiveTrigers.ID">{{ passiveTrigers.label }}</option>
+                                        <select v-model="passiveSkills[index].Attribute">
+                                            <option value="Vo">Vocal</option>
+                                            <option value="Da">Dance</option>
+                                            <option value="Vi">Visual</option>
+                                            <option value="VoDa">Vo & Da</option>
+                                            <option value="DaVi">Da & Vi</option>
+                                            <option value="ViVo">Vi & Vo</option>
+                                            <option value="All">Vo & Da & Vi</option>
                                         </select>
-                                        <!-- X の入力 -->
-                                        <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].existX" style="padding-left: 10px;"> X:
-                                            <input type="number" style="width: 30px;" v-model="passiveSkills[index].Trigger.tX[0]">
-                                        </span>
-                                        <!-- Y の入力 -->
-                                        <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].existY" style="padding-left: 10px;"> Y:
-                                            <input type="number" style="width: 30px;" v-model="passiveSkills[index].Trigger.tX[1]">
-                                        </span>
-                                    </div>
-                                    <div class="passiveSettingArea"
-                                        v-if="passiveSkills[index].Trigger.tID == 2 || passiveSkills[index].Trigger.tID == 3">
-                                        <!-- 履歴 -->
-                                        <span v-for="(his, Hindex) in passiveSkills[index].Trigger.tHis">
-                                            履歴:
-                                            <select v-model="passiveSkills[index].Trigger.tHis[Hindex]">
-                                                <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
-                                            </select>
-                                        </span>
-                                        <div @click="plusHistory(index)" class="btn" style="font-size: 13px;">履歴を追加</div>
-                                    </div>
-                                    <div class="passiveSettingArea"
-                                        v-if="passiveSkills[index].Trigger.tID == 18">
-                                        <!-- 履歴(ユニット人数) -->
-                                        <span>
-                                            ユニット:
-                                            <select v-model="passiveSkills[index].Trigger.tHis[0]">
-                                                <option value="1">指定なし</option>
-                                                <option value="2">イルミネ</option>
-                                                <option value="3">アンティーカ</option>
-                                                <option value="4">方クラ</option>
-                                                <option value="5">アルスト</option>
-                                                <option value="6">ストレイ</option>
-                                                <option value="7">ノクチル</option>
-                                                <option value="8">シーズ</option>
-                                                <option value="9">コメティック</option>
-                                            </select>
-                                        </span>
-                                    </div>
-                                    <div class="passiveSettingArea">
-                                        <input type="number" style="margin-left: 10px; width: 30px;" v-model="passiveSkills[index].ActiveTurn.after" min="1" v-bind:max="vault.maxTurn">ターン以降<br v-if="mobileView">
-                                        <input type="number" style="margin-left: 10px; width: 30px;" v-model="passiveSkills[index].ActiveTurn.before" min="1" v-bind:max="vault.maxTurn">ターン以前　<br v-if="mobileView">確率:
-                                        <input type="number" style="width: 45px;" v-model="passiveSkills[index].Probability">%　<br v-if="mobileView">回数:
-                                        <input type="number" style="width: 30px;" v-model="passiveSkills[index].Times">回
+                                        <input type="number" v-model="passiveSkills[index].Value" v-on:change="passiveColorCheck(index, passiveSkills[index].Gold)" style="width: 50px; margin-left: 10px;">%up<br v-if="mobileView">
                                     </div>
                                     <div class="passiveSettingArea" v-for="(ef, Eindex) in passiveSkills[index].Effect">
-                                        スキル効果:
+                                        効果:
                                         <select v-model="passiveSkills[index].Effect[Eindex].eID" @change="displayUpdate()">
                                             <option v-for="passiveEffects in skill_effect.passiveEffect" v-bind:value="passiveEffects.ID">{{ passiveEffects.label }}</option>
                                         </select>
-                                        <span
-                                            v-if="skill_effect.passiveEffect[skill_effect.findByPassiveID(passiveSkills[index].Effect[Eindex].eID)].existN"
-                                            style="padding-left: 10px;"> N:
-                                            <input type="number" style="width: 30px;" v-model="passiveSkills[index].Effect[Eindex].eValue">
+                                        <span v-if="skill_effect.passiveEffect[skill_effect.findByPassiveID(passiveSkills[index].Effect[Eindex].eID)].existN" style="padding-left: 10px;">
+                                            <p style="margin-bottom: 5px;">
+                                                {{ skill_effect.passiveEffect[skill_effect.findByPassiveID(passiveSkills[index].Effect[Eindex].eID)].parsedLabel[0] }}
+                                                <input type="number" style="width: 30px;" v-model="passiveSkills[index].Effect[Eindex].eValue">
+                                                {{ skill_effect.passiveEffect[skill_effect.findByPassiveID(passiveSkills[index].Effect[Eindex].eID)].parsedLabel[1] }}
+                                            </p>
                                         </span>
                                     </div>
                                     <div @click="plusEffect(index)" class="btn" style="font-size: 13px;">スキル効果を追加</div>
+                                    <div style="background-color: rgba(0, 0, 0, 0.2); height: 3px; margin-top: 10px;"></div>
+                                    <div class="passiveSettingArea">
+                                        条件:
+                                        <select v-model="passiveSkills[index].Trigger.tID" @change="clearHistry(index)">
+                                            <option v-for="passiveTrigers in passive_trigger.triggerList" v-bind:value="passiveTrigers.ID">{{ passiveTrigers.label }}</option>
+                                        </select>
+                                        <span v-if="passiveSkills[index].Trigger.tID != 3">
+                                            <br>
+                                            ターン:
+                                            <select v-model="passiveSkills[index].ActiveTurn.turnModel" @change="turnRefresh(index)">
+                                                <option value="0">指定なし</option>
+                                                <option value="1">〇ターン以前</option>
+                                                <option value="2">〇ターン以後</option>
+                                                <option value="3">〇ターン以前〇ターン以後</option>
+                                            </select>
+                                        </span>
+                                        <p style="margin-bottom: 5px;">
+                                            <span v-if="passiveSkills[index].Trigger.tID != 3">
+                                                <select v-if="passiveSkills[index].ActiveTurn.turnModel == 1 || passiveSkills[index].ActiveTurn.turnModel == 3" v-model="passiveSkills[index].ActiveTurn.before">
+                                                    <option v-for="turns in vault.turns" :value="turns">{{ turns }}ターン以前</option>
+                                                </select>
+                                                <span v-if="passiveSkills[index].ActiveTurn.turnModel == 3" style="padding: 0 5px"></span>
+                                                <select v-if="passiveSkills[index].ActiveTurn.turnModel >= 2" v-model="passiveSkills[index].ActiveTurn.after">
+                                                    <option v-for="turns in vault.turns" :value="turns">{{ turns }}ターン以降</option>
+                                                </select>
+                                                <span v-if="passiveSkills[index].ActiveTurn.turnModel != 0" style="padding: 0 5px"></span>
+                                                <br v-if="passiveSkills[index].ActiveTurn.turnModel != 0 && mobileView">
+                                            </span>
+                                            <span v-if="passiveSkills[index].Trigger.tID != 2 && passiveSkills[index].Trigger.tID != 3 && passiveSkills[index].Trigger.tID != 18">
+                                                <!-- X の入力 -->
+                                                <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].existX" style="padding-left: 10px;">
+                                                    {{  passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].parsedLabel[0] }}
+                                                    <input type="number" style="width: 30px;" v-model="passiveSkills[index].Trigger.tX[0]">
+                                                    {{  passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].parsedLabel[1] }}
+                                                </span>
+                                                <!-- Y の入力 -->
+                                                <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].existY" style="padding-left: 10px;">
+                                                    <input type="number" style="width: 30px;" v-model="passiveSkills[index].Trigger.tX[1]">
+                                                    {{  passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].parsedLabel[2] }}
+                                                </span>
+                                            </span>
+                                            <!-- 履歴 -->
+                                            <span v-if="passiveSkills[index].Trigger.tID == 2 || passiveSkills[index].Trigger.tID == 3 || passiveSkills[index].Trigger.tID == 18">
+                                                {{  passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].parsedLabel[0] }}
+                                                <span v-for="(his, Hindex) in passiveSkills[index].Trigger.tHis">
+                                                    <select v-model="passiveSkills[index].Trigger.tHis[Hindex]" v-if="passiveSkills[index].Trigger.tID != 18">
+                                                        <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
+                                                    </select>
+                                                    <select v-model="passiveSkills[index].Trigger.tHis[0]" v-if="passiveSkills[index].Trigger.tID == 18">
+                                                        <option value="1">指定なし</option>
+                                                        <option value="2">イルミネ</option>
+                                                        <option value="3">アンティーカ</option>
+                                                        <option value="4">方クラ</option>
+                                                        <option value="5">アルスト</option>
+                                                        <option value="6">ストレイ</option>
+                                                        <option value="7">ノクチル</option>
+                                                        <option value="8">シーズ</option>
+                                                        <option value="9">コメティック</option>
+                                                    </select>
+                                                </span>
+                                                {{  passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].parsedLabel[1] }}
+                                                <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].existX" style="padding-left: 10px;">
+                                                    <input type="number" style="width: 30px;" v-model="passiveSkills[index].Trigger.tX[0]">
+                                                    {{  passive_trigger.triggerList[passive_trigger.findByTriggerID(passiveSkills[index].Trigger.tID)].parsedLabel[2] }}
+                                                </span>
+                                            </span>
+                                        </p>
+                                        <div @click="plusHistory(index)" class="btn" style="font-size: 13px;" v-if="passiveSkills[index].Trigger.tID == 2 || passiveSkills[index].Trigger.tID == 3">履歴を追加</div>
+                                    </div>
+                                    <div class="passiveSettingArea">
+                                        <span>
+                                            ［確率:
+                                            <select v-model="passiveSkills[index].Probability">
+                                                <option v-for="probability in [5,10,15,20,25,30,35,40,45,50]" :value="probability">{{ probability }}</option>
+                                            </select>
+                                            %］
+                                        </span><br v-if="mobileView">
+                                        <span>
+                                            ［最大
+                                            <select v-model="passiveSkills[index].Times">
+                                                <option v-for="times in [1,2,3,4,5]" :value="times">{{ times }}</option>
+                                            </select>
+                                            回］
+                                        </span>
+                                    </div>
+                                    <div v-if="(passiveSkills[index].Class[1]=='passiveDelete')" class="background-blur" style="position: absolute; top: 0; right: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; border-radius: 10px;">
+                                        <div>
+                                            <button class="passiveDelBtn">
+                                                <img src="../assets/trashCan.png" alt="消去" @click="deletePassive(index)">
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div style="position: absolute; display: block; top: 0; right: 0px; width: 30px; padding: 10px; text-align: center;" @click="passiveDeleteToggle(index)">
+                                        <span class="meet-points"></span>
+                                    </div>
                                 </div>
-                                <button class="passiveDelBtn"><img src="../assets/trashCan.png" alt="消去" @click="deletePassive(index)"></button>
                             </li>
                             <div class="btn" @click="plusPassive()">パッシブを追加</div>
-                            <!-- <div class="btn" @click="passiveTemp.open()">テンプレートから追加</div> -->
                         </ul>
                     </div>
                 </section>
             </li>
             <li>
                 <section>
-                    <h2 v-bind:class="formationSettingClass" @click="toggleAccBtn('formationSetting', displayFormationSetting)">編成</h2>
-                    <div class="accBox" v-if="displayFormationSetting">
+                    <h2 v-bind:class="accAreaDisplay.formationSetting.class" @click="toggleAccBtn('formationSetting', 0)">編成</h2>
+                    <div class="accBox" v-if="accAreaDisplay.formationSetting.boolean">
                         <ul>
                             <li v-for="(fesIdolStatus, fesIdolIndex) in fesIdols" v-bind:id="fesIdolStatus.Position">
-                                <div style="width: 100%; padding-left: 10px;">
-                                    <div style="display: flex;">
-                                        <h3 class="positionName">{{ fesIdolStatus.Position }} : </h3>
+                                <div class="accBox" style="padding: 0px 10px; margin: 0;">
+                                    <div @click.self="toggleAccBtn('fesIdolSetting', fesIdolIndex)" style="user-select: none; cursor: pointer;">
+                                        <span :class="accAreaDisplay.fesIdolSetting[fesIdolIndex].class" @click.self="toggleAccBtn('fesIdolSetting', fesIdolIndex)">{{ fesIdolStatus.Position }} : </span>
                                         <select v-model="fesIdols[fesIdolIndex].Idol" style="margin: 5px;" @change="setLinkTrigger(fesIdolIndex)">
                                             <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
                                         </select>
                                     </div>
-                                    <div style="margin: 5px;">
-                                        Vo: <input type="number" v-model="fesIdols[fesIdolIndex].Status.VoValue" style="width: 60px;">
-                                        Da: <input type="number" v-model="fesIdols[fesIdolIndex].Status.DaValue" style="width: 60px;"><br v-if="mobileView">
-                                        Vi: <input type="number" v-model="fesIdols[fesIdolIndex].Status.ViValue" style="width: 60px;">
-                                        Me: <input type="number" v-model="fesIdols[fesIdolIndex].Status.MeValue" style="width: 60px;">
-                                    </div>
-                                    <div style="margin: 5px;">
-                                        思い出レベル: 
-                                        <select v-model="fesIdols[fesIdolIndex].MemorieLevel" style="margin: 5px;">
-                                            <option value='1'>1</option>
-                                            <option value='2'>2</option>
-                                            <option value='3'>3</option>
-                                            <option value='4'>4</option>
-                                            <option value='5'>Max</option>
-                                        </select>
-                                    </div>
-                                    <p>ライブスキル</p>
-                                    <ul style="padding-left: 0;">
-                                        <li v-for="(liveSkills, lindex) in fesIdols[fesIdolIndex].LiveSkill" style="display: block;">
-                                            優先順位:
-                                            <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Priority"
-                                                @change="prioritySelected()">
-                                                <option v-for="(priorityLists, pIndex) in priorityList" v-bind:value="priorityLists.priority" v-bind:class="priorityList[pIndex].selectedClass" v-bind:disabled="priorityDisable(pIndex)">{{ priorityLists.priority }}
-                                                </option>
+                                    <div v-if="accAreaDisplay.fesIdolSetting[fesIdolIndex].boolean">
+                                        <div style="margin: 5px;">
+                                            Vo: <input type="number" v-model="fesIdols[fesIdolIndex].Status.VoValue" style="width: 60px;">
+                                            Da: <input type="number" v-model="fesIdols[fesIdolIndex].Status.DaValue" style="width: 60px;"><br v-if="mobileView">
+                                            Vi: <input type="number" v-model="fesIdols[fesIdolIndex].Status.ViValue" style="width: 60px;">
+                                            Me: <input type="number" v-model="fesIdols[fesIdolIndex].Status.MeValue" style="width: 60px;">
+                                        </div>
+                                        <div style="margin: 5px;">
+                                            思い出レベル: 
+                                            <select v-model="fesIdols[fesIdolIndex].MemorieLevel" style="margin: 5px;">
+                                                <option value='1'>1</option>
+                                                <option value='2'>2</option>
+                                                <option value='3'>3</option>
+                                                <option value='4'>4</option>
+                                                <option value='5'>Max</option>
                                             </select>
-                                            <div style="padding: 3px;">
-                                                <div v-for="(LSeffect, aIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal" style="padding: 2px;">
-                                                    アピール: 
-                                                    <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aID" @change="displayUpdate()">
-                                                        <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
-                                                        </option>
-                                                    </select>
-                                                    <span v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aID != 1">
-                                                        <br v-if="mobileView">属性:
-                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aAttribute">
-                                                            <option value="Vo">Vo</option>
-                                                            <option value="Da">Da</option>
-                                                            <option value="Vi">Vi</option>
-                                                            <option value="Excellent">Excellent</option>
-                                                        </select>
-                                                    </span>
-                                                    <span v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aID != 1" style="padding-left: 10px;"> N:
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aValue">
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div @click="plusLiveSkillAppeal(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">アピールを追加</div>
-                                            <div style="padding: 3px;">
-                                                <div v-for="(LSeffect, lsIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Effect">
-                                                    効果: 
-                                                    <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID" @change="displayUpdate()">
-                                                        <option v-for="liveSkillEffects in skill_effect.liveSkillEffect" v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
-                                                        </option>
-                                                    </select><br v-if="mobileView">
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existM" style="padding-left: 10px;">
-                                                        M: 
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eTurn[1]">
-                                                        <br>
-                                                    </span>
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existAttribute" style="padding-left: 10px;">
-                                                        属性:
-                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eNote">
-                                                            <option value="Vo">Vo</option>
-                                                            <option value="Da">Da</option>
-                                                            <option value="Vi">Vi</option>
-                                                        </select><br v-if="mobileView">
-                                                    </span>
-                                                    <span v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID == 2">
-                                                        :
-                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eValue">
-                                                            <option v-for="idols in idol_list.duetList" v-bind:value="idols.ID">{{ idols.Name }}</option>
-                                                        </select>
-                                                    </span>
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existN" style="padding-left: 10px;"> N:
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eValue"><br v-if="mobileView">
-                                                    </span>
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existTurn" style="padding-left: 10px;">
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eTurn[0]">
-                                                        ターン<br v-if="mobileView">
-                                                    </span>
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existTime" style="padding-left: 10px;">
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eTime"> 回
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div @click="plusLiveSkillEffect(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">スキル効果を追加</div>
-                                            <div style="padding: 3px;">
-                                                追加効果:
-                                                <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType" @change="displayUpdate()">
-                                                    <option value='Link'>Link</option>
-                                                    <option value='Plus'>Plus</option>
-                                                    <!-- <option value='Change'>Change</option> -->
-                                                </select>
-                                            </div>
-                                            <div v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType == 'Plus'" style="padding: 3px;">
-                                                <div>
-                                                    <input type="number" style="margin-left: 10px; width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltAfter" min="1" v-bind:max="vault.maxTurn">ターン以降<br v-if="mobileView">
-                                                    <input type="number" style="margin-left: 10px; width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltBefore" min="1" v-bind:max="vault.maxTurn">ターン以前　<br v-if="mobileView">
-                                                </div>
-                                                <div v-for="(plusTriggers, pIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList" style="padding-top: 3px;">
-                                                    発動条件:
-                                                    <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID" @change="clearPAppealHistry(fesIdolIndex, lindex, pIndex)">
-                                                        <option v-for="passiveTrigers in passive_trigger.triggerList" v-bind:value="passiveTrigers.ID">{{ passiveTrigers.label }}</option>
-                                                    </select>
-                                                    <!-- X の入力 -->
-                                                    <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID)].existX" style="padding-left: 10px;"> X:
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltX">
-                                                    </span>
-                                                    <div v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 2 || fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 3">
-                                                        <!-- 履歴 -->
-                                                        <span v-for="(his, LHindex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis">
-                                                            履歴:
-                                                            <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis[LHindex]">
-                                                                <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
-                                                            </select>
-                                                        </span>
-                                                        <div @click="plusPAppealHistory(fesIdolIndex, lindex, pIndex)" class="btn" style="font-size: 13px;">履歴を追加</div>
-                                                    </div>
-                                                    <div v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 18">
-                                                        <!-- 履歴(ユニット人数) -->
-                                                        <span>
-                                                            ユニット:
-                                                            <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis[0]">
-                                                                <option value="1">指定なし</option>
-                                                                <option value="2">イルミネ</option>
-                                                                <option value="3">アンティーカ</option>
-                                                                <option value="4">方クラ</option>
-                                                                <option value="5">アルスト</option>
-                                                                <option value="6">ストレイ</option>
-                                                                <option value="7">ノクチル</option>
-                                                                <option value="8">シーズ</option>
-                                                            </select>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div @click="plusPAppealTrigger(fesIdolIndex, lindex)" class="btn" style="font-size: 11px; margin-top: 3px;">発動条件を追加</div>
-                                            </div>
-                                            <div style="padding: 3px;" v-if="fesIdols[fesIdolIndex].Idol >= 20 && fesIdols[fesIdolIndex].Idol <= 23">
-                                                Link条件: {{ idol_list.idolList[idol_list.findByIdolID(fesIdols[fesIdolIndex].LiveSkill[lindex].LinkTrigger[0])].Name ?? "" }}
-                                                <span v-for="(LT, ltindex) in fesIdols[fesIdolIndex].LiveSkill[lindex].LinkTrigger">
-                                                    <select v-if="ltindex != 0" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].LinkTrigger[ltindex]" style="margin: 5px;" @change="displayUpdate()">
-                                                        <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
-                                                    </select>
-                                                </span>
-                                                <div @click="plusLinkTrigger(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">Link条件を追加</div>
-                                            </div>
-                                            <div style="padding: 3px;">
-                                                <div v-for="(LSeffect, laIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal" style="padding: 2px;">
-                                                    {{ fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType }}アピール: 
-                                                    <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laID" @change="displayUpdate()">
-                                                        <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
-                                                        </option>
-                                                    </select>
-                                                    <span v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laID != 1">
-                                                        <br v-if="mobileView">属性:
-                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laAttribute">
-                                                            <option value="Vo">Vo</option>
-                                                            <option value="Da">Da</option>
-                                                            <option value="Vi">Vi</option>
-                                                            <option value="Excellent">Excellent</option>
-                                                        </select>
-                                                    </span>
-                                                    <span v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laID != 1" style="padding-left: 10px;"> N:
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laValue">
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div @click="plusLinkAppeal(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">
-                                                {{ fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType }}アピールを追加</div>
-                                            <div style="padding: 3px;">
-                                                <div v-for="(LSeffect, leIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect" style="padding: 2px;">
-                                                    {{ fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType }}効果:
-                                                    <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID" @change="displayUpdate()">
-                                                        <option v-for="liveSkillEffects in skill_effect.liveSkillEffect" v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
-                                                        </option>
-                                                    </select><br v-if="mobileView">
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existM" style="padding-left: 10px;">
-                                                        M: 
-                                                        <input type="number" style="width: 30px;"
-                                                            v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leTurn[1]">
-                                                        <br>
-                                                    </span>
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existAttribute" style="padding-left: 10px;">
-                                                        属性:
-                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leNote">
-                                                            <option value="Vo">Vo</option>
-                                                            <option value="Da">Da</option>
-                                                            <option value="Vi">Vi</option>
-                                                        </select><br v-if="mobileView">
-                                                    </span>
-                                                    <span v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID == 2">
-                                                        :
-                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leValue">
-                                                            <option v-for="idols in idol_list.duetList" v-bind:value="idols.ID">{{ idols.Name }}</option>
-                                                        </select><br v-if="mobileView">
-                                                    </span>
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existN" style="padding-left: 10px;"> N:
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leValue"><br v-if="mobileView">
-                                                    </span>
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existTurn" style="padding-left: 10px;">
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leTurn[0]">
-                                                        ターン<br v-if="mobileView">
-                                                    </span>
-                                                    <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existTime" style="padding-left: 10px;">
-                                                        <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leTime"> 回
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div @click="plusLinkEffect(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">
-                                                {{ fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType }}効果を追加
-                                            </div>
-                                        </li>
-                                    </ul>
-                                    <div v-if="fesIdolIndex == 4">
-                                        <p>思い出アピール</p>
-                                        <ul style="padding-left: 0;">
-                                            <li style="display: block;">
+                                        </div>
+                                        <p style="margin: 5px; padding-left: 20px;">ライブスキル</p>
+                                        <ul>
+                                            <li v-for="(liveSkills, lindex) in fesIdols[fesIdolIndex].LiveSkill" style="display: block;">
+                                                <!-- 優先順位:
+                                                <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Priority"
+                                                    @change="prioritySelected()">
+                                                    <option v-for="(priorityLists, pIndex) in priorityList" v-bind:value="priorityLists.priority" v-bind:class="priorityList[pIndex].selectedClass" v-bind:disabled="priorityDisable(pIndex)">{{ priorityLists.priority }}
+                                                    </option>
+                                                </select> -->
                                                 <div style="padding: 3px;">
-                                                    <div v-for="(Meffect, maIndex) in fesIdols[fesIdolIndex].MemoryAppeal.mAppeal" style="padding: 2px;">
+                                                    <div v-for="(LSeffect, aIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal" style="padding: 2px;">
                                                         アピール: 
-                                                        <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maID" @change="displayUpdate()">
+                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aID" @change="displayUpdate()">
                                                             <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
                                                             </option>
                                                         </select>
-                                                        <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maID != 1">
-                                                            <br v-if="mobileView">属性:
-                                                            <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maAttribute">
-                                                                <option value="Vo">Vo</option>
-                                                                <option value="Da">Da</option>
-                                                                <option value="Vi">Vi</option>
+                                                        <p v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aID != 1" style="margin-bottom: 5px;">
+                                                            <select style="margin-left: 10px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aAttribute">
+                                                                <option value="Vo">Vocal</option>
+                                                                <option value="Da">Dance</option>
+                                                                <option value="Vi">Visual</option>
                                                                 <option value="Excellent">Excellent</option>
                                                             </select>
-                                                        </span>
-                                                        <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maID != 1" style="padding-left: 10px;"> N:
-                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maValue">
-                                                        </span>
+                                                            <br v-if="mobileView">
+                                                            <input type="number" style="width: 30px; margin-left: 10px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aValue">
+                                                            {{ skill_effect.liveSkillAppeal[skill_effect.findByAppealID(fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aID)].parsedLabel[0]  }}
+                                                            <br v-if="mobileView">
+                                                            <span v-if="skill_effect.liveSkillAppeal[skill_effect.findByAppealID(fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aID)].variable">
+                                                                {{ skill_effect.liveSkillAppeal[skill_effect.findByAppealID(fesIdols[fesIdolIndex].LiveSkill[lindex].Appeal[aIndex].aID)].parsedLabel[1]  }}
+                                                            </span>
+                                                        </p>
                                                     </div>
                                                 </div>
-                                                <div @click="plusMemory('appeal')" class="btn" style="font-size: 11px;">思い出アピールを追加</div>
+                                                <div @click="plusLiveSkillAppeal(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">アピールを追加</div>
                                                 <div style="padding: 3px;">
-                                                    <div v-for="(Meffect, meIndex) in fesIdols[fesIdolIndex].MemoryAppeal.mEffect">
+                                                    <div v-for="(LSeffect, lsIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Effect">
                                                         効果: 
-                                                        <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID" @change="displayUpdate()">
+                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID" @change="displayUpdate()">
                                                             <option v-for="liveSkillEffects in skill_effect.liveSkillEffect" v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
                                                             </option>
                                                         </select><br v-if="mobileView">
-                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existM" style="padding-left: 10px;">
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existM" style="padding-left: 10px;">
                                                             M: 
-                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meTurn[1]">
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eTurn[1]">
                                                             <br>
                                                         </span>
-                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existAttribute" style="padding-left: 10px;">
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existAttribute" style="padding-left: 10px;">
                                                             属性:
-                                                            <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meNote">
+                                                            <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eNote">
                                                                 <option value="Vo">Vo</option>
                                                                 <option value="Da">Da</option>
                                                                 <option value="Vi">Vi</option>
                                                             </select><br v-if="mobileView">
                                                         </span>
-                                                        <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID == 2">
+                                                        <span v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID == 2">
                                                             :
-                                                            <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meValue">
+                                                            <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eValue">
                                                                 <option v-for="idols in idol_list.duetList" v-bind:value="idols.ID">{{ idols.Name }}</option>
                                                             </select>
                                                         </span>
-                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existN" style="padding-left: 10px;"> N:
-                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meValue"><br v-if="mobileView">
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existN" style="padding-left: 10px;"> N:
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eValue"><br v-if="mobileView">
                                                         </span>
-                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existTurn" style="padding-left: 10px;">
-                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meTurn[0]">
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existTurn" style="padding-left: 10px;">
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eTurn[0]">
                                                             ターン<br v-if="mobileView">
                                                         </span>
-                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existTime" style="padding-left: 10px;">
-                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meTime"> 回
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eID)].existTime" style="padding-left: 10px;">
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Effect[lsIndex].eTime"> 回
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div @click="plusMemory('effect')" class="btn" style="font-size: 11px;">思い出効果を追加</div>
+                                                <div @click="plusLiveSkillEffect(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">スキル効果を追加</div>
+                                                <div style="background-color: rgba(0, 0, 0, 0.2); height: 3px; margin-top: 10px;"></div>
                                                 <div style="padding: 3px;">
-                                                    <div v-for="(LSeffect, mlaIndex) in fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal" style="padding: 2px;">
-                                                        Linkアピール: 
-                                                        <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID" @change="displayUpdate()">
+                                                    追加効果:
+                                                    <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType" @change="displayUpdate()">
+                                                        <option value='Link'>Link</option>
+                                                        <option value='Plus'>Plus</option>
+                                                        <!-- <option value='Change'>Change</option> -->
+                                                    </select>
+                                                </div>
+                                                <div v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType == 'Plus'" style="padding: 3px;">
+                                                    <div>
+                                                        <input type="number" style="margin-left: 10px; width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltAfter" min="1" v-bind:max="vault.maxTurn">ターン以降<br v-if="mobileView">
+                                                        <input type="number" style="margin-left: 10px; width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltBefore" min="1" v-bind:max="vault.maxTurn">ターン以前　<br v-if="mobileView">
+                                                    </div>
+                                                    <div v-for="(plusTriggers, pIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList" style="padding-top: 3px;">
+                                                        発動条件:
+                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID" @change="clearPAppealHistry(fesIdolIndex, lindex, pIndex)">
+                                                            <option v-for="passiveTrigers in passive_trigger.triggerList" v-bind:value="passiveTrigers.ID">{{ passiveTrigers.label }}</option>
+                                                        </select>
+                                                        <!-- X の入力 -->
+                                                        <span v-if="passive_trigger.triggerList[passive_trigger.findByTriggerID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID)].existX" style="padding-left: 10px;"> X:
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltX">
+                                                        </span>
+                                                        <div v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 2 || fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 3">
+                                                            <!-- 履歴 -->
+                                                            <span v-for="(his, LHindex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis">
+                                                                履歴:
+                                                                <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis[LHindex]">
+                                                                    <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
+                                                                </select>
+                                                            </span>
+                                                            <div @click="plusPAppealHistory(fesIdolIndex, lindex, pIndex)" class="btn" style="font-size: 13px;">履歴を追加</div>
+                                                        </div>
+                                                        <div v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltID == 18">
+                                                            <!-- 履歴(ユニット人数) -->
+                                                            <span>
+                                                                ユニット:
+                                                                <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lTrigger.ltList[pIndex].ltHis[0]">
+                                                                    <option value="1">指定なし</option>
+                                                                    <option value="2">イルミネ</option>
+                                                                    <option value="3">アンティーカ</option>
+                                                                    <option value="4">方クラ</option>
+                                                                    <option value="5">アルスト</option>
+                                                                    <option value="6">ストレイ</option>
+                                                                    <option value="7">ノクチル</option>
+                                                                    <option value="8">シーズ</option>
+                                                                </select>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div @click="plusPAppealTrigger(fesIdolIndex, lindex)" class="btn" style="font-size: 11px; margin-top: 3px;">発動条件を追加</div>
+                                                </div>
+                                                <div style="padding: 3px;" v-if="fesIdols[fesIdolIndex].Idol >= 20 && fesIdols[fesIdolIndex].Idol <= 23">
+                                                    Link条件: {{ idol_list.idolList[idol_list.findByIdolID(fesIdols[fesIdolIndex].LiveSkill[lindex].LinkTrigger[0])].Name ?? "" }}
+                                                    <span v-for="(LT, ltindex) in fesIdols[fesIdolIndex].LiveSkill[lindex].LinkTrigger">
+                                                        <select v-if="ltindex != 0" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].LinkTrigger[ltindex]" style="margin: 5px;" @change="displayUpdate()">
+                                                            <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
+                                                        </select>
+                                                    </span>
+                                                    <div @click="plusLinkTrigger(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">Link条件を追加</div>
+                                                </div>
+                                                <div style="padding: 3px;">
+                                                    <div v-for="(LSeffect, laIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal" style="padding: 2px;">
+                                                        {{ fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType }}アピール: 
+                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laID" @change="displayUpdate()">
                                                             <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
                                                             </option>
                                                         </select>
-                                                        <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID != 1">
-                                                            <br v-if="mobileView">属性:
-                                                            <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaAttribute">
+                                                        <p v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laID != 1" style="margin-bottom: 5px;">
+                                                            <select style="margin-left: 10px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laAttribute">
+                                                                <option value="Vo">Vocal</option>
+                                                                <option value="Da">Dance</option>
+                                                                <option value="Vi">Visual</option>
+                                                                <option value="Excellent">Excellent</option>
+                                                            </select>
+                                                            <br v-if="mobileView">
+                                                            <input type="number" style="width: 30px; margin-left: 10px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laValue">
+                                                            {{ skill_effect.liveSkillAppeal[skill_effect.findByAppealID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laID)].parsedLabel[0]  }}
+                                                            <br v-if="mobileView">
+                                                            <span v-if="skill_effect.liveSkillAppeal[skill_effect.findByAppealID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laID)].variable">
+                                                                {{ skill_effect.liveSkillAppeal[skill_effect.findByAppealID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lAppeal[laIndex].laID)].parsedLabel[1]  }}
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div @click="plusLinkAppeal(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">
+                                                    {{ fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType }}アピールを追加</div>
+                                                <div style="padding: 3px;">
+                                                    <div v-for="(LSeffect, leIndex) in fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect" style="padding: 2px;">
+                                                        {{ fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType }}効果:
+                                                        <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID" @change="displayUpdate()">
+                                                            <option v-for="liveSkillEffects in skill_effect.liveSkillEffect" v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
+                                                            </option>
+                                                        </select><br v-if="mobileView">
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existM" style="padding-left: 10px;">
+                                                            M: 
+                                                            <input type="number" style="width: 30px;"
+                                                                v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leTurn[1]">
+                                                            <br>
+                                                        </span>
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existAttribute" style="padding-left: 10px;">
+                                                            属性:
+                                                            <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leNote">
                                                                 <option value="Vo">Vo</option>
                                                                 <option value="Da">Da</option>
                                                                 <option value="Vi">Vi</option>
-                                                                <option value="Excellent">Excellent</option>
-                                                            </select>
+                                                            </select><br v-if="mobileView">
                                                         </span>
-                                                        <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID != 1" style="padding-left: 10px;"> N:
-                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaValue">
+                                                        <span v-if="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID == 2">
+                                                            :
+                                                            <select v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leValue">
+                                                                <option v-for="idols in idol_list.duetList" v-bind:value="idols.ID">{{ idols.Name }}</option>
+                                                            </select><br v-if="mobileView">
+                                                        </span>
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existN" style="padding-left: 10px;"> N:
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leValue"><br v-if="mobileView">
+                                                        </span>
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existTurn" style="padding-left: 10px;">
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leTurn[0]">
+                                                            ターン<br v-if="mobileView">
+                                                        </span>
+                                                        <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leID)].existTime" style="padding-left: 10px;">
+                                                            <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lEffect[leIndex].leTime"> 回
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div @click="plusMemory('link')" class="btn" style="font-size: 11px;">
-                                                    Linkアピールを追加
+                                                <div @click="plusLinkEffect(fesIdolIndex, lindex)" class="btn" style="font-size: 11px;">
+                                                    {{ fesIdols[fesIdolIndex].LiveSkill[lindex].Link.lType }}効果を追加
                                                 </div>
                                             </li>
                                         </ul>
-                                    </div>
-                                    <p>パッシブスキル</p>
-                                    <div>
-                                        <draggable v-model="fesIdols[fesIdolIndex].PassiveIndex" item-key="no" handle=".dragHandle" @end="displayUpdate()" animation="100">
-                                            <template #item="{ element, index }">
-                                                <ul style="padding-left: 0;">
-                                                    <li v-if="!mobileView" style="border-radius: 5px; margin: 2px; padding: 2px;" v-bind:class="passiveClass(element.fesIdolIndex, index)">
-                                                        <select v-model="element.index" @change="displayUpdate()">
-                                                            <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
-                                                        </select>
-                                                        <div style="display: flex;">
-                                                            <div class="btn" style="font-size: 12px; padding: 1px 10px; margin-right: 20px; user-select: none;" @click="unsetPassive(element.fesIdolIndex, index)">削除</div>
+                                        <div v-if="fesIdolIndex == 4">
+                                            <p>思い出アピール</p>
+                                            <ul style="padding-left: 0;">
+                                                <li style="display: block;">
+                                                    <div style="padding: 3px;">
+                                                        <div v-for="(Meffect, maIndex) in fesIdols[fesIdolIndex].MemoryAppeal.mAppeal" style="padding: 2px;">
+                                                            アピール: 
+                                                            <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maID" @change="displayUpdate()">
+                                                                <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
+                                                                </option>
+                                                            </select>
+                                                            <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maID != 1">
+                                                                <br v-if="mobileView">属性:
+                                                                <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maAttribute">
+                                                                    <option value="Vo">Vo</option>
+                                                                    <option value="Da">Da</option>
+                                                                    <option value="Vi">Vi</option>
+                                                                    <option value="Excellent">Excellent</option>
+                                                                </select>
+                                                            </span>
+                                                            <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maID != 1" style="padding-left: 10px;"> N:
+                                                                <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mAppeal[maIndex].maValue">
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div @click="plusMemory('appeal')" class="btn" style="font-size: 11px;">思い出アピールを追加</div>
+                                                    <div style="padding: 3px;">
+                                                        <div v-for="(Meffect, meIndex) in fesIdols[fesIdolIndex].MemoryAppeal.mEffect">
+                                                            効果: 
+                                                            <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID" @change="displayUpdate()">
+                                                                <option v-for="liveSkillEffects in skill_effect.liveSkillEffect" v-bind:value="liveSkillEffects.ID">{{ liveSkillEffects.label }}
+                                                                </option>
+                                                            </select><br v-if="mobileView">
+                                                            <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existM" style="padding-left: 10px;">
+                                                                M: 
+                                                                <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meTurn[1]">
+                                                                <br>
+                                                            </span>
+                                                            <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existAttribute" style="padding-left: 10px;">
+                                                                属性:
+                                                                <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meNote">
+                                                                    <option value="Vo">Vo</option>
+                                                                    <option value="Da">Da</option>
+                                                                    <option value="Vi">Vi</option>
+                                                                </select><br v-if="mobileView">
+                                                            </span>
+                                                            <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID == 2">
+                                                                :
+                                                                <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meValue">
+                                                                    <option v-for="idols in idol_list.duetList" v-bind:value="idols.ID">{{ idols.Name }}</option>
+                                                                </select>
+                                                            </span>
+                                                            <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existN" style="padding-left: 10px;"> N:
+                                                                <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meValue"><br v-if="mobileView">
+                                                            </span>
+                                                            <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existTurn" style="padding-left: 10px;">
+                                                                <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meTurn[0]">
+                                                                ターン<br v-if="mobileView">
+                                                            </span>
+                                                            <span v-if="skill_effect.liveSkillEffect[skill_effect.findByLiveEffectID(fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meID)].existTime" style="padding-left: 10px;">
+                                                                <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mEffect[meIndex].meTime"> 回
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div @click="plusMemory('effect')" class="btn" style="font-size: 11px;">思い出効果を追加</div>
+                                                    <div style="padding: 3px;">
+                                                        <div v-for="(LSeffect, mlaIndex) in fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal" style="padding: 2px;">
+                                                            Linkアピール: 
+                                                            <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID" @change="displayUpdate()">
+                                                                <option v-for="liveSkillAppeals in skill_effect.liveSkillAppeal" v-bind:value="liveSkillAppeals.ID">{{ liveSkillAppeals.label }}
+                                                                </option>
+                                                            </select>
+                                                            <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID != 1">
+                                                                <br v-if="mobileView">属性:
+                                                                <select v-model="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaAttribute">
+                                                                    <option value="Vo">Vo</option>
+                                                                    <option value="Da">Da</option>
+                                                                    <option value="Vi">Vi</option>
+                                                                    <option value="Excellent">Excellent</option>
+                                                                </select>
+                                                            </span>
+                                                            <span v-if="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaID != 1" style="padding-left: 10px;"> N:
+                                                                <input type="number" style="width: 30px;" v-model="fesIdols[fesIdolIndex].MemoryAppeal.mLink.mlAppeal[mlaIndex].mlaValue">
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div @click="plusMemory('link')" class="btn" style="font-size: 11px;">
+                                                        Linkアピールを追加
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <p>パッシブスキル</p>
+                                        <div>
+                                            <draggable v-model="fesIdols[fesIdolIndex].PassiveIndex" item-key="no" handle=".dragHandle" @end="displayUpdate()" animation="100">
+                                                <template #item="{ element, index }">
+                                                    <ul style="padding-left: 0;">
+                                                        <li v-if="!mobileView" style="display: flex; border-radius: 5px; margin: 2px; padding: 2px;" v-bind:class="passiveClass(element.fesIdolIndex, index)">
+                                                            <select v-model="element.index" @change="displayUpdate()">
+                                                                <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Class[0]" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
+                                                            </select>
+                                                            <div style="display: flex;">
+                                                                <div class="btn" style="font-size: 12px; padding: 1px 10px; margin-right: 20px; user-select: none;" @click="unsetPassive(element.fesIdolIndex, index)">削除</div>
+                                                                <div class="dragHandle">
+                                                                    <span></span>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                        <li v-if="mobileView" style="display: flex; border-radius: 5px; margin: 2px; padding: 2px; justify-content: space-between;" v-bind:class="passiveClass(element.fesIdolIndex, index)">
+                                                            <div v-if="mobileView" class="btn" style="font-size: 12px; padding: 1px 5px; margin: 0 5px; user-select: none;" @click="unsetPassive(element.fesIdolIndex, index)">削除</div>
+                                                            <select v-model="element.index" @change="displayUpdate()" style="width: 45vw;">
+                                                                <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Class[0]" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
+                                                            </select>
+                                                            <div style="display: flex;">
+                                                            </div>
                                                             <div class="dragHandle">
                                                                 <span></span>
                                                             </div>
-                                                        </div>
-                                                    </li>
-                                                    <li v-if="mobileView" style="border-radius: 5px; margin: 2px; padding: 2px; justify-content: space-between;" v-bind:class="passiveClass(element.fesIdolIndex, index)">
-                                                        <div v-if="mobileView" class="btn" style="font-size: 12px; padding: 1px 5px; margin: 0 5px; user-select: none;" @click="unsetPassive(element.fesIdolIndex, index)">削除</div>
-                                                        <select v-model="element.index" @change="displayUpdate()" style="width: 45vw;">
-                                                            <option v-for="(passive, aIndex) in passiveSkills" v-bind:class="passive.Color" v-bind:value="aIndex">【{{ passive.Name }}】{{ passive.Attribute }} {{ passive.Value }}%up</option>
-                                                        </select>
-                                                        <div style="display: flex;">
-                                                        </div>
-                                                        <div class="dragHandle">
-                                                            <span></span>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </template>
-                                        </draggable>
-                                        <div @click="setPassive(fesIdolIndex)" class="btn" style="font-size: 11px; margin-top: 5px;">パッシブスキルを追加</div>
+                                                        </li>
+                                                    </ul>
+                                                </template>
+                                            </draggable>
+                                            <div @click="setPassive(fesIdolIndex)" class="btn" style="font-size: 11px; margin-top: 5px;">パッシブスキルを追加</div>
+                                        </div>
                                     </div>
                                 </div>
                             </li>
@@ -488,9 +538,8 @@
             </li>
             <li>
                 <section>
-                    <h2 v-bind:class="detailSettingClass" @click="toggleAccBtn('detailSetting', displayDetailSetting)">
-                        その他の設定</h2>
-                    <div class="accBox" v-if="displayDetailSetting">
+                    <h2 v-bind:class="accAreaDisplay.detailSetting.class" @click="toggleAccBtn('detailSetting', 0)">その他の設定</h2>
+                    <div class="accBox" v-if="accAreaDisplay.detailSetting.boolean">
                         <ul>
                             <li>
                                 <div>
@@ -574,7 +623,6 @@
         </div>
         <input type="file" id="inputFile" style="display: none;" @change="inputSetting">
         <Simulation ref="simulationReady"></Simulation>
-        <PassiveTemplate ref="passiveTemp" @childEmit="setTemplatePassive"></PassiveTemplate>
         <div v-if="displayUpdateData">
             <!-- displayUpdate() の為の空要素 -->
         </div>
@@ -588,7 +636,6 @@ import * as skill_effect from '../logic/data/skillEffect'
 import * as idol_list from '../logic/data/idolList'
 import * as vault from '../logic/event/vault'
 import * as types from '../logic/data/type'
-import Help from './help.vue'
 import Simulation from './simulation.vue'
 import Header from './header.vue'
 import PassiveTemplate from './passiveTemplate.vue'
@@ -618,7 +665,7 @@ const setData = (data: {
             Name: data.passive[i].Name ?? ref("").value,
             Attribute: data.passive[i].Attribute ?? ref("").value,
             Value: data.passive[i].Value ?? ref().value,
-            Color: data.passive[i].Color ?? "white",
+            Class: data.passive[i].Class ?? ["white", ref("passiveDeleteCansel").value],
             Gold: data.passive[i].Gold ?? ref(false).value,
             Trigger: {
                 tID: data.passive[i].Trigger.tID ?? ref(1).value,
@@ -626,6 +673,7 @@ const setData = (data: {
                 tHis: data.passive[i].Trigger.tHis ?? [ref().value]
             },
             ActiveTurn: {
+                turnModel: data.passive[i].ActiveTurn.turnModel ?? ref(0).value,
                 after: data.passive[i].ActiveTurn.after ?? ref(1).value,
                 before: data.passive[i].ActiveTurn.before ?? ref(vault.maxTurn).value
             },
@@ -1124,46 +1172,79 @@ const deleteData = () => {
     }
 }
 
-// パッシブスキルの入力画面
-const passiveSettingClass = ref("accBtn close")
-const displayPassiveSetting = ref(true)
-
-// 編成の入力画面
-const formationSettingClass = ref("accBtn close")
-const displayFormationSetting = ref(true)
-
-// その他の設定画面
-const detailSettingClass = ref("accBtn close")
-const displayDetailSetting = ref(true)
+let accAreaDisplay = {
+    passive: {
+        class: "accBtn",
+        boolean: ref(false).value
+    },
+    formationSetting: {
+        class: "accBtn",
+        boolean: ref(false).value
+    },
+    fesIdolSetting: [
+        {
+            class: "accIdolBtn positionName",
+            boolean: ref(false).value
+        },
+        {
+            class: "accIdolBtn positionName",
+            boolean: ref(false).value
+        },
+        {
+            class: "accIdolBtn positionName",
+            boolean: ref(false).value
+        },
+        {
+            class: "accIdolBtn positionName",
+            boolean: ref(false).value
+        },
+        {
+            class: "accIdolBtn positionName",
+            boolean: ref(false).value
+        },
+    ],
+    detailSetting: {
+        class: "accBtn",
+        boolean: ref(false).value
+    }
+}
 
 // アコーディオンエリアのトグルスイッチ
-const toggleAccBtn = (eleClass: string, isBoxDisplay: boolean) => {
+const toggleAccBtn = (eleClass: string, index: number) => {
     if (eleClass == "passiveSetting") {
-        if (isBoxDisplay) {
-            passiveSettingClass.value = "accBtn";
-            displayPassiveSetting.value = false;
+        if (accAreaDisplay.passive.boolean) {
+            accAreaDisplay.passive.class = "accBtn";
+            accAreaDisplay.passive.boolean = false;
         } else {
-            passiveSettingClass.value = "accBtn close";
-            displayPassiveSetting.value = true;
+            accAreaDisplay.passive.class = "accBtn close";
+            accAreaDisplay.passive.boolean = true;
         }
     } else if (eleClass == "formationSetting") {
-        if (isBoxDisplay) {
-            formationSettingClass.value = "accBtn";
-            displayFormationSetting.value = false;
+        if (accAreaDisplay.formationSetting.boolean) {
+            accAreaDisplay.formationSetting.class = "accBtn";
+            accAreaDisplay.formationSetting.boolean = false;
         } else {
-            formationSettingClass.value = "accBtn close";
-            displayFormationSetting.value = true;
+            accAreaDisplay.formationSetting.class = "accBtn close";
+            accAreaDisplay.formationSetting.boolean = true;
+        }
+    } else if (eleClass == "fesIdolSetting") {
+        if (accAreaDisplay.fesIdolSetting[index].boolean) {
+            accAreaDisplay.fesIdolSetting[index].class = "accIdolBtn positionName";
+            accAreaDisplay.fesIdolSetting[index].boolean = false;
+        } else {
+            accAreaDisplay.fesIdolSetting[index].class = "accIdolBtn positionName close";
+            accAreaDisplay.fesIdolSetting[index].boolean = true;
         }
     } else if (eleClass == "detailSetting") {
-        if (isBoxDisplay) {
-            detailSettingClass.value = "accBtn";
-            displayDetailSetting.value = false;
+        if (accAreaDisplay.detailSetting.boolean) {
+            accAreaDisplay.detailSetting.class = "accBtn";
+            accAreaDisplay.detailSetting.boolean = false;
         } else {
-            detailSettingClass.value = "accBtn close";
-            displayDetailSetting.value = true;
+            accAreaDisplay.detailSetting.class = "accBtn close";
+            accAreaDisplay.detailSetting.boolean = true;
         }
     }
-
+    displayUpdate();
 }
 
 // 追加要素の反映
@@ -1193,12 +1274,12 @@ let passiveSkills: types.passive[] = [];
 const passiveColorCheck = (index: number, gold: boolean) => {
     if (passiveSkills[index].Value >= 75 || gold) {
         if (passiveSkills[index].Value >= 180 && !gold) {
-            passiveSkills[index].Color = "rainbow";
+            passiveSkills[index].Class[0] = "rainbow";
         } else {
-            passiveSkills[index].Color = "gold";
+            passiveSkills[index].Class[0] = "gold";
         }
     } else {
-        passiveSkills[index].Color = "white";
+        passiveSkills[index].Class[0] = "white";
     }
     displayUpdate();
 }
@@ -1207,9 +1288,9 @@ const passiveColorCheck = (index: number, gold: boolean) => {
 const plusPassive = () => {
     const newPassive: types.passive = {
         Name: ref("").value,
-        Attribute: ref("").value,
+        Attribute: ref("Vo").value,
         Value: ref().value,
-        Color: "white",
+        Class: ["white", ref("").value],
         Gold: ref(false).value,
         Trigger: {
             tID: ref(1).value,
@@ -1217,6 +1298,7 @@ const plusPassive = () => {
             tHis: [ref().value]
         },
         ActiveTurn: {
+            turnModel: ref(0).value,
             after: ref(1).value,
             before: ref(vault.maxTurn).value
         },
@@ -1249,11 +1331,12 @@ const deletePassive = (index: number) => {
     }
     displayUpdate();
 }
-
-// パッシブテンプレート
-const passiveTemp = ref();
-const setTemplatePassive = (passive:types.passive) => {
-    passiveSkills.push(passive);
+const passiveDeleteToggle = (index:number) => {
+    if(passiveSkills[index].Class[1]== "") {
+        passiveSkills[index].Class[1] = "passiveDelete"
+    }else {
+        passiveSkills[index].Class[1] = "";
+    }
     displayUpdate();
 }
 
@@ -1275,6 +1358,7 @@ const clearHistry = (index: number) => {
     passiveSkills[index].Trigger.tHis = [
         ref().value
     ];
+    turnRefresh(index);
     displayUpdate();
 }
 
@@ -1284,6 +1368,13 @@ const plusEffect = (index: number) => {
         eID: ref(1).value,
         eValue: ref(0).value
     });
+    displayUpdate();
+}
+
+// ターン初期化
+const turnRefresh = (index: number) => {
+    passiveSkills[index].ActiveTurn.after = 1;
+    passiveSkills[index].ActiveTurn.before = vault.maxTurn;
     displayUpdate();
 }
 
@@ -1298,10 +1389,10 @@ const setIdolList = () => {
             Position: positionList[i],
             MemorieLevel: ref().value,
             Status: {
-                VoValue: ref().value,
-                DaValue: ref().value,
-                ViValue: ref().value,
-                MeValue: ref().value
+                VoValue: ref(0).value,
+                DaValue: ref(0).value,
+                ViValue: ref(0).value,
+                MeValue: ref(0).value
             },
             LiveSkill: [
                 {
@@ -1319,12 +1410,12 @@ const setIdolList = () => {
                         eNote: ref().value
                     }],
                     Link: {
-                        lType: ref().value,
+                        lType: 'Link',
                         lTrigger: {
-                            ltBefore: ref().value,
-                            ltAfter: ref().value,
+                            ltBefore: ref(10).value,
+                            ltAfter: ref(1).value,
                             ltList: [{
-                                ltID: ref().value,
+                                ltID: ref(1).value,
                                 ltX: ref().value,
                                 ltHis: [ref().value]
                             }]
@@ -1359,12 +1450,12 @@ const setIdolList = () => {
                         eNote: ref().value
                     }],
                     Link: {
-                        lType: ref().value,
+                        lType: 'Link',
                         lTrigger: {
-                            ltBefore: ref().value,
-                            ltAfter: ref().value,
+                            ltBefore: ref(10).value,
+                            ltAfter: ref(1).value,
                             ltList: [{
-                                ltID: ref().value,
+                                ltID: ref(1).value,
                                 ltX: ref().value,
                                 ltHis: [ref().value]
                             }]
@@ -1580,7 +1671,7 @@ const unsetPassive = (index: number, deleteIndex: number) => {
 const passiveClass = (index: number, pasIndex: number) => {
     let returnColor;
     if (passiveSkills[fesIdols[index].PassiveIndex[pasIndex].index]) {
-        returnColor = passiveSkills[fesIdols[index].PassiveIndex[pasIndex].index].Color;
+        returnColor = passiveSkills[fesIdols[index].PassiveIndex[pasIndex].index].Class[0];
     } else {
         returnColor = "white"
     }
@@ -1673,10 +1764,8 @@ const snavBtnActive = () => {
         displayUpdate()
     }
 }
-const displayUserHelp = ref()
 const userHelp = () => {
-    // location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
-    displayUserHelp.value.open()
+    location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
 }
 
 // モバイル切り替え
@@ -1721,6 +1810,25 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
     appearance: textfield;
+}
+
+/* general purpose */
+.background-blur {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.meet-points {
+    display: inline-block;
+    vertical-align: middle;
+    color: #333;
+    line-height: 1;
+    width: 0.25em;
+    height: 0.25em;
+    background: currentColor;
+    border-radius: 50%;
+    box-shadow: -0.375em 0 0 0 currentColor, 0.375em 0 0 0 currentColor;
 }
 
 /* smallnav-btn setting
@@ -1944,6 +2052,7 @@ input[type="number"] {
     cursor: pointer;
     font-size: 1rem;
     font-weight: normal;
+	padding: 0 0 0 16px;
     padding: 1% 0 1% 5%;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
 }
@@ -1956,31 +2065,70 @@ input[type="number"] {
     width: 15px;
     height: 2px;
     background-color: #333;
-
 }
 
 .accBtn::before {
     top: 48%;
     left: 15px;
     transform: rotate(0deg);
-
+    transition: 0.5s;
 }
 
 .accBtn::after {
     top: 48%;
     left: 15px;
     transform: rotate(90deg);
-
+    transition: 0.5s;
 }
 
 /*　closeというクラスがついたら形状変化　*/
 .accBtn.close::before {
     transform: rotate(45deg);
+    transition: 0.5s;
 }
 
 .accBtn.close::after {
-    transform: rotate(-45deg);
+    transform: rotate(135deg);
+    transition: 0.5s;
 }
+
+/* アイコン < */
+.accIdolBtn {
+	position: relative;
+	display: inline-block;
+	padding: 0 0 0 16px;
+	vertical-align: middle;
+	text-decoration: none;
+    -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+.accIdolBtn::before,
+.accIdolBtn::after {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	margin: auto;
+	content: "";
+	vertical-align: middle;
+}
+
+.accIdolBtn::before {
+	left: 3px;
+	width: 4px;
+	height: 4px;
+	border-top: 2px solid rgb(43, 43, 43);
+	border-right: 2px solid rgb(43, 43, 43);
+	-webkit-transform: rotate(45deg);
+	transform: rotate(45deg);
+    transition: 0.2s;
+}
+
+/*　closeというクラスがついたら形状変化　*/
+.accIdolBtn.close::before {
+    transform: rotate(135deg);
+    transition: 0.2s;
+}
+
 
 /* accordion box style */
 .accBox {
@@ -1989,11 +2137,10 @@ input[type="number"] {
 
 .accBox ul {
     list-style: none;
-    padding-right: 40px;
+    padding: 0 40px;
 }
 
 .accBox ul>li, .accBox ul div>li {
-    display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px;
@@ -2005,24 +2152,20 @@ input[type="number"] {
     border-radius: 10px;
 }
 
-.accBox ul li>button {
+.passiveDelBtn {
     opacity: .7;
-    height: 50px;
+    padding: 20px;
     border: none;
     border-radius: 10px;
-}
-
-.accBox ul li>button:hover {
-    opacity: 1;
-}
-
-.passiveDelBtn {
     cursor:pointer;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
 }
+.passiveDelBtn:hover {
+    opacity: 1;
+}
 
 .passiveDelBtn>img {
-    height: 40px;
+    height: 90px;
 }
 
 .gold {
@@ -2060,6 +2203,7 @@ input[type="number"] {
     width: fit-content;
     /* other browsers */
     padding: 3px 10px;
+    margin-left: 70px;
     border: 1px solid rgba(0, 0, 0, .3);
     border-radius: 10px;
     cursor: pointer;
@@ -2138,7 +2282,7 @@ input[type="number"] {
     }
 
     .accBox ul {
-        padding-right: 0;
+        padding: 0 5px;
     }
     
     .accBox ul>li, .accBox ul div>li {
@@ -2152,13 +2296,8 @@ input[type="number"] {
     .btn {
         margin: 0 0 0 auto;
     }
-
-    .passiveDelBtn {
-        padding: 2px;
-        margin-left: 5px;
-    }
     .passiveDelBtn>img {
-        width: 30px;
+        width: 60px;
         height: auto;
     }
     

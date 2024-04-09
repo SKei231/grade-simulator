@@ -38,7 +38,7 @@ export type fesIdol = {
         ViValue: number,
         MeValue: number
     },
-    LiveSkill: [{
+    LiveSkill: {
         Priority: number,
         Appeal: [{
             aID: number,
@@ -55,11 +55,12 @@ export type fesIdol = {
         Link: {
             lType: "Link" | "Plus" | "Change",
             lTrigger: {
+                ltModel: number,
                 ltBefore: number,
                 ltAfter: number,
                 ltList: [{
                     ltID: number,
-                    ltX: number,
+                    ltX: number[],
                     ltHis: number[]
                 }]
             },
@@ -77,46 +78,7 @@ export type fesIdol = {
             }]
         },
         LinkTrigger: number[]
-    }, {
-        Priority: number,
-        Appeal: [{
-            aID: number,
-            aValue: number,
-            aAttribute: "Vo" | "Da" | "Vi" | "Excellent"
-        }],
-        Effect: [{
-            eID: number,
-            eValue: number,
-            eTurn: number[],
-            eTime: number,
-            eNote: string
-        }],
-        Link: {
-            lType: "Link" | "Plus" | "Change",
-            lTrigger: {
-                ltBefore: number,
-                ltAfter: number,
-                ltList: [{
-                    ltID: number,
-                    ltX: number,
-                    ltHis: number[]
-                }]
-            },
-            lAppeal: [{
-                laID: number,
-                laValue: number,
-                laAttribute: "Vo" | "Da" | "Vi" | "Excellent"
-            }],
-            lEffect: [{
-                leID: number,
-                leValue: number,
-                leTurn: number[],
-                leTime: number,
-                leNote: string
-            }]
-        },
-        LinkTrigger: number[]
-    }],
+    }[],
     PassiveIndex: [{
         index: number,
         times: number,

@@ -210,7 +210,9 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
                         errerMessage.push(fesIdol[i].Position + ' のPlusアピールの発動条件を選択してください');
                     }
                     // ltX
-                    if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltX && triggerList[findByTriggerID(fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID)].existX) {
+                    if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltX[0] && triggerList[findByTriggerID(fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID)].existX) {
+                        errerMessage.push(fesIdol[i].Position + ' のPlusアピールの発動条件の数値を入力してください');
+                    }else if(!fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltX[1] && triggerList[findByTriggerID(fesIdol[i].LiveSkill[j].Link.lTrigger.ltList[plusI].ltID)].existY) {
                         errerMessage.push(fesIdol[i].Position + ' のPlusアピールの発動条件の数値を入力してください');
                     }
                     // ltHis

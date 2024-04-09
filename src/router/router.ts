@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import InputField from '../components/inputField.vue'
+import Index from '../components/index.vue'
 import Result from '../components/result.vue'
 
 const routes = [
-  { path: '/', name: 'Index', component: InputField},
+  { path: '/', name: 'Index', component: Index},
   { path: '/Result', name: 'Result', component: Result}
 ]
 

@@ -445,7 +445,7 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "メンタル【M】%減らし最大〇%UP",
+        label: "メンタル〇%減らし最大△%UP",
         parsedLabel: ["メンタル", "%減らし最大","%UP"],
         ID: 19,
         existN: true,
@@ -691,8 +691,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "【M】ターンの間 回避時〇%UP",
-        parsedLabel: ["ターンの間 回避率", "%UP"],
+        label: "〇ターンの間 回避時△%UP",
+        parsedLabel: ["","ターンの間 回避時", "%UP"],
         ID: 16,
         existN: true,
         existM: true,
@@ -715,8 +715,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "【M】ターンの間 ダメージ時〇%UP",
-        parsedLabel: ["ターンの間 ダメージ時", "%UP"],
+        label: "〇ターンの間 ダメージ時△%UP",
+        parsedLabel: ["","ターンの間 ダメージ時", "%UP"],
         ID: 17,
         existN: true,
         existM: true,

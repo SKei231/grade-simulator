@@ -402,6 +402,7 @@ const liveSkillAppeal = (turn:number) => {
                     if(checker) { // 履歴のヒットがなかった場合
                         return false;
                     }else if(scanningIndex == linkList.length){ // 履歴全てがヒットした場合
+                        console.log("link")
                         return true;
                     }else {
                         checker = true;

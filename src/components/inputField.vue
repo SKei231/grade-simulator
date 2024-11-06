@@ -1,5 +1,5 @@
 <template>
-    <div id="contents">
+    <div :class="contents">
         <ul class="accArea">
             <li>
                 <section>
@@ -11,7 +11,8 @@
                                     <div class="passiveSettingArea">
                                         パッシブ名:
                                         <input type="text" v-model="passiveSkills[index].Name" style="margin-right: 20px;" placeholder="パッシブの名前を入力" @change="displayUpdate()"><br v-if="mobileView">
-                                        <input type="checkbox" v-bind:id="goldID(index)" style="margin-left: 10px;" v-model="passiveSkills[index].Gold" @change="passiveColorCheck(index, passiveSkills[index].Gold)"><label v-bind:for="goldID(index)">金パッシブ</label>
+                                        <input type="checkbox" v-bind:id="GRID(index, 'gold')" style="margin-left: 10px; margin-top: 10px;" v-model="passiveSkills[index].Gold" @change="passiveColorCheck(index, passiveSkills[index].Gold,  passiveSkills[index].Rainbow)"><label v-bind:for="GRID(index, 'gold')">金パッシブ</label>
+                                        <input type="checkbox" v-bind:id="GRID(index, 'rainbow')" style="margin-left: 10px; margin-top: 10px;" v-model="passiveSkills[index].Rainbow" @change="passiveColorCheck(index, passiveSkills[index].Gold, passiveSkills[index].Rainbow)"><label v-bind:for="GRID(index, 'rainbow')">虹パッシブ</label>
                                     </div>
                                     <div class="passiveSettingArea">
                                         <select v-model="passiveSkills[index].Attribute">
@@ -23,7 +24,7 @@
                                             <option value="ViVo">Vi & Vo</option>
                                             <option value="All">Vo & Da & Vi</option>
                                         </select>
-                                        <input type="number" v-model="passiveSkills[index].Value" v-on:change="passiveColorCheck(index, passiveSkills[index].Gold)" style="width: 50px; margin-left: 10px;">%up<br v-if="mobileView">
+                                        <input type="number" v-model="passiveSkills[index].Value" v-on:change="passiveColorCheck(index, passiveSkills[index].Gold,  passiveSkills[index].Rainbow)" style="width: 50px; margin-left: 10px;">%up<br v-if="mobileView">
                                     </div>
                                     <div class="passiveSettingArea" v-for="(ef, Eindex) in passiveSkills[index].Effect">
                                         効果:
@@ -148,7 +149,7 @@
                         <ul>
                             <li v-for="(fesIdolStatus, fesIdolIndex) in fesIdols" v-bind:id="fesIdolStatus.Position">
                                 <div class="accBox" style="padding: 0px 10px; margin: 0;">
-                                    <div @click.self="toggleAccBtn('fesIdolSetting', fesIdolIndex)" style="user-select: none; cursor: pointer;">
+                                    <div @click.self="toggleAccBtn('fesIdolSetting', fesIdolIndex)" style="user-select: none; cursor: pointer; display: block;">
                                         <span :class="accAreaDisplay.fesIdolSetting[fesIdolIndex].class" @click.self="toggleAccBtn('fesIdolSetting', fesIdolIndex)">{{ fesIdolStatus.Position }} : </span>
                                         <select v-model="fesIdols[fesIdolIndex].Idol" style="margin: 5px;" @change="setLinkTrigger(fesIdolIndex)">
                                             <option v-for="idols in idol_list.idolList" v-bind:value="idols.ID">{{ idols.Name }}</option>
@@ -561,58 +562,107 @@
                     <div class="accBox" v-if="accAreaDisplay.detailSetting.boolean">
                         <ul>
                             <li>
-                                <div>
-                                    <label for="damage">審査員ダメージ（影響力）</label>
-                                    <input type="number" id="damage" v-model="detailSetting.damage">
+                                <div @click.self="toggleAccBtn('advancedSetting', 0)" style="user-select: none; cursor: pointer;">
+                                    <span :class="accAreaDisplay.advancedSetting[0].class" @click.self="toggleAccBtn('advancedSetting', 0)">メンタルダメージ系</span>
                                 </div>
+                                <ul v-if="accAreaDisplay.advancedSetting[0].boolean">
+                                    <li>
+                                        <label for="damage">審査員ダメージ（影響力）</label>
+                                        <input type="number" id="damage" v-model="detailSetting.damage">
+                                    </li>
+                                    <li>
+                                        <label for="damageStrong">打たれ強いを取得した人数</label>
+                                        <input type="number" id="damageStrong" v-model="detailSetting.damageStrong" max="5">
+                                    </li>
+                                    <li>
+                                        <label for="damageWeak">打たれ弱いを取得した人数</label>
+                                        <input type="number" id="damageWeak" v-model="detailSetting.damageWeak" max="5">
+                                    </li>
+                                </ul>
                             </li>
                             <li>
-                                <div>
-                                    <label for="damageStrong">打たれ強いを取得した人数</label>
-                                    <input type="number" id="damageStrong" v-model="detailSetting.damageStrong" max="5">
+                                <div @click.self="toggleAccBtn('advancedSetting', 1)" style="user-select: none; cursor: pointer;">
+                                    <span :class="accAreaDisplay.advancedSetting[1].class" @click.self="toggleAccBtn('advancedSetting', 1)">思い出アピール系</span>
                                 </div>
+                                <ul v-if="accAreaDisplay.advancedSetting[1].boolean">
+                                    <li>
+                                        <label for="maxMemory">パラコレの数</label>
+                                        <select v-model="detailSetting.maxMemory" id="maxMemory" style="margin: 5px; width: 100px;" @change="displayUpdate()">
+                                            <option value="1000">0</option>
+                                            <option value="2000">1</option>
+                                            <option value="1900">2</option>
+                                            <option value="1800">3</option>
+                                            <option value="1700">4</option>
+                                            <option value="1600">5</option>
+                                        </select>
+                                        <br v-if="mobileView">
+                                        <span>思い出ゲージ最大値：{{ detailSetting.maxMemory/10 }}</span>
+                                    </li>
+                                    <li>
+                                        <label for="romanticist">ロマンチスト を取得した人数</label>
+                                        <select v-model="detailSetting.romanticist" id="romanticist" style="margin: 5px; width: 100px;" @change="displayUpdate()">
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </li>
+                                    <li>
+                                        <label for="omonouDPlus">思い出(ノウハウ)++ を取得した人数</label>
+                                        <select v-model="detailSetting.omonouDPlus" id="omonouDPlus" style="margin: 5px; width: 100px;" @change="displayUpdate()">
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </li>
+                                    <li>
+                                        <label for="omonouPlus">思い出(ノウハウ)+ を取得した人数</label>
+                                        <select v-model="detailSetting.omonouPlus" id="omonouPlus" style="margin: 5px; width: 100px;" @change="displayUpdate()">
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </li>
+                                    <li>
+                                        <label for="omonoukakin">思い出増加量 +2% を取得した人数</label>
+                                        <select v-model="detailSetting.omonoukakin" id="omonoukakin" style="margin: 5px; width: 100px;" @change="displayUpdate()">
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </li>
+                                    <li>
+                                        <label for="omonouElse">その他の思い出加速（合計%）</label>
+                                        <br v-if="mobileView">
+                                        <input type="number" id="omonouElse" v-model="detailSetting.omonouElse">
+                                    </li>
+                                </ul>
                             </li>
                             <li>
-                                <div>
-                                    <label for="damageWeak">打たれ弱いを取得した人数</label>
-                                    <input type="number" id="damageWeak" v-model="detailSetting.damageWeak" max="5">
+                                <div @click.self="toggleAccBtn('advancedSetting', 2)" style="user-select: none; cursor: pointer;">
+                                    <span :class="accAreaDisplay.advancedSetting[2].class" @click.self="toggleAccBtn('advancedSetting', 2)">注目度系</span>
                                 </div>
-                            </li>
-                            <li>
-                                <div>
-                                    <label for="">思い出(ノウハウ)++ を取得した人数</label>
-                                    <input type="number" id="omonouDPlus" v-model="detailSetting.omonouDPlus" max="5">
-                                </div>
-                            </li>
-                            <li>
-                                <div>
-                                    <label for="">思い出(ノウハウ)+ を取得した人数</label>
-                                    <input type="number" id="omonouPlus" v-model="detailSetting.omonouPlus" max="5">
-                                </div>
-                            </li>
-                            <li>
-                                <div>
-                                    <label for="">思い出増加量 +2% を取得した人数</label>
-                                    <input type="number" id="omonoukakin" v-model="detailSetting.omonoukakin" max="5">
-                                </div>
-                            </li>
-                            <li>
-                                <div>
-                                    <label for="">その他の思い出加速（%）</label>
-                                    <input type="number" id="omonouElse" v-model="detailSetting.omonouElse">
-                                </div>
-                            </li>
-                            <li>
-                                <div>
-                                    <label for="">注目の的 を取得した人数</label>
-                                    <input type="number" id="centerOfAttention" v-model="detailSetting.centerOfAttention" max="5">
-                                </div>
-                            </li>
-                            <li>
-                                <div>
-                                    <label for="">ひかえめ を取得した人数</label>
-                                    <input type="number" id="noAttention" v-model="detailSetting.noAttention" max="5">
-                                </div>
+                                <ul v-if="accAreaDisplay.advancedSetting[2].boolean">
+                                    <li>
+                                        <label for="">注目の的 を取得した人数</label>
+                                        <input type="number" id="centerOfAttention" v-model="detailSetting.centerOfAttention" max="5">
+                                    </li>
+                                    <li>
+                                        <label for="">ひかえめ を取得した人数</label>
+                                        <input type="number" id="noAttention" v-model="detailSetting.noAttention" max="5">
+                                    </li>
+                                </ul>
                             </li>
                         </ul>
                     </div>
@@ -621,10 +671,16 @@
         </ul>
         <input type="file" id="inputFile" style="display: none;" @change="inputSetting">
         <Simulation ref="simulationReady"></Simulation>
-        <div v-if="displayUpdateData">
-            <!-- displayUpdate() の為の空要素 -->
-        </div>
+        <span :key="renderKey"><!-- displayUpdate() の為の空要素 --></span>
     </div>
+    <Navigate 
+        @naviActive="naviActive"
+        @simulationOpen="simulationOpen"
+        @setLocalStorage="setLocalStorage"
+        @openFile="openFile"
+        @outputSetting="outputSetting"
+        @deleteData="deleteData">
+    </Navigate>
 </template>
 
 <script setup lang="ts">
@@ -636,6 +692,7 @@ import * as vault from '../logic/event/vault'
 import * as types from '../logic/data/type'
 import Simulation from './simulation.vue'
 import draggable from 'vuedraggable'
+import Navigate from './inputNavi.vue'
 
 
 // localStorage から読み込み
@@ -656,428 +713,503 @@ const setData = (data: {
 }) => {
     // パッシブ
     passiveSkills = []
-    for (let i = 0; i < data.passive.length; i++) {
-        let newPassive: types.passive = {
-            Name: data.passive[i].Name ?? ref("").value,
-            Attribute: data.passive[i].Attribute ?? ref("").value,
-            Value: data.passive[i].Value ?? ref().value,
-            Class: data.passive[i].Class ?? ["white", ref("passiveDeleteCansel").value],
-            Gold: data.passive[i].Gold ?? ref(false).value,
-            Trigger: {
-                tID: data.passive[i].Trigger.tID ?? ref(1).value,
-                tX: data.passive[i].Trigger.tX ?? [ref().value, ref().value],
-                tHis: data.passive[i].Trigger.tHis ?? [ref().value]
-            },
-            ActiveTurn: {
-                turnModel: data.passive[i].ActiveTurn.turnModel ?? ref(0).value,
-                after: data.passive[i].ActiveTurn.after ?? ref(1).value,
-                before: data.passive[i].ActiveTurn.before ?? ref(vault.maxTurn).value
-            },
-            Probability: data.passive[i].Probability ?? ref().value,
-            Times: data.passive[i].Times ?? ref().value,
-            Effect: data.passive[i].Effect ?? [
-                {
-                    eID: ref(1).value,
-                    eValue: ref().value
+    try {
+        for (let i = 0; i < data.passive.length; i++) {
+            let newPassive: types.passive = {
+                Name: data.passive[i].Name ?? ref("").value,
+                Attribute: data.passive[i].Attribute ?? ref("").value,
+                Value: data.passive[i].Value ?? ref().value,
+                Class: data.passive[i].Class ?? ["white", ref("passiveDeleteCansel").value],
+                Gold: data.passive[i].Gold ?? ref(false).value,
+                Rainbow: data.passive[i].Rainbow ?? ref(false).value,
+                Trigger: {
+                    tID: data.passive[i].Trigger.tID ?? ref(1).value,
+                    tX: data.passive[i].Trigger.tX ?? [ref().value, ref().value],
+                    tHis: data.passive[i].Trigger.tHis ?? [ref().value]
+                },
+                ActiveTurn: {
+                    turnModel: data.passive[i].ActiveTurn.turnModel ?? ref(0).value,
+                    after: data.passive[i].ActiveTurn.after ?? ref(1).value,
+                    before: data.passive[i].ActiveTurn.before ?? ref(vault.maxTurn).value
+                },
+                Probability: data.passive[i].Probability ?? ref().value,
+                Times: data.passive[i].Times ?? ref().value,
+                Effect: data.passive[i].Effect ?? [
+                    {
+                        eID: ref(1).value,
+                        eValue: ref().value
+                    }
+                ]
+            }
+            for (let j = 0; j < data.passive[i].Effect.length; j++) {
+                if (typeof newPassive.Effect[j].eID !== "number") {
+                    newPassive.Effect[j].eID = ref(1).value
                 }
-            ]
-        }
-        for (let j = 0; j < data.passive[i].Effect.length; j++) {
-            if (typeof newPassive.Effect[j].eID !== "number") {
-                newPassive.Effect[j].eID = ref(1).value
+                if (typeof newPassive.Effect[j].eValue !== "number") {
+                    newPassive.Effect[j].eValue = ref().value
+                }
             }
-            if (typeof newPassive.Effect[j].eValue !== "number") {
-                newPassive.Effect[j].eValue = ref().value
+            if(typeof data.passive[i].Trigger.tX === "number") {
+                newPassive.Trigger.tX = [ref(data.passive[i].Trigger.tX).value, ref().value];
             }
+            passiveSkills.push(newPassive);
         }
-        if(typeof data.passive[i].Trigger.tX === "number") {
-            newPassive.Trigger.tX = [ref(data.passive[i].Trigger.tX).value, ref().value];
+        for(let i = 0; i < passiveSkills.length; i++) {
+            passiveColorCheck(i, passiveSkills[i].Gold, passiveSkills[i].Rainbow);
         }
-        passiveSkills.push(newPassive);
+    } catch (error) {
+        window.alert("パッシブの読み込みに失敗しました");
+        console.log(error);
+        passiveSkills = [];
     }
     if(inputFileType == 0) {
         // 編成
         fesIdols = []
-        for (let i = 0; i < 5; i++) {
-            let newFesIdol: types.fesIdol = {
-                Idol: data.fesIdol[i].Idol ?? ref().value,
-                Position: data.fesIdol[i].Position ?? positionList[i],
-                MemorieLevel: data.fesIdol[i].MemorieLevel ?? ref().value,
-                Status: {
-                    VoValue: data.fesIdol[i].Status.VoValue ?? ref().value,
-                    DaValue: data.fesIdol[i].Status.DaValue ?? ref().value,
-                    ViValue: data.fesIdol[i].Status.ViValue ?? ref().value,
-                    MeValue: data.fesIdol[i].Status.MeValue ?? ref().value
-                },
-                LiveSkill: [
-                    {
-                        Priority: data.fesIdol[i].LiveSkill[0].Priority ?? ref().value,
-                        Appeal: data.fesIdol[i].LiveSkill[0].Appeal ?? [{
-                            aID: ref(1).value,
-                            aValue: ref().value,
-                            aAttribute: ref().value
-                        }],
-                        Effect: data.fesIdol[i].LiveSkill[0].Effect ?? [{
-                            eID: ref(1).value,
-                            eValue: ref().value,
-                            eTurn: [ref().value, ref().value],
-                            eTime: ref().value,
-                            eNote: ref().value
-                        }],
-                        Link: {
-                            lType: data.fesIdol[i].LiveSkill[0].Link.lType ?? ref('Link').value,
-                            lTrigger: data.fesIdol[i].LiveSkill[0].Link.lTrigger ?? {
-                                ltBefore: ref(vault.maxTurn).value,
-                                ltAfter: ref(1).value,
-                                ltList: [{
-                                    ltID: ref(1).value,
-                                    ltX: [ref().value, ref().value],
-                                    ltHis: [ref().value]
-                                }]
-                            },
-                            lAppeal: data.fesIdol[i].LiveSkill[0].Link.lAppeal ?? [{
-                                laID: ref(1).value,
-                                laValue: ref().value,
-                                laAttribute: ref().value
-                            }],
-                            lEffect: data.fesIdol[i].LiveSkill[0].Link.lEffect ?? [{
-                                leID: ref(1).value,
-                                leValue: ref().value,
-                                leTurn: [ref().value, ref().value],
-                                leTime: ref().value,
-                                leNote: ref().value
-                            }],
-                        },
-                        LinkTrigger: data.fesIdol[i].LiveSkill[0].LinkTrigger ?? [ref().value]
+        try {
+            for (let i = 0; i < 5; i++) {
+                let newFesIdol: types.fesIdol = {
+                    Idol: data.fesIdol[i].Idol ?? ref().value,
+                    Position: data.fesIdol[i].Position ?? positionList[i],
+                    MemorieLevel: data.fesIdol[i].MemorieLevel ?? ref().value,
+                    Status: {
+                        VoValue: data.fesIdol[i].Status.VoValue ?? ref().value,
+                        DaValue: data.fesIdol[i].Status.DaValue ?? ref().value,
+                        ViValue: data.fesIdol[i].Status.ViValue ?? ref().value,
+                        MeValue: data.fesIdol[i].Status.MeValue ?? ref().value
                     },
-                    {
-                        Priority: data.fesIdol[i].LiveSkill[1].Priority ?? ref().value,
-                        Appeal: data.fesIdol[i].LiveSkill[1].Appeal ?? [{
-                            aID: ref(1).value,
-                            aValue: ref().value,
-                            aAttribute: ref().value
-                        }],
-                        Effect: data.fesIdol[i].LiveSkill[1].Effect ?? [{
-                            eID: ref(1).value,
-                            eValue: ref().value,
-                            eTurn: [ref().value, ref().value],
-                            eTime: ref().value,
-                            eNote: ref().value
-                        }],
-                        Link: {
-                            lType: data.fesIdol[i].LiveSkill[1].Link.lType ?? ref('Link').value,
-                            lTrigger: data.fesIdol[i].LiveSkill[1].Link.lTrigger ?? {
-                                ltBefore: ref(vault.maxTurn).value,
-                                ltAfter: ref(1).value,
-                                ltList: [{
-                                    ltID: ref(1).value,
-                                    ltX: [ref().value, ref().value],
-                                    ltHis: [ref().value]
-                                }]
+                    LiveSkill: [
+                        {
+                            Priority: data.fesIdol[i].LiveSkill[0].Priority ?? ref().value,
+                            Appeal: data.fesIdol[i].LiveSkill[0].Appeal ?? [{
+                                aID: ref(1).value,
+                                aValue: ref().value,
+                                aAttribute: ref().value
+                            }],
+                            Effect: data.fesIdol[i].LiveSkill[0].Effect ?? [{
+                                eID: ref(1).value,
+                                eValue: ref().value,
+                                eTurn: [ref().value, ref().value],
+                                eTime: ref().value,
+                                eNote: ref().value
+                            }],
+                            Link: {
+                                lType: data.fesIdol[i].LiveSkill[0].Link.lType ?? ref('Link').value,
+                                lTrigger: data.fesIdol[i].LiveSkill[0].Link.lTrigger ?? {
+                                    ltBefore: ref(vault.maxTurn).value,
+                                    ltAfter: ref(1).value,
+                                    ltList: [{
+                                        ltID: ref(1).value,
+                                        ltX: [ref().value, ref().value],
+                                        ltHis: [ref().value]
+                                    }]
+                                },
+                                lAppeal: data.fesIdol[i].LiveSkill[0].Link.lAppeal ?? [{
+                                    laID: ref(1).value,
+                                    laValue: ref().value,
+                                    laAttribute: ref().value
+                                }],
+                                lEffect: data.fesIdol[i].LiveSkill[0].Link.lEffect ?? [{
+                                    leID: ref(1).value,
+                                    leValue: ref().value,
+                                    leTurn: [ref().value, ref().value],
+                                    leTime: ref().value,
+                                    leNote: ref().value
+                                }],
                             },
-                            lAppeal: data.fesIdol[i].LiveSkill[1].Link.lAppeal ?? [{
-                                laID: ref(1).value,
-                                laValue: ref().value,
-                                laAttribute: ref().value
-                            }],
-                            lEffect: data.fesIdol[i].LiveSkill[1].Link.lEffect ?? [{
-                                leID: ref(1).value,
-                                leValue: ref().value,
-                                leTurn: [ref().value, ref().value],
-                                leTime: ref().value,
-                                leNote: ref().value
-                            }],
+                            LinkTrigger: data.fesIdol[i].LiveSkill[0].LinkTrigger ?? [ref().value]
                         },
-                        LinkTrigger: data.fesIdol[i].LiveSkill[1].LinkTrigger ?? [ref().value]
+                        {
+                            Priority: data.fesIdol[i].LiveSkill[1].Priority ?? ref().value,
+                            Appeal: data.fesIdol[i].LiveSkill[1].Appeal ?? [{
+                                aID: ref(1).value,
+                                aValue: ref().value,
+                                aAttribute: ref().value
+                            }],
+                            Effect: data.fesIdol[i].LiveSkill[1].Effect ?? [{
+                                eID: ref(1).value,
+                                eValue: ref().value,
+                                eTurn: [ref().value, ref().value],
+                                eTime: ref().value,
+                                eNote: ref().value
+                            }],
+                            Link: {
+                                lType: data.fesIdol[i].LiveSkill[1].Link.lType ?? ref('Link').value,
+                                lTrigger: data.fesIdol[i].LiveSkill[1].Link.lTrigger ?? {
+                                    ltBefore: ref(vault.maxTurn).value,
+                                    ltAfter: ref(1).value,
+                                    ltList: [{
+                                        ltID: ref(1).value,
+                                        ltX: [ref().value, ref().value],
+                                        ltHis: [ref().value]
+                                    }]
+                                },
+                                lAppeal: data.fesIdol[i].LiveSkill[1].Link.lAppeal ?? [{
+                                    laID: ref(1).value,
+                                    laValue: ref().value,
+                                    laAttribute: ref().value
+                                }],
+                                lEffect: data.fesIdol[i].LiveSkill[1].Link.lEffect ?? [{
+                                    leID: ref(1).value,
+                                    leValue: ref().value,
+                                    leTurn: [ref().value, ref().value],
+                                    leTime: ref().value,
+                                    leNote: ref().value
+                                }],
+                            },
+                            LinkTrigger: data.fesIdol[i].LiveSkill[1].LinkTrigger ?? [ref().value]
+                        }
+                    ],
+                    PassiveIndex: data.fesIdol[i].PassiveIndex ?? [],
+                    MemoryAppeal: data.fesIdol[i].MemoryAppeal ?? {
+                        mAppeal: [{
+                            maID: ref(1).value,
+                            maValue: ref().value,
+                            maAttribute: ref().value
+                        }],
+                        mEffect: [{
+                            meID: ref().value,
+                            meValue: ref().value,
+                            meTurn: [ref().value, ref().value],
+                            meTime: ref().value,
+                            meNote: ref().value
+                        }],
+                        mLink: {
+                            mlAppeal: [{
+                                mlaID: ref(1).value,
+                                mlaValue: ref().value,
+                                mlaAttribute: ref().value
+                            }]
+                        }
                     }
-                ],
-                PassiveIndex: data.fesIdol[i].PassiveIndex ?? [],
-                MemoryAppeal: data.fesIdol[i].MemoryAppeal ?? {
-                    mAppeal: [{
-                        maID: ref(1).value,
-                        maValue: ref().value,
-                        maAttribute: ref().value
-                    }],
-                    mEffect: [{
-                        meID: ref().value,
-                        meValue: ref().value,
-                        meTurn: [ref().value, ref().value],
-                        meTime: ref().value,
-                        meNote: ref().value
-                    }],
-                    mLink: {
-                        mlAppeal: [{
-                            mlaID: ref(1).value,
-                            mlaValue: ref().value,
-                            mlaAttribute: ref().value
-                        }]
+                }
+                for (let j = 0; j < newFesIdol.LiveSkill[0].Appeal.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[0].Appeal[j].aID !== "number") {
+                        newFesIdol.LiveSkill[0].Appeal[j].aID = ref(1).value
+                    }
+                    if (typeof newFesIdol.LiveSkill[0].Appeal[j].aValue !== "number") {
+                        newFesIdol.LiveSkill[0].Appeal[j].aValue = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[0].Appeal[j].aAttribute !== "string") {
+                        newFesIdol.LiveSkill[0].Appeal[j].aAttribute = ref().value
                     }
                 }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[0].Appeal.length; j++) {
-                if (typeof newFesIdol.LiveSkill[0].Appeal[j].aID !== "number") {
-                    newFesIdol.LiveSkill[0].Appeal[j].aID = ref(1).value
-                }
-                if (typeof newFesIdol.LiveSkill[0].Appeal[j].aValue !== "number") {
-                    newFesIdol.LiveSkill[0].Appeal[j].aValue = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[0].Appeal[j].aAttribute !== "string") {
-                    newFesIdol.LiveSkill[0].Appeal[j].aAttribute = ref().value
-                }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[0].Effect.length; j++) {
-                if (typeof newFesIdol.LiveSkill[0].Effect[j].eID !== "number") {
-                    newFesIdol.LiveSkill[0].Effect[j].eID = ref(1).value
-                }
-                try {
-                    if (typeof newFesIdol.LiveSkill[0].Effect[j].eTurn[0] !== "number" && typeof newFesIdol.LiveSkill[0].Effect[j].eTurn[1] !== "number") {
+                for (let j = 0; j < newFesIdol.LiveSkill[0].Effect.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[0].Effect[j].eID !== "number") {
+                        newFesIdol.LiveSkill[0].Effect[j].eID = ref(1).value
+                    }
+                    try {
+                        if (typeof newFesIdol.LiveSkill[0].Effect[j].eTurn[0] !== "number" && typeof newFesIdol.LiveSkill[0].Effect[j].eTurn[1] !== "number") {
+                            newFesIdol.LiveSkill[0].Effect[j].eTurn = [ref().value, ref().value]
+                        }
+                    }catch (error) {
                         newFesIdol.LiveSkill[0].Effect[j].eTurn = [ref().value, ref().value]
                     }
-                }catch (error) {
-                    newFesIdol.LiveSkill[0].Effect[j].eTurn = [ref().value, ref().value]
-                }
-                if (typeof newFesIdol.LiveSkill[0].Effect[j].eTime !== "number") {
-                    newFesIdol.LiveSkill[0].Effect[j].eTime = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[0].Effect[j].eValue !== "number") {
-                    newFesIdol.LiveSkill[0].Effect[j].eValue = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[0].Effect[j].eNote !== "string") {
-                    newFesIdol.LiveSkill[0].Effect[j].eNote = ref().value
-                }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lTrigger.ltList.length; j++) {
-                if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltID !== "number") {
-                    newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltID = ref(1).value
-                }
-                if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[0] !== "number") {
-                    newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[0] = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[1] !== "number") {
-                    newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[1] = ref().value
-                }
-                for(let p = 0; p < newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis.length; p++) {
-                    if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis[p] !== "number") {
-                        newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis[p] = ref().value
+                    if (typeof newFesIdol.LiveSkill[0].Effect[j].eTime !== "number") {
+                        newFesIdol.LiveSkill[0].Effect[j].eTime = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[0].Effect[j].eValue !== "number") {
+                        newFesIdol.LiveSkill[0].Effect[j].eValue = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[0].Effect[j].eNote !== "string") {
+                        newFesIdol.LiveSkill[0].Effect[j].eNote = ref().value
                     }
                 }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lAppeal.length; j++) {
-                if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laID !== "number") {
-                    newFesIdol.LiveSkill[0].Link.lAppeal[j].laID = ref(1).value
+                for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lTrigger.ltList.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltID !== "number") {
+                        newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltID = ref(1).value
+                    }
+                    try {
+                        if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[0] !== "number") {
+                            newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[0] = ref().value
+                        }
+                    } catch (error) {
+                        newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX = [ref().value, ref().value]
+                    }
+                    try {
+                        if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[1] !== "number") {
+                            newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[1] = ref().value
+                        }
+                    } catch (error) {
+                        newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX = [newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltX[0], ref().value]
+                    }
+                    for(let p = 0; p < newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis.length; p++) {
+                        if (typeof newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis[p] !== "number") {
+                            newFesIdol.LiveSkill[0].Link.lTrigger.ltList[j].ltHis[p] = ref().value
+                        }
+                    }
                 }
-                if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laValue !== "number") {
-                    newFesIdol.LiveSkill[0].Link.lAppeal[j].laValue = ref().value
+                for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lAppeal.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laID !== "number") {
+                        newFesIdol.LiveSkill[0].Link.lAppeal[j].laID = ref(1).value
+                    }
+                    if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laValue !== "number") {
+                        newFesIdol.LiveSkill[0].Link.lAppeal[j].laValue = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laAttribute !== "string") {
+                        newFesIdol.LiveSkill[0].Link.lAppeal[j].laAttribute = ref().value
+                    }
                 }
-                if (typeof newFesIdol.LiveSkill[0].Link.lAppeal[j].laAttribute !== "string") {
-                    newFesIdol.LiveSkill[0].Link.lAppeal[j].laAttribute = ref().value
-                }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lEffect.length; j++) {
-                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leID !== "number") {
-                    newFesIdol.LiveSkill[0].Link.lEffect[j].leID = ref(1).value
-                }
-                try {
-                    if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn[0] !== "number" && typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn[1] !== "number") {
+                for (let j = 0; j < newFesIdol.LiveSkill[0].Link.lEffect.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leID !== "number") {
+                        newFesIdol.LiveSkill[0].Link.lEffect[j].leID = ref(1).value
+                    }
+                    try {
+                        if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn[0] !== "number" && typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn[1] !== "number") {
+                            newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn = [ref().value, ref().value]
+                        }
+                    } catch (error) {
                         newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn = [ref().value, ref().value]
                     }
-                } catch (error) {
-                    newFesIdol.LiveSkill[0].Link.lEffect[j].leTurn = [ref().value, ref().value]
-                }
-                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTime !== "number") {
-                    newFesIdol.LiveSkill[0].Link.lEffect[j].leTime = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leValue !== "number") {
-                    newFesIdol.LiveSkill[0].Link.lEffect[j].leValue = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leNote !== "string") {
-                    newFesIdol.LiveSkill[0].Link.lEffect[j].leNote = ref().value
-                }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[0].LinkTrigger.length; j++) {
-                if (typeof newFesIdol.LiveSkill[0].LinkTrigger[j] !== "number") {
-                    newFesIdol.LiveSkill[0].LinkTrigger[j] = ref().value
-                }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[1].Appeal.length; j++) {
-                if (typeof newFesIdol.LiveSkill[1].Appeal[j].aID !== "number") {
-                    newFesIdol.LiveSkill[1].Appeal[j].aID = ref(1).value
-                }
-                if (typeof newFesIdol.LiveSkill[1].Appeal[j].aValue !== "number") {
-                    newFesIdol.LiveSkill[1].Appeal[j].aValue = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[1].Appeal[j].aAttribute !== "string") {
-                    newFesIdol.LiveSkill[1].Appeal[j].aAttribute = ref().value
-                }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[1].Effect.length; j++) {
-                if (typeof newFesIdol.LiveSkill[1].Effect[j].eID !== "number") {
-                    newFesIdol.LiveSkill[1].Effect[j].eID = ref(1).value
-                }
-                try {
-                    if (typeof newFesIdol.LiveSkill[1].Effect[j].eTurn[0] !== "number" && typeof newFesIdol.LiveSkill[1].Effect[j].eTurn[1] !== "number") {
-                        newFesIdol.LiveSkill[1].Effect[j].eTurn = [ref().value, ref().value]
+                    if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leTime !== "number") {
+                        newFesIdol.LiveSkill[0].Link.lEffect[j].leTime = ref().value
                     }
-                } catch (error) {
-                        newFesIdol.LiveSkill[1].Effect[j].eTurn = [ref().value, ref().value]
-                }
-                if (typeof newFesIdol.LiveSkill[1].Effect[j].eTime !== "number") {
-                    newFesIdol.LiveSkill[1].Effect[j].eTime = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[1].Effect[j].eValue !== "number") {
-                    newFesIdol.LiveSkill[1].Effect[j].eValue = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[1].Effect[j].eNote !== "string") {
-                    newFesIdol.LiveSkill[1].Effect[j].eNote = ref().value
-                }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lTrigger.ltList.length; j++) {
-                if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltID !== "number") {
-                    newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltID = ref(1).value
-                }
-                if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[0] !== "number") {
-                    newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[0] = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[1] !== "number") {
-                    newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[1] = ref().value
-                }
-                for(let k = 0; k < newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis.length; k++) {
-                    if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis[k] !== "number") {
-                        newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis[k] = ref().value
+                    if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leValue !== "number") {
+                        newFesIdol.LiveSkill[0].Link.lEffect[j].leValue = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[0].Link.lEffect[j].leNote !== "string") {
+                        newFesIdol.LiveSkill[0].Link.lEffect[j].leNote = ref().value
                     }
                 }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lAppeal.length; j++) {
-                if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laID !== "number") {
-                    newFesIdol.LiveSkill[1].Link.lAppeal[j].laID = ref(1).value
+                for (let j = 0; j < newFesIdol.LiveSkill[0].LinkTrigger.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[0].LinkTrigger[j] !== "number") {
+                        newFesIdol.LiveSkill[0].LinkTrigger[j] = ref().value
+                    }
                 }
-                if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laValue !== "number") {
-                    newFesIdol.LiveSkill[1].Link.lAppeal[j].laValue = ref().value
+                for (let j = 0; j < newFesIdol.LiveSkill[1].Appeal.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[1].Appeal[j].aID !== "number") {
+                        newFesIdol.LiveSkill[1].Appeal[j].aID = ref(1).value
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Appeal[j].aValue !== "number") {
+                        newFesIdol.LiveSkill[1].Appeal[j].aValue = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Appeal[j].aAttribute !== "string") {
+                        newFesIdol.LiveSkill[1].Appeal[j].aAttribute = ref().value
+                    }
                 }
-                if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laAttribute !== "string") {
-                    newFesIdol.LiveSkill[1].Link.lAppeal[j].laAttribute = ref().value
+                for (let j = 0; j < newFesIdol.LiveSkill[1].Effect.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[1].Effect[j].eID !== "number") {
+                        newFesIdol.LiveSkill[1].Effect[j].eID = ref(1).value
+                    }
+                    try {
+                        if (typeof newFesIdol.LiveSkill[1].Effect[j].eTurn[0] !== "number" && typeof newFesIdol.LiveSkill[1].Effect[j].eTurn[1] !== "number") {
+                            newFesIdol.LiveSkill[1].Effect[j].eTurn = [ref().value, ref().value]
+                        }
+                    } catch (error) {
+                            newFesIdol.LiveSkill[1].Effect[j].eTurn = [ref().value, ref().value]
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Effect[j].eTime !== "number") {
+                        newFesIdol.LiveSkill[1].Effect[j].eTime = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Effect[j].eValue !== "number") {
+                        newFesIdol.LiveSkill[1].Effect[j].eValue = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Effect[j].eNote !== "string") {
+                        newFesIdol.LiveSkill[1].Effect[j].eNote = ref().value
+                    }
                 }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lEffect.length; j++) {
-                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leID !== "number") {
-                    newFesIdol.LiveSkill[1].Link.lEffect[j].leID = ref(1).value
+                for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lTrigger.ltList.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltID !== "number") {
+                        newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltID = ref(1).value
+                    }
+                    try {
+                        if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[0] !== "number") {
+                            newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[0] = ref().value
+                        }
+                    } catch (error) {
+                        newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX = [ref().value, ref().value]
+                    }
+                    try {
+                        if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[1] !== "number") {
+                            newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[1] = ref().value
+                        }
+                    } catch (error) {
+                        newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX = [ref(newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltX[0]).value, ref().value]
+                    }
+                    for(let k = 0; k < newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis.length; k++) {
+                        if (typeof newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis[k] !== "number") {
+                            newFesIdol.LiveSkill[1].Link.lTrigger.ltList[j].ltHis[k] = ref().value
+                        }
+                    }
                 }
-                try {
-                    if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn[0] !== "number" && typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn[1] !== "number") {
+                for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lAppeal.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laID !== "number") {
+                        newFesIdol.LiveSkill[1].Link.lAppeal[j].laID = ref(1).value
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laValue !== "number") {
+                        newFesIdol.LiveSkill[1].Link.lAppeal[j].laValue = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Link.lAppeal[j].laAttribute !== "string") {
+                        newFesIdol.LiveSkill[1].Link.lAppeal[j].laAttribute = ref().value
+                    }
+                }
+                for (let j = 0; j < newFesIdol.LiveSkill[1].Link.lEffect.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leID !== "number") {
+                        newFesIdol.LiveSkill[1].Link.lEffect[j].leID = ref(1).value
+                    }
+                    try {
+                        if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn[0] !== "number" && typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn[1] !== "number") {
+                            newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn = [ref().value, ref().value]
+                        }
+                    } catch (error) {
                         newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn = [ref().value, ref().value]
                     }
-                } catch (error) {
-                    newFesIdol.LiveSkill[1].Link.lEffect[j].leTurn = [ref().value, ref().value]
-                }
-                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTime !== "number") {
-                    newFesIdol.LiveSkill[1].Link.lEffect[j].leTime = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leValue !== "number") {
-                    newFesIdol.LiveSkill[1].Link.lEffect[j].leValue = ref().value
-                }
-                if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leNote !== "string") {
-                    newFesIdol.LiveSkill[1].Link.lEffect[j].leNote = ref().value
-                }
-            }
-            for (let j = 0; j < newFesIdol.LiveSkill[1].LinkTrigger.length; j++) {
-                if (typeof newFesIdol.LiveSkill[1].LinkTrigger[j] !== "number") {
-                    newFesIdol.LiveSkill[1].LinkTrigger[j] = ref().value
-                }
-            }
-            for(let j = 0; j < newFesIdol.PassiveIndex.length; j++) {
-                if (typeof newFesIdol.PassiveIndex[j].index !== "number") {
-                    newFesIdol.PassiveIndex[j] = {
-                        index: ref(0).value,
-                        times: ref().value,
-                        fesIdolIndex: i
+                    if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leTime !== "number") {
+                        newFesIdol.LiveSkill[1].Link.lEffect[j].leTime = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leValue !== "number") {
+                        newFesIdol.LiveSkill[1].Link.lEffect[j].leValue = ref().value
+                    }
+                    if (typeof newFesIdol.LiveSkill[1].Link.lEffect[j].leNote !== "string") {
+                        newFesIdol.LiveSkill[1].Link.lEffect[j].leNote = ref().value
                     }
                 }
-                try {
-                    if(typeof newFesIdol.PassiveIndex[j].fesIdolIndex !== "number") {
-                        newFesIdol.PassiveIndex[j].fesIdolIndex = i;
-                    }
-                } catch (error) {
-                    newFesIdol.PassiveIndex[j] = {
-                        index: ref(newFesIdol.PassiveIndex[j].index).value,
-                        times: ref().value,
-                        fesIdolIndex: i
+                for (let j = 0; j < newFesIdol.LiveSkill[1].LinkTrigger.length; j++) {
+                    if (typeof newFesIdol.LiveSkill[1].LinkTrigger[j] !== "number") {
+                        newFesIdol.LiveSkill[1].LinkTrigger[j] = ref().value
                     }
                 }
-            }
-            for(let j = 0; j < newFesIdol.MemoryAppeal.mAppeal.length; j++) {
-                if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maID !== "number") {
-                    newFesIdol.MemoryAppeal.mAppeal[j].maID = ref(1).value
+                for(let j = 0; j < newFesIdol.PassiveIndex.length; j++) {
+                    if (typeof newFesIdol.PassiveIndex[j].index !== "number") {
+                        newFesIdol.PassiveIndex[j] = {
+                            index: ref(0).value,
+                            times: ref().value,
+                            fesIdolIndex: i
+                        }
+                    }
+                    try {
+                        if(typeof newFesIdol.PassiveIndex[j].fesIdolIndex !== "number") {
+                            newFesIdol.PassiveIndex[j].fesIdolIndex = i;
+                        }
+                    } catch (error) {
+                        newFesIdol.PassiveIndex[j] = {
+                            index: ref(newFesIdol.PassiveIndex[j].index).value,
+                            times: ref().value,
+                            fesIdolIndex: i
+                        }
+                    }
                 }
-                if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maValue !== "number") {
-                    newFesIdol.MemoryAppeal.mAppeal[j].maValue = ref().value
+                for(let j = 0; j < newFesIdol.MemoryAppeal.mAppeal.length; j++) {
+                    if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maID !== "number") {
+                        newFesIdol.MemoryAppeal.mAppeal[j].maID = ref(1).value
+                    }
+                    if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maValue !== "number") {
+                        newFesIdol.MemoryAppeal.mAppeal[j].maValue = ref().value
+                    }
+                    if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maAttribute !== "string") {
+                        newFesIdol.MemoryAppeal.mAppeal[j].maAttribute = ref().value
+                    }
                 }
-                if (typeof newFesIdol.MemoryAppeal.mAppeal[j].maAttribute !== "string") {
-                    newFesIdol.MemoryAppeal.mAppeal[j].maAttribute = ref().value
-                }
-            }
-            for(let j = 0; j < newFesIdol.MemoryAppeal.mEffect.length; j++) {
-                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meID !== "number") {
-                    newFesIdol.MemoryAppeal.mEffect[j].meID = ref(1).value
-                }
-                try {
-                    if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[0] !== "number" && typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[1] !== "number") {
+                for(let j = 0; j < newFesIdol.MemoryAppeal.mEffect.length; j++) {
+                    if (typeof newFesIdol.MemoryAppeal.mEffect[j].meID !== "number") {
+                        newFesIdol.MemoryAppeal.mEffect[j].meID = ref(1).value
+                    }
+                    try {
+                        if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[0] !== "number" && typeof newFesIdol.MemoryAppeal.mEffect[j].meTurn[1] !== "number") {
+                            newFesIdol.MemoryAppeal.mEffect[j].meTurn = [ref().value, ref().value]
+                        }
+                    }catch (error) {
                         newFesIdol.MemoryAppeal.mEffect[j].meTurn = [ref().value, ref().value]
                     }
-                }catch (error) {
-                    newFesIdol.MemoryAppeal.mEffect[j].meTurn = [ref().value, ref().value]
+                    if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTime !== "number") {
+                        newFesIdol.MemoryAppeal.mEffect[j].meTime = ref().value
+                    }
+                    if (typeof newFesIdol.MemoryAppeal.mEffect[j].meValue !== "number") {
+                        newFesIdol.MemoryAppeal.mEffect[j].meValue = ref().value
+                    }
+                    if (typeof newFesIdol.MemoryAppeal.mEffect[j].meNote !== "string") {
+                        newFesIdol.MemoryAppeal.mEffect[j].meNote = ref().value
+                    }
                 }
-                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meTime !== "number") {
-                    newFesIdol.MemoryAppeal.mEffect[j].meTime = ref().value
+                for(let j = 0; j < newFesIdol.MemoryAppeal.mLink.mlAppeal.length; j++) {
+                    if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID !== "number") {
+                        newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID = ref(1).value
+                    }
+                    if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue !== "number") {
+                        newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue = ref().value
+                    }
+                    if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute !== "string") {
+                        newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute = ref().value
+                    }
                 }
-                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meValue !== "number") {
-                    newFesIdol.MemoryAppeal.mEffect[j].meValue = ref().value
-                }
-                if (typeof newFesIdol.MemoryAppeal.mEffect[j].meNote !== "string") {
-                    newFesIdol.MemoryAppeal.mEffect[j].meNote = ref().value
-                }
+                fesIdols.push(newFesIdol)
             }
-            for(let j = 0; j < newFesIdol.MemoryAppeal.mLink.mlAppeal.length; j++) {
-                if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID !== "number") {
-                    newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaID = ref(1).value
-                }
-                if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue !== "number") {
-                    newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaValue = ref().value
-                }
-                if (typeof newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute !== "string") {
-                    newFesIdol.MemoryAppeal.mLink.mlAppeal[j].mlaAttribute = ref().value
-                }
-            }
-            fesIdols.push(newFesIdol)
+        } catch (error) {
+            window.alert("編成の読み込みに失敗しました");
+            console.log(error);
+            fesIdols = [];
+            setIdolList();
         }
         // 詳細設定
-        detailSetting = {
-            damage: data.detail.damage ?? ref(231).value,
-            damageStrong: data.detail.damageStrong ?? ref(0).value,
-            damageWeak: data.detail.damageWeak ?? ref(0).value,
-            count: data.detail.count ?? ref(1).value,
-            omonouDPlus: data.detail.omonouDPlus ?? ref(0).value,
-            omonouPlus: data.detail.omonouPlus ?? ref(0).value,
-            omonoukakin: data.detail.omonoukakin ?? ref(0).value,
-            omonouElse: data.detail.omonouElse ?? ref(0).value,
-            centerOfAttention: data.detail.centerOfAttention ?? ref(0).value,
-            noAttention: data.detail.noAttention ?? ref(0).value,
-            liveSkillRandom: data.detail.liveSkillRandom ?? ref(false).value
+        try {
+            detailSetting = {
+                damage: data.detail.damage ?? ref(231).value,
+                damageStrong: data.detail.damageStrong ?? ref(0).value,
+                damageWeak: data.detail.damageWeak ?? ref(0).value,
+                count: data.detail.count ?? ref(1).value,
+                romanticist: data.detail.romanticist ?? ref(0).value,
+                omonouDPlus: data.detail.omonouDPlus ?? ref(0).value,
+                omonouPlus: data.detail.omonouPlus ?? ref(0).value,
+                omonoukakin: data.detail.omonoukakin ?? ref(0).value,
+                omonouElse: data.detail.omonouElse ?? ref(0).value,
+                centerOfAttention: data.detail.centerOfAttention ?? ref(0).value,
+                noAttention: data.detail.noAttention ?? ref(0).value,
+                liveSkillRandom: data.detail.liveSkillRandom ?? ref(false).value,
+                maxMemory: data.detail.maxMemory ?? ref(1000).value
+            }
+            if(detailSetting.count < 0 || detailSetting.count > 10) {
+                detailSetting.count = 1
+            }
+        } catch (error) {
+            window.alert("詳細設定の読み込みに失敗しました");
+            console.log(error);
+            detailSetting = {
+                // 審査員ダメージ
+                damage: ref(231).value,
+                // 打たれ強い
+                damageStrong: ref(0).value,
+                // 打たれ弱い
+                damageWeak: ref(0).value,
+                // 試行回数
+                count: ref(1).value,
+                // ロマンチスト
+                romanticist: ref(0).value,
+                // 思い出++
+                omonouDPlus: ref(0).value,
+                // 思い出+
+                omonouPlus: ref(0).value,
+                // 思い出増加+2%
+                omonoukakin: ref(0).value,
+                // その他思い出加速
+                omonouElse: ref(0).value,
+                // 注目の的
+                centerOfAttention: ref(0).value,
+                // ひかえめ
+                noAttention: ref(0).value,
+                // ライブスキルのランダム
+                liveSkillRandom: ref(false).value,
+                // パラコレの数（思い出ゲージ最大値） 1000 ~ 2000
+                maxMemory: ref(1000).value
+            }
         }
     }
 }
 
 // localStorage へ保存
 const setLocalStorage = () => {
-    const setData = makeJson();
-    localStorage.setItem('GradeFes', setData)
-    window.alert("保存しました。")
+    try{        
+        const setData = makeJson();
+        localStorage.setItem('GradeFes', setData);
+    } catch {
+        window.alert("データの保存に失敗しました");
+        throw new Error('test')
+    }
 }
 
 // JSONへ変換
 const makeJson = () => {
     // パッシブ不要部の削除
     for(let i = 0; i < passiveSkills.length; i ++) {
-        for(let j = 0; j < passiveSkills[i].Effect.length; j++) {
+        for(let j = 1; j < passiveSkills[i].Effect.length; j++) {
             if(passiveSkills[i].Effect[j].eID == 1) {
                 passiveSkills[i].Effect.splice(j,1)
             }
@@ -1086,43 +1218,43 @@ const makeJson = () => {
     // 編成不要部の削除
     for(let i = 0; i < 5; i ++) {
         for(let j = 0; j < fesIdols[i].LiveSkill.length; j++) {
-            for(let n = 0; n < fesIdols[i].LiveSkill[j].Appeal.length; n++) {
+            for(let n = 1; n < fesIdols[i].LiveSkill[j].Appeal.length; n++) {
                 if(fesIdols[i].LiveSkill[j].Appeal[n].aID == 1) {
                     fesIdols[i].LiveSkill[j].Appeal.splice(n,1)
                 }
             }
-            for(let n = 0; n < fesIdols[i].LiveSkill[j].Effect.length; n++) {
+            for(let n = 1; n < fesIdols[i].LiveSkill[j].Effect.length; n++) {
                 if(fesIdols[i].LiveSkill[j].Effect[n].eID == 1) {
                     fesIdols[i].LiveSkill[j].Effect.splice(n,1)
                 }
             }
-            for(let n = 0; n < fesIdols[i].LiveSkill[j].Link.lTrigger.ltList.length; n++) {
+            for(let n = 1; n < fesIdols[i].LiveSkill[j].Link.lTrigger.ltList.length; n++) {
                 if(fesIdols[i].LiveSkill[j].Link.lTrigger.ltList[n].ltID == 1 && n > 0) {
                     fesIdols[i].LiveSkill[j].Link.lTrigger.ltList.splice(n,1)
                 }
             }
-            for(let n = 0; n < fesIdols[i].LiveSkill[j].Link.lAppeal.length; n++) {
+            for(let n = 1; n < fesIdols[i].LiveSkill[j].Link.lAppeal.length; n++) {
                 if(fesIdols[i].LiveSkill[j].Link.lAppeal[n].laID == 1) {
                     fesIdols[i].LiveSkill[j].Link.lAppeal.splice(n,1)
                 }
             }
-            for(let n = 0; n < fesIdols[i].LiveSkill[j].Link.lEffect.length; n++) {
+            for(let n = 1; n < fesIdols[i].LiveSkill[j].Link.lEffect.length; n++) {
                 if(fesIdols[i].LiveSkill[j].Link.lEffect[n].leID == 1) {
                     fesIdols[i].LiveSkill[j].Link.lEffect.splice(n,1)
                 }
             }
             // memory
-            for(let n = 0; n < fesIdols[i].MemoryAppeal.mAppeal.length; n++) {
+            for(let n = 1; n < fesIdols[i].MemoryAppeal.mAppeal.length; n++) {
                 if(fesIdols[i].MemoryAppeal.mAppeal[n].maID == 1) {
                     fesIdols[i].MemoryAppeal.mAppeal.splice(n,1)
                 }
             }
-            for(let n = 0; n < fesIdols[i].MemoryAppeal.mEffect.length; n++) {
+            for(let n = 1; n < fesIdols[i].MemoryAppeal.mEffect.length; n++) {
                 if(fesIdols[i].MemoryAppeal.mEffect[n].meID == 1) {
                     fesIdols[i].MemoryAppeal.mEffect.splice(n,1)
                 }
             }
-            for(let n = 0; n < fesIdols[i].MemoryAppeal.mLink.mlAppeal.length; n++) {
+            for(let n = 1; n < fesIdols[i].MemoryAppeal.mLink.mlAppeal.length; n++) {
                 if(fesIdols[i].MemoryAppeal.mLink.mlAppeal[n].mlaID == 1) {
                     fesIdols[i].MemoryAppeal.mLink.mlAppeal.splice(n,1)
                 }
@@ -1138,7 +1270,7 @@ const makeJson = () => {
     return JSON.stringify(data);
 }
 
-const deleteConfirm = ref(false);
+// const deleteConfirm = ref(false);
 // データの削除
 const deleteData = () => {
     // パッシブ
@@ -1157,6 +1289,8 @@ const deleteData = () => {
         damageWeak: ref(0).value,
         // 試行回数
         count: ref(1).value,
+        // ロマンチスト
+        romanticist: ref(0).value,
         // 思い出++
         omonouDPlus: ref(0).value,
         // 思い出+
@@ -1170,7 +1304,9 @@ const deleteData = () => {
         // ひかえめ
         noAttention: ref(0).value,
         // ライブスキルのランダム
-        liveSkillRandom: ref(false).value
+        liveSkillRandom: ref(false).value,
+        // パラコレの数（思い出ゲージ最大値）
+        maxMemory: ref(1000).value
     }
 }
 
@@ -1208,7 +1344,21 @@ let accAreaDisplay = {
     detailSetting: {
         class: "accBtn",
         boolean: ref(false).value
-    }
+    },
+    advancedSetting: [
+        {
+            class: "accIdolBtn positionName",
+            boolean: ref(false).value
+        },
+        {
+            class: "accIdolBtn positionName",
+            boolean: ref(false).value
+        },
+        {
+            class: "accIdolBtn positionName",
+            boolean: ref(false).value
+        }
+    ]
 }
 
 // アコーディオンエリアのトグルスイッチ
@@ -1245,15 +1395,34 @@ const toggleAccBtn = (eleClass: string, index: number) => {
             accAreaDisplay.detailSetting.class = "accBtn close";
             accAreaDisplay.detailSetting.boolean = true;
         }
+    }else if (eleClass == "advancedSetting") {
+        if (accAreaDisplay.advancedSetting[index].boolean) {
+            accAreaDisplay.advancedSetting[index].class = "accIdolBtn positionName";
+            accAreaDisplay.advancedSetting[index].boolean = false;
+        } else {
+            accAreaDisplay.advancedSetting[index].class = "accIdolBtn positionName close";
+            accAreaDisplay.advancedSetting[index].boolean = true;
+        }
     }
     displayUpdate();
 }
 
-// 追加要素の反映
-const displayUpdateData = ref(false);
+// 再レンダリング
+const renderKey = ref(0);
 const displayUpdate = () => {
-    displayUpdateData.value = false;
-    displayUpdateData.value = true;
+    renderKey.value++;
+}
+
+// ナビ開閉
+const contents = ref("contents");
+const naviActive = (active:boolean) => {
+    if(active) {
+        contents.value = "contents active";
+        displayUpdate();
+    }else {
+        contents.value = "contents";
+        displayUpdate();
+    }
 }
 
 /**
@@ -1273,15 +1442,23 @@ const displayUpdate = () => {
  */
 let passiveSkills: types.passive[] = [];
 
-const passiveColorCheck = (index: number, gold: boolean) => {
-    if (passiveSkills[index].Value >= 75 || gold) {
-        if (passiveSkills[index].Value >= 180 && !gold) {
-            passiveSkills[index].Class[0] = "rainbow";
-        } else {
+const passiveColorCheck = (index: number, gold: boolean, rainbow:boolean) => {
+    if(gold || rainbow) {
+        if(gold) {
             passiveSkills[index].Class[0] = "gold";
+        } else {
+            passiveSkills[index].Class[0] = "rainbow";
         }
     } else {
-        passiveSkills[index].Class[0] = "white";
+        if (passiveSkills[index].Value >= 75) {
+            if (passiveSkills[index].Value >= 180) {
+                passiveSkills[index].Class[0] = "rainbow";
+            } else {
+                passiveSkills[index].Class[0] = "gold";
+            }
+        } else {
+            passiveSkills[index].Class[0] = "white";
+        }
     }
     displayUpdate();
 }
@@ -1294,6 +1471,7 @@ const plusPassive = () => {
         Value: ref().value,
         Class: ["white", ref("").value],
         Gold: ref(false).value,
+        Rainbow: ref(false).value,
         Trigger: {
             tID: ref(1).value,
             tX: [ref().value, ref().value],
@@ -1342,9 +1520,9 @@ const passiveDeleteToggle = (index:number) => {
     displayUpdate();
 }
 
-// 金パッシブラベルID発行
-const goldID = (index: number) => {
-    return "gold" + index;
+// 金 / 虹パッシブラベルID発行
+const GRID = (index: number, color: 'gold' | 'rainbow') => {
+    return color + index;
 }
 
 // 履歴追加ボタン
@@ -1526,23 +1704,23 @@ const setPriorityList = () => {
 }
 setPriorityList()
 
-const prioritySelected = () => {
-    for (let select = 0; select < priorityList.length; select++) {
-        priorityList[select].selectedClass = ""
-    }
-    for (let i = 0; i < fesIdols.length; i++) {
-        for (let j = 0; j < 2; j++) {
-            if (fesIdols[i].LiveSkill[j].Priority) {
-                priorityList[fesIdols[i].LiveSkill[j].Priority].selectedClass = "selected"
-            }
-        }
-    }
-    displayUpdate()
-}
+// const prioritySelected = () => {
+//     for (let select = 0; select < priorityList.length; select++) {
+//         priorityList[select].selectedClass = ""
+//     }
+//     for (let i = 0; i < fesIdols.length; i++) {
+//         for (let j = 0; j < 2; j++) {
+//             if (fesIdols[i].LiveSkill[j].Priority) {
+//                 priorityList[fesIdols[i].LiveSkill[j].Priority].selectedClass = "selected"
+//             }
+//         }
+//     }
+//     displayUpdate()
+// }
 
-const priorityDisable = (index: number) => {
-    return priorityList[index].selectedClass == "selected"
-}
+// const priorityDisable = (index: number) => {
+//     return priorityList[index].selectedClass == "selected"
+// }
 
 // アピール追加ボタン
 const plusLiveSkillAppeal = (index: number, appealIndex: number) => {
@@ -1699,6 +1877,8 @@ let detailSetting: types.detail = {
     damageWeak: ref(0).value,
     // 試行回数
     count: ref(1).value,
+    // ロマンチスト
+    romanticist: ref(0).value,
     // 思い出++
     omonouDPlus: ref(0).value,
     // 思い出+
@@ -1712,7 +1892,9 @@ let detailSetting: types.detail = {
     // ひかえめ
     noAttention: ref(0).value,
     // ライブスキルのランダム
-    liveSkillRandom: ref(false).value
+    liveSkillRandom: ref(false).value,
+    // パラコレの数（思い出ゲージ最大値） 1000 ~ 2000
+    maxMemory: ref(1000).value
 }
 
 // 設定の出力
@@ -1750,32 +1932,10 @@ const inputSetting = (event: Event) => {
             displayUpdate()
             // @ts-ignore
             document.getElementById('inputFile')!.value = '';
-            if(mobileView.value) {
-                snavBtnActive();
-            }
         }
     } catch {
         console.log("input errer")
     }
-}
-
-
-// ハンバーガーメニュー
-const smallnavbtn = ref("smallnav-btn")
-const smallnavDisplay = ref(false)
-const snavBtnActive = () => {
-    if (smallnavbtn.value == "smallnav-btn") {
-        smallnavbtn.value = "smallnav-btn active";
-        smallnavDisplay.value = true;
-        displayUpdate()
-    } else {
-        smallnavbtn.value = "smallnav-btn";
-        smallnavDisplay.value = false;
-        displayUpdate()
-    }
-}
-const userHelp = () => {
-    location.href = "https://note.com/tunakan_yt212/n/na0cd640b09b5";
 }
 
 // モバイル切り替え
@@ -1785,7 +1945,6 @@ const watchWindowSize = () => {
         mobileView.value = true;
     } else {
         mobileView.value = false;
-        smallnavDisplay.value = false;
     }
 }
 watchWindowSize()
@@ -1843,8 +2002,13 @@ input[type="number"] {
 
 /* コンテンツ
 ---------------------------------------------------------------------------- */
-#contents {
+.contents {
     margin: 0 5%;
+    transition: all .7s ease-in-out;
+
+    &.active {
+        margin-right: 25vw;
+    }
 }
 
 .bigBtn {
@@ -1856,88 +2020,23 @@ input[type="number"] {
     border-radius: 10px;
     user-select: none;
 }
-
-.deleteConfBtn {
-    color: aliceblue;
-    background-color: #4e4e4e;
-}
-
-.deleteConfBtn:hover {
-    cursor: pointer;
-    color: #000000;
-    background-color: rgb(185, 185, 185);
-}
-
-#deleteBtn {
-    color: aliceblue;
-    width: 110px;
-    background-color: rgba(169, 212, 11, 0.658);
-}
-
-#deleteBtn:hover {
-    cursor: pointer;
-    background-color: rgba(169, 212, 11, 0.9);
-}
-
-
-#saveBtn {
-    color: aliceblue;
-    background-color: rgba(3, 182, 57, 0.658);
-}
-
-#saveBtn:hover {
-    cursor: pointer;
-    background-color: rgba(3, 182, 57, 0.9);
-}
-
-#outputBtn {
-    color: aliceblue;
-    background-color: rgba(3, 182, 57, 0.658);
-}
-
-#outputBtn:hover {
-    cursor: pointer;
-    background-color: rgba(3, 182, 57, 0.9);
-}
-
-#inputBtn,#inputPassiveBtn,#inputAllBtn {
-    margin-left: 10px;
-    color: aliceblue;
-    background-color: rgba(3, 155, 182, 0.658);
-}
-
-#inputBtn:hover,#inputPassiveBtn:hover,#inputAllBtn:hover {
-    cursor: pointer;
-    background-color: rgba(3, 155, 182, 0.9);
-}
-
-#nextBtn {
-    color: aliceblue;
-    background-color: rgba(3, 36, 182, 0.658);
-}
-
-#nextBtn:hover {
-    cursor: pointer;
-    background-color: rgba(3, 36, 182, 0.9);
-}
-
 /* accordinon area style */
 .accArea {
     list-style: none;
-}
 
-.accArea li {
-    margin: 10px 0;
-}
+    li {
+        margin: 10px 0;
+    }
 
-.accArea section {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-}
+    section {
+        border: 1px solid #ccc;
+        border-radius: 10px;
 
-.accArea section h2 {
-    z-index: 10;
-    user-select: none;
+        h2 {
+            z-index: 10;
+            user-select: none;
+        }
+    }
 }
 
 .accBtn {
@@ -1948,41 +2047,37 @@ input[type="number"] {
 	padding: 0 0 0 16px;
     padding: 1% 0 1% 5%;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
-}
+    
+    /*アイコンの＋と×*/
+    &::after, &::before {
+        position: absolute;
+        content: '';
+        width: 15px;
+        height: 2px;
+        background-color: #333;
+        transition: .5s ease-out;
+    }
 
-/*アイコンの＋と×*/
-.accBtn::before,
-.accBtn::after {
-    position: absolute;
-    content: '';
-    width: 15px;
-    height: 2px;
-    background-color: #333;
-}
+    &::before {
+        top: 48%;
+        left: 15px;
+        transform: rotate(0deg);
+    }
 
-.accBtn::before {
-    top: 48%;
-    left: 15px;
-    transform: rotate(0deg);
-    transition: 0.5s;
-}
+    &::after {
+        top: 48%;
+        left: 15px;
+        transform: rotate(90deg);
+    }
+    
+    /*　closeというクラスがついたら形状変化　*/
+    &.close::before {
+        transform: rotate(45deg);
+    }
 
-.accBtn::after {
-    top: 48%;
-    left: 15px;
-    transform: rotate(90deg);
-    transition: 0.5s;
-}
-
-/*　closeというクラスがついたら形状変化　*/
-.accBtn.close::before {
-    transform: rotate(45deg);
-    transition: 0.5s;
-}
-
-.accBtn.close::after {
-    transform: rotate(-45deg);
-    transition: 0.5s;
+    &.close::after {
+        transform: rotate(-45deg);
+    }
 }
 
 /* アイコン < */
@@ -1993,56 +2088,57 @@ input[type="number"] {
 	vertical-align: middle;
 	text-decoration: none;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
-}
-.accIdolBtn::before,
-.accIdolBtn::after {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	margin: auto;
-	content: "";
-	vertical-align: middle;
-}
 
-.accIdolBtn::before {
-	left: 3px;
-	width: 5px;
-	height: 5px;
-	border-top: 2px solid rgb(43, 43, 43);
-	border-right: 2px solid rgb(43, 43, 43);
-	-webkit-transform: rotate(45deg);
-	transform: rotate(45deg);
-    transition: 0.2s;
-}
+    &::before, &::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        margin: auto;
+        content: "";
+        vertical-align: middle;
+    }
 
-/*　closeというクラスがついたら形状変化　*/
-.accIdolBtn.close::before {
-    transform: rotate(135deg);
-    transition: 0.2s;
-}
+    &::before {
+        left: 3px;
+        width: 5px;
+        height: 5px;
+        border-top: 2px solid rgb(43, 43, 43);
+        border-right: 2px solid rgb(43, 43, 43);
+        -webkit-transform: rotate(45deg);
+        transform: rotate(45deg);
+        transition: 0.5s ease-out;
+    }
 
+    /*　closeというクラスがついたら形状変化　*/
+    &.close::before {
+        transform: rotate(135deg);
+    }
+
+}
 
 /* accordion box style */
 .accBox {
     margin: 0 3% 3% 3%;
-}
 
-.accBox ul {
-    list-style: none;
-    padding: 0 40px;
-}
+    ul {
+        position: relative;
+        z-index: 10;
+        list-style: none;
+        padding: 0 40px;
 
-.accBox ul>li, .accBox ul div>li {
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border: 2px solid rgba(0, 0, 0, .3);
-    border-radius: 10px;
-}
+        >li, div>li {
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 2px solid rgba(0, 0, 0, .3);
+            border-radius: 10px;
+        }
 
-.accBox ul li>div {
-    border-radius: 10px;
+        div>li {
+            border-radius: 10px;
+        }
+    }
 }
 
 .passiveDelBtn {
@@ -2052,13 +2148,15 @@ input[type="number"] {
     border-radius: 10px;
     cursor:pointer;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
-}
-.passiveDelBtn:hover {
-    opacity: 1;
-}
+    transition: all 0.2s;
 
-.passiveDelBtn>img {
-    height: 90px;
+    &:hover {
+        opacity: 1;
+    }
+
+    >img {
+        height: 90px;
+    }
 }
 
 .gold {
@@ -2100,10 +2198,10 @@ input[type="number"] {
     border: 1px solid rgba(0, 0, 0, .3);
     border-radius: 10px;
     cursor: pointer;
-}
 
-.btn:hover {
-    background-color: rgba(226, 226, 226, 0.3);
+    &:hover {
+        background-color: rgba(226, 226, 226, 0.3);
+    }
 }
 
 
@@ -2122,18 +2220,18 @@ input[type="number"] {
     width: 50px;
     height: 20px;
     position: relative;
-}
 
-.dragHandle>span {
-    display: block;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin: -4px 0 0 -10px;
-    width: 20px;
-    height: 4px;
-    border-top: 2px rgba(0, 0, 0, .4) solid;
-    border-bottom: 2px rgba(0, 0, 0, .4) solid;
+    >span {
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -4px 0 0 -10px;
+        width: 20px;
+        height: 4px;
+        border-top: 2px rgba(0, 0, 0, .4) solid;
+        border-bottom: 2px rgba(0, 0, 0, .4) solid;
+    }
 }
 
 #Leader {
@@ -2155,8 +2253,12 @@ input[type="number"] {
 /* モバイル　1000px
 --------------------------------------------------------------------------------- */
 @media screen and (max-width: 1030px) {
-    #contents {
+    .contents {
         margin: 0 1%;
+
+        &.active {
+            margin: 0 1%;
+        }
     }
 
     ul {
@@ -2172,43 +2274,41 @@ input[type="number"] {
 
     .accBox {
         margin: 0 1% 1% 1%;
-    }
 
-    .accBox ul {
-        padding: 0 5px;
-    }
-    
-    .accBox ul>li, .accBox ul div>li {
-        padding: 6px;
-    }
+        ul {
+            padding: 0 5px;
 
-    .accBox>ul>li>div {
-        min-width: 70vw;
+            >li, div>li {
+                padding: 6px;
+            }
+        }
     }
 
     .btn {
         margin: 0 0 0 auto;
     }
-    .passiveDelBtn>img {
-        width: 60px;
-        height: auto;
+    .passiveDelBtn{
+        >img {
+            width: 60px;
+            height: auto;
+        }
     }
     
     .dragHandle {
         width: 40px;
         height: 20px;
         position: relative;
-    }
 
-    .dragHandle>span {
-        display: block;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        margin: -4px 0 0 -7px;
-        width: 14px;
-        height: 4px;
-        border-top: 2px rgba(0, 0, 0, .4) solid;
-        border-bottom: 2px rgba(0, 0, 0, .4) solid;
+        >span {
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: -4px 0 0 -7px;
+            width: 14px;
+            height: 4px;
+            border-top: 2px rgba(0, 0, 0, .4) solid;
+            border-bottom: 2px rgba(0, 0, 0, .4) solid;
+        }
     }
 }</style>

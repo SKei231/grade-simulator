@@ -7,6 +7,7 @@ export type passive = {
     Value: number,
     Class: ["white" | "gold" | "rainbow", string],
     Gold: boolean,
+    Rainbow: boolean,
     Trigger: {
         tID: number,
         tX: number[],
@@ -117,6 +118,8 @@ export type detail = {
     damageWeak: number,
     // 試行回数
     count: number,
+    // ロマンチスト
+    romanticist: number,
     // 思い出++
     omonouDPlus: number,
     // 思い出+
@@ -130,7 +133,9 @@ export type detail = {
     // ひかえめ
     noAttention: number,
     // ライブスキルのランダム選択
-    liveSkillRandom: boolean
+    liveSkillRandom: boolean,
+    // パラコレの数（思い出ゲージ最大値） 1000 ~ 2000
+    maxMemory: number,
 }
 
 // パッシブの発動条件
@@ -179,7 +184,7 @@ export type sEffect = {
 
 // アイドル
 export type idol = {
-    Name: String,
+    Name: string,
     ID: number,
     Unit: number[]
 }

@@ -1,9 +1,10 @@
 // 設定、ログの保管
+import { passiveEffect } from '../data/skillEffect';
 import * as types from '../data/type'
 import { defaultStatus } from './simulate';
 
 // version
-export const version = '1.2.0';
+export const version = '1.3.0';
 console.log("ver." + version);
 
 // 最大ターン
@@ -24,7 +25,7 @@ export let staticStatus = {
     Me: 0
 }
 
-// シュミレートログ
+// シミュレートログ
 export let log: types.log[] = []
 
 // ログの初期化
@@ -80,7 +81,7 @@ export const countPassiveAct = (turn:number ,index:number) => {
     log[turn].PassiveActTime[index]++
 }
 
-// シュミレート結果の挿入
+//シミュレート結果の挿入
 export const logPush = (status:types.status, turn:number) => {
     // メンタル
     (function() {
@@ -216,6 +217,7 @@ const indexSeaech = (data:number, array:number[]):number | string => {
 
 // データのセット
 export let passiveSkills: types.passive[] = [];
+export let rPassiveList: number[] = [];
 export let fesIdols: types.fesIdol[] = [];
 export let detailSetting: types.detail;
 export const setData = (passive: types.passive[], fesIdol: types.fesIdol[], detail: types.detail) => {

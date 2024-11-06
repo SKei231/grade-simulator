@@ -1,12 +1,10 @@
 <template>
-    <Header></Header>
-    <InputField></InputField>
 </template>
 
 <script setup lang="ts">
-import Header from './header.vue'
-import InputField from './inputField.vue'
+import router from '../router/router';
 
+router.push('/Input');
 </script>
 
 <style scoped>

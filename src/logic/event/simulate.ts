@@ -109,6 +109,9 @@ const statusUpdate = () => {
     if (vault.detailSetting.damageWeak > 0) {
         defaultStatus.DamageRatio = Math.pow(1.1, vault.detailSetting.damageWeak);
     }
+    if (vault.detailSetting.romanticist > 0) {
+        defaultStatus.MemoryRatio *= 0.05 * vault.detailSetting.romanticist + 1;
+    }
     if (vault.detailSetting.omonouDPlus > 0) {
         defaultStatus.MemoryRatio *= 0.05 * vault.detailSetting.omonouDPlus + 1;
     }
@@ -197,8 +200,8 @@ const memoryGaugeIncrease = () => {
 }
 // 最大、最小値の調整
 const memoryMaxSave = () => {
-    if(status.MemoryGauge > 1000) {
-        status.MemoryGauge = 1000
+    if(status.MemoryGauge > vault.detailSetting.maxMemory) {
+        status.MemoryGauge = vault.detailSetting.maxMemory
     }
 }
 
@@ -261,13 +264,22 @@ const passiveSkillActivate = (turn:number) => {
     order.unshift(0)
     order.push(4)
 
+    let rainbowActedList: number[] = [] // 虹パッシブ発動済み index リスト
+
     /**
      * パッシブの発動
      * @param index パッシブのindex
      * @param position Leaderかどうか Le:0
      * @returns true: 発動
      */
-    const passiveAct = (index:number, position:number):boolean => {
+    const passiveAct = (index:number, position:number, rainbowMode:boolean):boolean => {
+        if(rainbowMode) { // 同一虹パッシブがすでに発動したかどうか
+            for(let i = 0;i < rainbowActedList.length; i++) {
+                if(index == rainbowActedList[i]) {
+                    return false
+                }
+            }
+        }
         if(vault.passiveSkills[index].Trigger.tID == 2 || vault.passiveSkills[index].Trigger.tID == 3 || vault.passiveSkills[index].Trigger.tID == 18) {
             if(triggerList[findByTriggerID(vault.passiveSkills[index].Trigger.tID)].value(turn, vault.passiveSkills[index].Trigger.tX, vault.passiveSkills[index].ActiveTurn.before, vault.passiveSkills[index].ActiveTurn.after, vault.passiveSkills[index].Trigger.tHis)) { // 発動可能かどうか
                 // 発動するかどうか
@@ -300,7 +312,7 @@ const passiveSkillActivate = (turn:number) => {
                 const passiveClass = (vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Class[0] == "rainbow")
                 if(rainbowMode == passiveClass){
                     if(status.PassiveActTimes[order[i]][j] > 0 && passiveActTime < 6) {
-                        if(passiveAct(vault.fesIdols[order[i]].PassiveIndex[j].index, i)) {
+                        if(passiveAct(vault.fesIdols[order[i]].PassiveIndex[j].index, i, rainbowMode)) {
                             if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Vo") {
                                 status.Buff.Passive.pVo += vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Value;
                             }else if(vault.passiveSkills[vault.fesIdols[order[i]].PassiveIndex[j].index].Attribute == "Da") {
@@ -332,15 +344,12 @@ const passiveSkillActivate = (turn:number) => {
                             status.PassiveActTimes[order[i]][j]--;
                             passiveActTime++;
                             if(rainbowMode) {
-                                passiveActTime = 6;
+                                rainbowActedList.push(vault.fesIdols[order[i]].PassiveIndex[j].index);
                             }
                         }
                     }
                 }
             }
-        }
-        if(rainbowMode) {
-            passiveActTime = 1;
         }
     }
     passiveActivate(true)  // 虹パッシブの発動
@@ -402,7 +411,6 @@ const liveSkillAppeal = (turn:number) => {
                     if(checker) { // 履歴のヒットがなかった場合
                         return false;
                     }else if(scanningIndex == linkList.length){ // 履歴全てがヒットした場合
-                        console.log("link")
                         return true;
                     }else {
                         checker = true;
@@ -440,6 +448,9 @@ const liveSkillAppeal = (turn:number) => {
                     }else {
                         // value, turn, note, deleteMental (自傷バフ)
                         liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eNote, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eTurn[1]);
+                        if(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Effect[i].eID == 19) {
+
+                        }
                     }
                 }else {
                     // value, turn, note (通常 VoDaVi バフ)
@@ -465,6 +476,7 @@ const liveSkillAppeal = (turn:number) => {
                         }else {
                             // value, turn, note, deleteMental (自傷バフ)
                             liveSkillEffect[findByLiveEffectID(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leID)].value(vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leValue, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[0], vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leNote, vault.fesIdols[lin[0]].LiveSkill[lin[1]].Link.lEffect[i].leTurn[1]);
+                            
                         }
                     }else {
                         // value, turn, note (通常 VoDaVi バフ)

@@ -308,6 +308,9 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
     if(!detail.damageWeak && detail.damageWeak !== 0) {
         errerMessage.push('打たれ弱いを取得した人数を入力してください（0 ~ 5）');
     }
+    if(!detail.maxMemory && detail.maxMemory !== 0) {
+        errerMessage.push('パラコレの数を入力してください（0 ~ 5）');
+    }
     if(!detail.omonouDPlus && detail.omonouDPlus !== 0) {
         errerMessage.push('思い出(ノウハウ)++ を取得した人数を入力してください（0 ~ 5）');
     }
@@ -325,9 +328,6 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
     }
     if(!detail.noAttention && detail.noAttention !== 0) {
         errerMessage.push('ひかえめを取得した人数を入力してください（0 ~ 5）');
-    }
-    if(!detail.count) {
-        errerMessage.push('試行回数を入力してください');
     }
 
     return errerMessage

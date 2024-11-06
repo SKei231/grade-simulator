@@ -473,7 +473,7 @@ export const liveSkillEffect: sEffect[] = [
                 attribute = 3;
             }
             if(attribute != 0) {
-                console.log(buffValue)
+                status.MentalEffect -= dMental;
                 pushVisibleBuff(attribute, turn, buffValue, 0 ,0);
             }
         }

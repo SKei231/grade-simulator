@@ -1,11 +1,11 @@
 <template>
   <div v-if="logErrer" id="errerArea">
     <h2 style="text-align: center;">エラーが発生しました。</h2>
-    <p style="text-align: center; margin: 0 10vw;">データの読み込みに失敗しました。<br v-if="mobileView">入力画面へ戻り、再度シュミレートを行ってください。</p>
+    <p style="text-align: center; margin: 0 10vw;">データの読み込みに失敗しました。<br v-if="mobileView">入力画面へ戻り、再度シミュレートを行ってください。</p>
     <br>
-    <p style="text-align: center; font-size: .8rem; margin: 0 10vw;">※ページのリロードを行うとシュミレート結果が破棄されます。</p>
+    <p style="text-align: center; font-size: .8rem; margin: 0 10vw;">※ページのリロードを行うとシミュレート結果が破棄されます。</p>
     <p style="text-align: center; font-size: .8rem;">リロード以外で何度もこの画面が表示される場合、<br v-if="mobileView">
-      <a href="https://twitter.com/messages/1000751929008447489-1341019207417221122" style="text-decoration: underline;">管理者のTwitter</a>へメッセージを送信してください。
+      <a href="https://twitter.com/messages/1000751929008447489-1341019207417221122" style="text-decoration: underline;">管理者のX(twitter)</a>へメッセージを送信してください。
     </p>
   </div>
   <div v-if="!displayChart && !logErrer">
@@ -232,7 +232,7 @@
     <div class="bigBtn" @click="(router.go(-1))">入力画面に戻る</div>
     <div class="bigBtn" @click="outputResult()">結果を出力する</div>
   </div>
-  <div v-if="display"></div>
+  <span :key="renderKey"></span>
 </template>
 
 <script setup lang="ts">
@@ -498,7 +498,7 @@ const createCharts = () => {
             scales: {
               y: {
                 min: 0,
-                max: 100
+                max: vault.detailSetting.maxMemory/10
               }
             }
           })
@@ -792,7 +792,7 @@ const createCharts = () => {
         const createMemoryLabel = ():number[] => {
           let returnArray = [];
           returnArray.length = 0;
-          for(let i = 0; i <= 100; i++) {
+          for(let i = 0; i <= vault.detailSetting.maxMemory/10; i++) {
             data.labels.push(String(i));
             returnArray.push(0);
           }
@@ -891,14 +891,7 @@ type pActiveList = {
   trigger: string,
   rate: number
 }
-let passiveActiveList:pActiveList[] = [{
-  label: 'test',
-  attribute: '',
-  color: 'white',
-  value: 0,
-  trigger: 'test',
-  rate: 0
-}]
+let passiveActiveList:pActiveList[] = []
 const createTriggerList = () => {
   passiveActiveList.length = 0;
   const Turn = graphTurn.value - 1;
@@ -906,9 +899,9 @@ const createTriggerList = () => {
     passiveActiveList.push({
       label: vault.passiveSkills[i].Name,
       attribute: vault.passiveSkills[i].Attribute,
-      color: vault.passiveSkills[i].Color,
+      color: vault.passiveSkills[i].Class[0],
       value: vault.passiveSkills[i].Value,
-      trigger: triggerList[findByTriggerID(vault.passiveSkills[i].Trigger.tID)].label.replace('【X】', String(vault.passiveSkills[i].Trigger.tX[0])).replace('【Y】', String(vault.passiveSkills[i].Trigger.tX[1])),
+      trigger: triggerList[findByTriggerID(vault.passiveSkills[i].Trigger.tID)].label.replace('〇', String(vault.passiveSkills[i].Trigger.tX[0])).replace('△', String(vault.passiveSkills[i].Trigger.tX[1])),
       rate: Math.floor((vault.log[Turn].PassiveActTime[i] / (vault.detailSetting.count * 1000)) * 10000) / 100
     })
   }
@@ -1281,10 +1274,9 @@ const changeTurn = () => {
 }
 
 // 画面更新のための関数
-const display = ref(false);
+let renderKey = 0;
 const displayUpdate = () => {
-  display.value = true;
-  display.value = false;
+  renderKey++;
 }
 
 // 結果のcsv出力
@@ -1370,99 +1362,96 @@ onMounted(() => {
   border-radius: 10px;
   user-select: none;
   color: aliceblue;
-  background-color: rgba(3, 36, 182, 0.658);
+  background-color: rgba(0, 0, 0, .5);
   margin: auto;
   margin: 30px 0;
-}
-.bigBtn:hover {
-  cursor: pointer;
-  background-color: rgba(3, 36, 182, 0.9);
+
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, .7);
+  }
 }
 
 .accArea {
     list-style: none;
   padding-inline-start: 2px;
-}
 
-.accArea li {
+  li {
     margin: 10px 0;
-}
+  }
 
-.accArea section {
-  margin-right: 15vw;
+  section {
+    margin-right: 15vw;
     border: 1px solid #ccc;
     border-radius: 10px;
-}
 
-.accArea section h2 {
-    z-index: 10;
-    user-select: none;
+    h2 {
+      z-index: 10;
+      user-select: none;
+    }
+  }
 }
 
 .accBtn {
-    position: relative;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: normal;
-    padding: 1% 0 1% 5%;
-    -webkit-tap-highlight-color:rgba(0,0,0,0);
-}
-
-/*アイコンの＋と×*/
-.accBtn::before,
-.accBtn::after {
+  position: relative;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: normal;
+  padding: 1% 0 1% 5%;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  
+  /*アイコンの＋と×*/
+  &::before,&::after {
     position: absolute;
     content: '';
     width: 15px;
     height: 2px;
     background-color: #333;
+  }
 
-}
-
-.accBtn::before {
+  &::before {
     top: 48%;
     left: 15px;
     transform: rotate(0deg);
+  }
 
-}
-
-.accBtn::after {
+  &::after {
     top: 48%;
     left: 15px;
     transform: rotate(90deg);
+  }
 
-}
-
-/*　closeというクラスがついたら形状変化　*/
-.accBtn.close::before {
+  /*　closeというクラスがついたら形状変化　*/
+  &.close::before {
     transform: rotate(45deg);
-}
+  }
 
-.accBtn.close::after {
+  &.close::after {
     transform: rotate(-45deg);
+  }
 }
 
 /* accordion box style */
 .accBox {
-    margin: 0 2% 2% 2%;
-}
+  margin: 0 2% 2% 2%;
+  
+  ul {
+    padding-inline-start: 10px;
+    list-style: none;
+    padding-right: 5px;
 
-.accBox ul {
-  padding-inline-start: 10px;
-  list-style: none;
-  padding-right: 5px;
-}
+    >li {
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border: 2px solid rgba(0, 0, 0, .3);
+      border-radius: 10px;
+    }
 
-.accBox ul>li {
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border: 2px solid rgba(0, 0, 0, .3);
-  border-radius: 10px;
-}
-
-.accBox ul li>div {
-    border-radius: 10px;
+    li>div {
+      border-radius: 10px;
+    }
+  }
 }
 .gold {
     background-color: rgba(255, 215, 0, 0.3);
@@ -1493,23 +1482,26 @@ onMounted(() => {
     color: white;
     background-color: rgba(0, 0, 0, 0.603);
   }
-  .accArea>li>section {
-    margin-right: 5vw;
+  .accArea{
+    >li>section {
+      margin-right: 5vw;
+    }
   }
-  .accBox ul {
-    padding: 0;
-  }
-  
-  .accBox ul>li {
-    padding: 10px 5px;
-  }
+  .accBox{
+    ul {
+      padding: 0;
 
+      >li {
+        padding: 10px 5px;
+      }
+    }
+  }
   .accBtn {
     text-align: center;
-  }
 
-  .accBox>ul>li>div {
-    min-width: 70vw;
+    >ul>li>div {
+      min-width: 70vw;
+    }
   }
 }
 </style>

@@ -12,11 +12,11 @@ visivleBuff.buffListCheck()
 export const findByPassiveID = (id: number): number => {
     let seaechIndex = 0;
     while (true) {
-        if (passiveEffect[seaechIndex].ID == id) {
-            return seaechIndex;
-        } else if (seaechIndex == passiveEffect.length) {
+        if (seaechIndex == passiveEffect.length) {
             console.log("No such passiveEffect ID:" + id)
             return 99
+        }else if (passiveEffect[seaechIndex].ID == id) {
+            return seaechIndex;
         }
         seaechIndex++;
     }
@@ -25,11 +25,11 @@ export const findByPassiveID = (id: number): number => {
 export const findByLiveEffectID = (id: number): number => {
     let seaechIndex = 0;
     while (true) {
-        if (liveSkillEffect[seaechIndex].ID == id) {
-            return seaechIndex;
-        } else if (seaechIndex == liveSkillEffect.length) {
+        if (seaechIndex == liveSkillEffect.length) {
             console.log("No such liveEffect ID:" + id)
             return 99
+        }else if (liveSkillEffect[seaechIndex].ID == id) {
+            return seaechIndex;
         }
         seaechIndex++;
     }
@@ -38,11 +38,11 @@ export const findByLiveEffectID = (id: number): number => {
 export const findByAppealID = (id: number): number => {
     let seaechIndex = 0;
     while (true) {
-        if (liveSkillAppeal[seaechIndex].ID == id) {
-            return seaechIndex;
-        } else if (seaechIndex == liveSkillAppeal.length) {
+        if (seaechIndex == liveSkillAppeal.length) {
             console.log("No such liveAppeal ID:" + id)
-            return 99
+            return 1
+        }else if (liveSkillAppeal[seaechIndex].ID == id) {
+            return seaechIndex;
         }
         seaechIndex++;
     }
@@ -52,12 +52,14 @@ export const findByAppealID = (id: number): number => {
 export const passiveEffect: pEffect[] = [
     {
         label: "なし",
+        parsedLabel: ["なし"],
         ID: 1,
         existN: false,
         value: function (value:number) {}
     },
     {
-        label: "(他属性の追加バフ)【N】％UP",
+        label: "(その他の属性)〇%UP",
+        parsedLabel: ["その他の属性","%UP"],
         ID: 10,
         existN: true,
         value: function (value:number, attribute:string) {
@@ -74,7 +76,8 @@ export const passiveEffect: pEffect[] = [
         }
     },
     {
-        label: "メンタル【N】％回復",
+        label: "メンタル〇%回復",
+        parsedLabel: ["メンタル","%回復"],
         ID: 2,
         existN: true,
         value: function (value:number) {
@@ -83,7 +86,8 @@ export const passiveEffect: pEffect[] = [
         }
     },
     {
-        label: "メンタルダメージ【N】％UP",
+        label: "メンタルダメージ〇%UP",
+        parsedLabel: ["メンタルダメージ","%UP"],
         ID: 3,
         existN: true,
         value: function (value:number) {
@@ -91,7 +95,8 @@ export const passiveEffect: pEffect[] = [
         }
     },
     {
-        label: "メンタルダメージ【N】％CUT",
+        label: "メンタルダメージ〇%CUT",
+        parsedLabel: ["メンタルダメージ","%CUT"],
         ID: 4,
         existN: true,
         value: function (value:number) {
@@ -99,7 +104,8 @@ export const passiveEffect: pEffect[] = [
         }
     },
     {
-        label: "思い出ゲージ【N】％UP",
+        label: "思い出ゲージ〇%UP",
+        parsedLabel: ["思い出ゲージ","%UP"],
         ID: 5,
         existN: true,
         value: function (value:number) {
@@ -107,7 +113,8 @@ export const passiveEffect: pEffect[] = [
         }
     },
     {
-        label: "発動時に思い出ゲージ【N】％UP",
+        label: "発動時に思い出ゲージ〇%UP",
+        parsedLabel: ["発動時に思い出ゲージ","%UP"],
         ID: 8,
         existN: true,
         value: function (value:number) {
@@ -115,7 +122,8 @@ export const passiveEffect: pEffect[] = [
         }
     },
     {
-        label: "注目度【N】％UP",
+        label: "注目度〇%UP",
+        parsedLabel: ["注目度","%UP"],
         ID: 6,
         existN: true,
         value: function (value:number) {
@@ -123,7 +131,8 @@ export const passiveEffect: pEffect[] = [
         }
     },
     {
-        label: "注目度【N】％DOWN",
+        label: "注目度〇%DOWN",
+        parsedLabel: ["注目度","%DOWN"],
         ID: 7,
         existN: true,
         value: function (value:number) {
@@ -131,7 +140,8 @@ export const passiveEffect: pEffect[] = [
         }
     },
     {
-        label: "リアクション回避【N】％UP",
+        label: "リアクション回避〇%UP",
+        parsedLabel: ["リアクション回避","%UP"],
         ID: 9,
         existN: true,
         value: function (value:number) {
@@ -144,6 +154,7 @@ export const passiveEffect: pEffect[] = [
 export const liveSkillAppeal: sAppeal[] = [
     {
         label: "なし",
+        parsedLabel: [""],
         ID: 1,
         variable: false,
         ratioLabel: "",
@@ -153,7 +164,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール【N】倍",
+        label: "〇倍アピール",
+        parsedLabel: ["倍アピール"],
         ID: 2,
         variable: false,
         ratioLabel: "",
@@ -163,7 +175,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "スキル履歴が多いほど【N】倍",
+        label: "〇倍アピール[スキル履歴が多いほど]",
+        parsedLabel: ["倍アピール","[スキル履歴が多いほど]"],
         ID: 13,
         variable: true,
         ratioLabel: "履歴人数(人)",
@@ -179,7 +192,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(メンタルが多いほど)【N】倍",
+        label: "〇倍アピール[メンタルが多いほど]",
+        parsedLabel: ["倍アピール","[メンタルが多いほど]"],
         ID: 3,
         variable: true,
         ratioLabel: "Me(実数)",
@@ -195,7 +209,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(メンタルが少ないほど)【N】倍",
+        label: "〇倍アピール[メンタルが少ないほど]",
+        parsedLabel: ["倍アピール","[メンタルが少ないほど]"],
         ID: 4,
         variable: true,
         ratioLabel: "Me(実数)",
@@ -211,7 +226,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(思い出ゲージが多いほど)【N】倍",
+        label: "〇倍アピール[思い出ゲージが多いほど]",
+        parsedLabel: ["倍アピール","[思い出ゲージが多いほど]"],
         ID: 5,
         variable: true,
         ratioLabel: "思い出ゲージ(%)",
@@ -227,7 +243,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(注目度が高いほど)【N】倍",
+        label: "〇倍アピール[注目度が高いほど]",
+        parsedLabel: ["倍アピール","[注目度が高いほど]"],
         ID: 6,
         variable: true,
         ratioLabel: "注目度(%)",
@@ -243,7 +260,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(注目度が低いほど)【N】倍",
+        label: "〇倍アピール[注目度が低いほど]",
+        parsedLabel: ["倍アピール","[注目度が低いほど]"],
         ID: 7,
         variable: true,
         ratioLabel: "注目度(%)",
@@ -259,7 +277,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(回復回数が多いほど)【N】倍",
+        label: "〇倍アピール[回復回数が多いほど]",
+        parsedLabel: ["倍アピール","[回復回数が多いほど]"],
         ID: 8,
         variable: true,
         ratioLabel: "回復回数(回)",
@@ -275,7 +294,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(UP消去)【N】倍",
+        label: "〇倍アピール[属性UP消去]",
+        parsedLabel: ["倍アピール","[属性UP消去]"],
         ID: 9,
         variable: true,
         ratioLabel: "アピールUP(個)",
@@ -291,7 +311,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(DOWN消去)【N】倍",
+        label: "〇倍アピール[属性DOWN消去]",
+        parsedLabel: ["倍アピール","[属性DOWN消去]"],
         ID: 11,
         variable: true,
         ratioLabel: "アピールDOWN(個)",
@@ -307,7 +328,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(強化)【N】倍",
+        label: "〇倍アピール[属性強化]",
+        parsedLabel: ["倍アピール","[属性強化]"],
         ID: 10,
         variable: false,
         ratioLabel: "",
@@ -317,7 +339,8 @@ export const liveSkillAppeal: sAppeal[] = [
         }
     },
     {
-        label: "アピール(回避率が高いほど)【N】倍",
+        label: "〇倍アピール[回避率が高いほど]",
+        parsedLabel: ["倍アピール","[回避率が高いほど]"],
         ID: 12,
         variable: true,
         ratioLabel: "回避率(%)",
@@ -339,6 +362,7 @@ export const buffLastID = 19;
 export const liveSkillEffect: sEffect[] = [
     {
         label: "なし",
+        parsedLabel: ["なし"],
         ID: 1,
         existN: false,
         existM: false,
@@ -350,6 +374,7 @@ export const liveSkillEffect: sEffect[] = [
     },
     {
         label: "デュエット",
+        parsedLabel: ["デュエット"],
         ID: 2,
         existN: false,
         existM: false,
@@ -372,7 +397,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "【N】%UP",
+        label: "属性〇%UP",
+        parsedLabel: ["", "%UP"],
         ID: 18,
         existN: true,
         existM: false,
@@ -395,7 +421,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "【N】%DOWN",
+        label: "属性〇%DOWN",
+        parsedLabel: ["", "%DOWN"],
         ID: 20,
         existN: true,
         existM: false,
@@ -418,7 +445,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "メンタル【M】%減らし最大【N】%UP",
+        label: "メンタル〇%減らし最大△%UP",
+        parsedLabel: ["メンタル", "%減らし最大","%UP"],
         ID: 19,
         existN: true,
         existM: true,
@@ -445,13 +473,14 @@ export const liveSkillEffect: sEffect[] = [
                 attribute = 3;
             }
             if(attribute != 0) {
-                console.log(buffValue)
+                status.MentalEffect -= dMental;
                 pushVisibleBuff(attribute, turn, buffValue, 0 ,0);
             }
         }
     },
     {
-        label: "メンタル【N】％回復",
+        label: "メンタル〇%回復",
+        parsedLabel: ["メンタル", "%回復"],
         ID: 3,
         existN: true,
         existM: false,
@@ -465,7 +494,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "メンタル【N】％回復[超過思い出変換]",
+        label: "メンタル〇%回復[超過思い出変換]",
+        parsedLabel: ["メンタル", "%回復[超過思い出変換]"],
         ID: 4,
         existN: true,
         existM: false,
@@ -482,7 +512,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "メンタルダメージ【N】％UP",
+        label: "メンタルダメージ〇%UP",
+        parsedLabel: ["メンタルダメージ", "%UP"],
         ID: 5,
         existN: true,
         existM: false,
@@ -495,7 +526,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "メンタルダメージ【N】％CUT",
+        label: "メンタルダメージ〇%CUT",
+        parsedLabel: ["メンタルダメージ", "%CUT"],
         ID: 6,
         existN: true,
         existM: false,
@@ -508,7 +540,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "思い出ゲージ【N】％UP",
+        label: "思い出ゲージ〇%UP",
+        parsedLabel: ["思い出ゲージ", "%UP"],
         ID: 7,
         existN: true,
         existM: false,
@@ -521,7 +554,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "注目度【N】％UP",
+        label: "注目度〇%UP",
+        parsedLabel: ["注目度", "%UP"],
         ID: 8,
         existN: true,
         existM: false,
@@ -534,7 +568,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "注目度【N】％DOWN",
+        label: "注目度〇%DOWN",
+        parsedLabel: ["注目度", "%DOWN"],
         ID: 9,
         existN: true,
         existM: false,
@@ -547,7 +582,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "パッシブ発動率【N】％",
+        label: "パッシブスキル発動率〇%UP",
+        parsedLabel: ["パッシブスキル発動率", "%UP"],
         ID: 10,
         existN: true,
         existM: false,
@@ -560,7 +596,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "リザレクション効果【N】％付与",
+        label: "リザレクション効果〇%付与",
+        parsedLabel: ["リザレクション効果", "%付与"],
         ID: 11,
         existN: true,
         existM: false,
@@ -573,7 +610,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "影響力【N】％UP",
+        label: "影響力〇%UP",
+        parsedLabel: ["影響力", "%UP"],
         ID: 12,
         existN: true,
         existM: false,
@@ -586,7 +624,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "影響力【N】％DOWN",
+        label: "影響力〇%DOWN",
+        parsedLabel: ["影響力", "%DOWN"],
         ID: 13,
         existN: true,
         existM: false,
@@ -599,7 +638,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "リラックス効果【N】％付与",
+        label: "リラックス効果〇%付与",
+        parsedLabel: ["リラックス効果", "%付与"],
         ID: 14,
         existN: true,
         existM: false,
@@ -612,7 +652,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "リアクション回避【N】％UP",
+        label: "リアクション回避〇%UP",
+        parsedLabel: ["リアクション回避", "%UP"],
         ID: 15,
         existN: true,
         existM: false,
@@ -625,7 +666,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "【N】%UP[ダメージを受けるまで]",
+        label: "属性〇%UP[ダメージを受けるまで]",
+        parsedLabel: ["", "%UP[ダメージを受けるまで]"],
         ID: 21,
         existN: true,
         existM: false,
@@ -649,7 +691,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "【M】ターンの間 回避時【N】％UP",
+        label: "〇ターンの間 回避時△%UP",
+        parsedLabel: ["","ターンの間 回避時", "%UP"],
         ID: 16,
         existN: true,
         existM: true,
@@ -672,7 +715,8 @@ export const liveSkillEffect: sEffect[] = [
         }
     },
     {
-        label: "【M】ターンの間 ダメージ時【N】％UP",
+        label: "〇ターンの間 ダメージ時△%UP",
+        parsedLabel: ["","ターンの間 ダメージ時", "%UP"],
         ID: 17,
         existN: true,
         existM: true,

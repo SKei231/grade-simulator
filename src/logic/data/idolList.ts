@@ -11,7 +11,7 @@ const straylight = [17, 18, 19];
 const noctchill = [20, 21, 22, 23];
 const shiis = [24, 25];
 const cometik = [33, 34, 35];
-const bkomathi = [36, 37];
+const bkomathi = [36, 37, 38];
 
 export const getUnitMember = (index:number):number[] => {
     if(index == 2) {
@@ -211,6 +211,11 @@ export const idolList: idol[] = [
     {
         Name: "有馬かな",
         ID: 37,
+        Unit: bkomathi
+    },
+    {
+        Name: "MEMちょ",
+        ID: 38,
         Unit: bkomathi
     },
 ]

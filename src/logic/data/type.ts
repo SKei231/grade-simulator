@@ -5,14 +5,16 @@ export type passive = {
     Name: string,
     Attribute: string,
     Value: number,
-    Color: "white" | "gold" | "rainbow",
+    Class: ["white" | "gold" | "rainbow", string],
     Gold: boolean,
+    Rainbow: boolean,
     Trigger: {
         tID: number,
         tX: number[],
         tHis: number[]
     },
     ActiveTurn: {
+        turnModel: number,
         after: number,
         before: number
     },
@@ -37,7 +39,7 @@ export type fesIdol = {
         ViValue: number,
         MeValue: number
     },
-    LiveSkill: [{
+    LiveSkill: {
         Priority: number,
         Appeal: [{
             aID: number,
@@ -54,11 +56,12 @@ export type fesIdol = {
         Link: {
             lType: "Link" | "Plus" | "Change",
             lTrigger: {
+                ltModel: number,
                 ltBefore: number,
                 ltAfter: number,
                 ltList: [{
                     ltID: number,
-                    ltX: number,
+                    ltX: number[],
                     ltHis: number[]
                 }]
             },
@@ -76,46 +79,7 @@ export type fesIdol = {
             }]
         },
         LinkTrigger: number[]
-    }, {
-        Priority: number,
-        Appeal: [{
-            aID: number,
-            aValue: number,
-            aAttribute: "Vo" | "Da" | "Vi" | "Excellent"
-        }],
-        Effect: [{
-            eID: number,
-            eValue: number,
-            eTurn: number[],
-            eTime: number,
-            eNote: string
-        }],
-        Link: {
-            lType: "link" | "plus" | "change",
-            lTrigger: {
-                ltBefore: number,
-                ltAfter: number,
-                ltList: [{
-                    ltID: number,
-                    ltX: number,
-                    ltHis: number[]
-                }]
-            },
-            lAppeal: [{
-                laID: number,
-                laValue: number,
-                laAttribute: "Vo" | "Da" | "Vi" | "Excellent"
-            }],
-            lEffect: [{
-                leID: number,
-                leValue: number,
-                leTurn: number[],
-                leTime: number,
-                leNote: string
-            }]
-        },
-        LinkTrigger: number[]
-    }],
+    }[],
     PassiveIndex: [{
         index: number,
         times: number,
@@ -154,6 +118,8 @@ export type detail = {
     damageWeak: number,
     // 試行回数
     count: number,
+    // ロマンチスト
+    romanticist: number,
     // 思い出++
     omonouDPlus: number,
     // 思い出+
@@ -167,12 +133,15 @@ export type detail = {
     // ひかえめ
     noAttention: number,
     // ライブスキルのランダム選択
-    liveSkillRandom: boolean
+    liveSkillRandom: boolean,
+    // パラコレの数（思い出ゲージ最大値） 1000 ~ 2000
+    maxMemory: number,
 }
 
 // パッシブの発動条件
 export type trigger = {
     label: string,
+    parsedLabel: string[],
     ID: number,
     existX: boolean,
     existY: boolean,
@@ -182,6 +151,7 @@ export type trigger = {
 // パッシブスキル効果
 export type pEffect = {
     label: string,
+    parsedLabel: string[],
     ID: number,
     existN: boolean,
     value: Function
@@ -190,6 +160,7 @@ export type pEffect = {
 // ライブスキルアピール
 export type sAppeal = {
     label: string,
+    parsedLabel: string[],
     ID: number,
     variable: boolean,
     ratioLabel: string,
@@ -200,6 +171,7 @@ export type sAppeal = {
 // ライブスキル効果
 export type sEffect = {
     label: string,
+    parsedLabel: string[],
     ID: number,
     existN: boolean,
     existM: boolean,
@@ -212,7 +184,7 @@ export type sEffect = {
 
 // アイドル
 export type idol = {
-    Name: String,
+    Name: string,
     ID: number,
     Unit: number[]
 }
@@ -223,7 +195,7 @@ export type status = {
     Damage: number, // 影響力
     DamageRatio: number, // ダメージ倍率
     MentalEffect: number, // ライブスキル発動後のメンタル変動値
-    Attention: number, // 注目度 100％→100
+    Attention: number, // 注目度 100%→100
     RecoveryTimes: number, // 回復回数
     RecoveryTimesIncreases: number, // 回復回数の増加量
     MemoryGauge: number, // 思い出ゲージ
@@ -269,7 +241,7 @@ export type visibleBuff = {
 export type log = {
     Turn: number, // ターン
     Mental: number[], // メンタル
-    Attention: number[], // 注目度 100％→100
+    Attention: number[], // 注目度 100%→100
     RecoveryTimes: number[], // 回復回数
     MemoryGauge: number[], // 思い出ゲージ
     Buff: {

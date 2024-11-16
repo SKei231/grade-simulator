@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div :class="naviState.content">
-                <nav style="display: flex; justify-content: center; height: 100%;">
+                <nav class="nav" style="display: flex; justify-content: center; height: 100%;">
                     <ul :class="naviState.ul.main" style="margin-top: 20nh;">
                         <li :class="naviState.link" style="padding-top: 8vh;"><p @click="emits('simulationOpen'); navBtnActive(false)">次へ</p></li>
                         <li :class="naviState.link"><p @click="saveData()">入力を保存</p></li>
@@ -256,7 +256,7 @@ window.addEventListener('resize', watchWindowSize)
     }
 }
 
-nav {
+.nav {
     position: relative;
     ul {
         display: block;

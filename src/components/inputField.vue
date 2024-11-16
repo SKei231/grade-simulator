@@ -1576,7 +1576,7 @@ const setIdolList = () => {
             },
             LiveSkill: [
                 {
-                    Priority: ref().value,
+                    Priority: ref(i*2+1).value,
                     Appeal: [{
                         aID: ref(1).value,
                         aValue: ref().value,
@@ -1617,7 +1617,7 @@ const setIdolList = () => {
                     LinkTrigger: [ref(20).value]
                 },
                 {
-                    Priority: ref().value,
+                    Priority: ref(i*2+2).value,
                     Appeal: [{
                         aID: ref(1).value,
                         aValue: ref().value,
@@ -1690,19 +1690,19 @@ const setIdolList = () => {
 setIdolList();
 
 // ライブスキル優先度
-const priorityList: [{
-    priority: number,
-    selectedClass: "" | "selected" // @ts-ignore
-}] = [{}]
-const setPriorityList = () => {
-    for (let i = 1; i < 11; i++) {
-        priorityList.push({
-            priority: i,
-            selectedClass: ""
-        })
-    }
-}
-setPriorityList()
+// const priorityList: [{
+//     priority: number,
+//     selectedClass: "" | "selected" // @ts-ignore
+// }] = [{}]
+// const setPriorityList = () => {
+//     for (let i = 0; i < 10; i++) {
+//         priorityList.push({
+//             priority: i+1,
+//             selectedClass: ""
+//         })
+//     }
+// }
+// setPriorityList()
 
 // const prioritySelected = () => {
 //     for (let select = 0; select < priorityList.length; select++) {
@@ -1956,6 +1956,11 @@ const simulationOpen = () => {
     for(let i = 0; i < 5; i++) {
         for(let j = 0; j < fesIdols[i].PassiveIndex.length; j++) {
             fesIdols[i].PassiveIndex[j].times = passiveSkills[fesIdols[i].PassiveIndex[j].index].Times
+        }
+        for(let j = 0; j < fesIdols[i].LiveSkill.length; j++) {
+            if(!fesIdols[i].LiveSkill[j].Priority){
+                fesIdols[i].LiveSkill[j].Priority = i*2 + j + 1;
+            }
         }
     }
     simulationReady.value.setData({

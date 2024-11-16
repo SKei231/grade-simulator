@@ -1366,10 +1366,10 @@ onMounted(() => {
   margin: auto;
   margin: 30px 0;
 
-  &:hover {
-    cursor: pointer;
-    background-color: rgba(0, 0, 0, .7);
-  }
+}
+.bigBtn:hover {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, .7);
 }
 
 .accArea {
@@ -1399,36 +1399,35 @@ onMounted(() => {
   font-weight: normal;
   padding: 1% 0 1% 5%;
   -webkit-tap-highlight-color:rgba(0,0,0,0);
-  
-  /*アイコンの＋と×*/
-  &::before,&::after {
-    position: absolute;
-    content: '';
-    width: 15px;
-    height: 2px;
-    background-color: #333;
-  }
+}
+/*アイコンの＋と×*/
+.accBtn::before,.accBtn::after {
+  position: absolute;
+  content: '';
+  width: 15px;
+  height: 2px;
+  background-color: #333;
+}
 
-  &::before {
-    top: 48%;
-    left: 15px;
-    transform: rotate(0deg);
-  }
+.accBtn::before {
+  top: 48%;
+  left: 15px;
+  transform: rotate(0deg);
+}
 
-  &::after {
-    top: 48%;
-    left: 15px;
-    transform: rotate(90deg);
-  }
+.accBtn::after {
+  top: 48%;
+  left: 15px;
+  transform: rotate(90deg);
+}
 
-  /*　closeというクラスがついたら形状変化　*/
-  &.close::before {
-    transform: rotate(45deg);
-  }
+/*　closeというクラスがついたら形状変化　*/
+.accBtn.close::before {
+  transform: rotate(45deg);
+}
 
-  &.close::after {
-    transform: rotate(-45deg);
-  }
+.accBtn.close::after {
+  transform: rotate(-45deg);
 }
 
 /* accordion box style */

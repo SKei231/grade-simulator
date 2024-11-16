@@ -4,7 +4,7 @@ import * as types from '../data/type'
 import { defaultStatus } from './simulate';
 
 // version
-export const version = '1.3.0';
+export const version = '1.3.1';
 console.log("ver." + version);
 
 // 最大ターン

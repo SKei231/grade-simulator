@@ -92,10 +92,6 @@ export const dataVerification = (passive:passive[], fesIdol:fesIdol[], detail:de
         }
         // liveskill
         for(let j = 0; j < fesIdol[i].LiveSkill.length; j++) {
-            // priority
-            if(!fesIdol[i].LiveSkill[j].Priority) {
-                errerMessage.push(fesIdol[i].Position + ' のライブスキルの優先順位を入力してください');
-            }
             // appeal
             for(let aIndex = 0; aIndex < fesIdol[i].LiveSkill[j].Appeal.length; aIndex++) {
                 if(fesIdol[i].LiveSkill[j].Appeal[aIndex].aID != 1) {

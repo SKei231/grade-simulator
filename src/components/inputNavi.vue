@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div :class="naviState.content">
-                <nav style="display: flex; justify-content: center; height: 100%;">
+                <nav class="nav" style="display: flex; justify-content: center; height: 100%;">
                     <ul :class="naviState.ul.main" style="margin-top: 20nh;">
                         <li :class="naviState.link" style="padding-top: 8vh;"><p @click="emits('simulationOpen'); navBtnActive(false)">次へ</p></li>
                         <li :class="naviState.link"><p @click="saveData()">入力を保存</p></li>
@@ -172,10 +172,9 @@ window.addEventListener('resize', watchWindowSize)
     width: 20vw;
     z-index: 0;
     overflow: hidden;
-
-    &.active {
-        z-index: 80;
-    }
+}
+.navi-menu-wrapper.active {
+    z-index: 80;
 }
 
 .navi-menu {
@@ -200,63 +199,60 @@ window.addEventListener('resize', watchWindowSize)
     cursor: pointer;
     transition: all 0.35s ease-out;
 
-    &.active:before {
-        transform: scale(18);
-    }
+}
+.navi-btn.active:before {
+    transform: scale(18);
+}
 
-    &:active:before {
-        opacity: 0.75;
-    }
+.navi-btn:active:before {
+    opacity: 0.75;
+}
 
-    &:before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: -1;
-        width: 75px;
-        height: 75px;
-        background: rgba(0, 19, 34, 0.319);
-        border-radius: 50%;
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
-        cursor: pointer;
-        transform-origin: center 70%;
-        transform: scale(1);
-        transition: all 0.35s ease-out;
-        /* blur */
-        -webkit-backdrop-filter: blur(1px);
-        backdrop-filter: blur(1px);
-    }
+.navi-btn:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 75px;
+    height: 75px;
+    background: rgba(0, 19, 34, 0.319);
+    border-radius: 50%;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transform-origin: center 70%;
+    transform: scale(1);
+    transition: all 0.35s ease-out;
+    /* blur */
+    -webkit-backdrop-filter: blur(1px);
+    backdrop-filter: blur(1px);
+}
 
-    &.delete{
-        opacity: 0;
-    }
+.navi-btn.delete{
+    opacity: 0;
 }
 
 #noCircle {
-    &:before {
-        background: none;
-        box-shadow: none;
-        /* blur */
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
-    }
-
     .navi-patty {
         background: none;
     }
 }
-
-.navi-content {
-    &.active {
-        position: fixed;
-        width: 20vw;
-        height: 85vh;
-        z-index: 91;
-    }
+#noCircle:before {
+    background: none;
+    box-shadow: none;
+    /* blur */
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 
-nav {
+.navi-content.active {
+    position: fixed;
+    width: 20vw;
+    height: 85vh;
+    z-index: 91;
+}
+
+.nav {
     position: relative;
     ul {
         display: block;
@@ -266,21 +262,20 @@ nav {
         text-align: center;
         overflow: hidden;
         transition: all .4s;
-        
-        /* ナビゲーションの遷移 */
-        &.hide {
-            width: 0;
-            opacity: 0;
-            transform: translateX(50px);
-        }
-        &.leave {
-            width: 0;
-            opacity: 0;
-            transform: translateX(-50px);
-        }
-        &.active {
-            opacity: 1;
-        }
+    }
+    /* ナビゲーションの遷移 */
+    ul.hide {
+        width: 0;
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    ul.leave {
+        width: 0;
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    ul.active {
+        opacity: 1;
     }
     li {
         will-change: transform, opacity;
@@ -289,43 +284,41 @@ nav {
         opacity: 0;
 
 
-        &.active {
-            z-index: 99;
-            padding: 0 50px;
-            transform: translateY(0);
-            opacity: 1;
-            transition: 0.4s ease-out;
+    }
+    li.active {
+        z-index: 99;
+        padding: 0 50px;
+        transform: translateY(0);
+        opacity: 1;
+        transition: 0.4s ease-out;
 
-            >p {
-                font-family: 'meiryo';
-                font-weight: 400;
-                /* hover animation */
-                cursor: pointer;
-                margin: 0;
-                padding: 10px;
-                position: relative;
-                z-index: 99;
-                &::before {
-                    background: #0000005b;
-                    content: '';
-                    width: 100%;
-                    height: 2px;
-                    position: absolute;
-                    left: 0;
-                    bottom: 0;
-                    margin: auto;
-                    transform-origin: right top;
-                    transform: scale(0, 1);
-                    transition: transform .3s;
-                }
-    
-                &:hover {
-                    &::before {
-                        transform-origin: left top;
-                        transform: scale(1, 1);
-                    }
-                }
-            }
+        >p {
+            font-family: 'meiryo';
+            font-weight: 400;
+            /* hover animation */
+            cursor: pointer;
+            margin: 0;
+            padding: 10px;
+            position: relative;
+            z-index: 99;
+        }
+        >p::before {
+            background: #0000005b;
+            content: '';
+            width: 100%;
+            height: 2px;
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            margin: auto;
+            transform-origin: right top;
+            transform: scale(0, 1);
+            transition: transform .3s;
+        }
+
+        >p:hover::before {
+            transform-origin: left top;
+            transform: scale(1, 1);
         }
     }
 }
@@ -342,24 +335,20 @@ nav {
         opacity: 1;
         transform: translate(0) rotate(0deg);
         transition: all 0.2s ease-out;
-        
-        &:last-child {
-            margin-bottom: 0;
-        }
     }
+    .navi-patty:last-child {
+        margin-bottom: 0;
+    }
+}
+.navi-hamburger.navi-close {
+    transform: rotate(-180deg);
 
-    &.navi-close {
-        transform: rotate(-180deg);
-
-        .navi-patty {
-            &:nth-child(1) {
-                transform: translate(-10px, 4px) rotate(-45deg) scale(0.5, 1);
-            }
-            
-            &:nth-child(3) {
-                transform: translate(-10px, -4px) rotate(45deg) scale(0.5, 1);
-            }
-        }
+    .navi-patty:nth-child(1) {
+        transform: translate(-10px, 4px) rotate(-45deg) scale(0.5, 1);
+    }
+    
+    .navi-patty:nth-child(3) {
+        transform: translate(-10px, -4px) rotate(45deg) scale(0.5, 1);
     }
 }
 
@@ -379,16 +368,14 @@ nav {
     .navi-btn.active:before {
       transform: scale(25);
     }
-    .navi-content {
-        &.active {
-            width: 80vw;
-            height: 85vh;
-        }
+    .navi-content.active {
+        width: 80vw;
+        height: 85vh;
+    }
 
-        &.active+#navi-wrapper {
-            z-index: 90;
-            width: 80vw;
-        }
+    .navi-content.active+#navi-wrapper {
+        z-index: 90;
+        width: 80vw;
     }
     .navi-menu-wrapper {
         width: 80vw;

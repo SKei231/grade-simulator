@@ -3,7 +3,7 @@
     <div style="position: relative;">
         <div class="finalCheck" v-if="!correctData && !simulationRunning">
             <h2 style="padding-bottom: 10px;">入力データに不備があります</h2>
-            <div style="overflow: scroll; height: 30vh;">
+            <div class="eMessageBox">
                 <p v-for="eMessage in errerMessage" style="text-align: center;">{{ eMessage }}</p>
             </div>
             <div class="bigBtn" id="backBtn" @click="close()">戻る</div>
@@ -286,6 +286,19 @@ window.addEventListener('resize', watchWindowSize)
     backdrop-filter: blur(10px);
     overflow: scroll;
     z-index: 100;
+}
+
+.eMessageBox {
+    overflow: scroll;
+    height: 30vh;
+    /*IE(Internet Explorer)・Microsoft Edgeへの対応*/
+    -ms-overflow-style: none;
+    /*Firefoxへの対応*/
+    scrollbar-width: none;
+}
+/*Google Chrome、Safariへの対応*/
+.eMessageBox::-webkit-scrollbar {
+    display:none;
 }
 
 .finalCheck {

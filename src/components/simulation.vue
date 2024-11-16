@@ -324,11 +324,10 @@ window.addEventListener('resize', watchWindowSize)
     margin-top: 10px;
     color: aliceblue;
     background-color: rgba(0, 0, 0, 0.603);
-
-    &:hover {
-        cursor: pointer;
-        background-color: rgba(0, 0, 0, 0.7);
-    }
+}
+.bigBtn:hover {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 #backBtn {
@@ -338,10 +337,9 @@ window.addEventListener('resize', watchWindowSize)
     border: 1px solid rgba(0, 0, 0, 0.603);
     color: rgba(0, 0, 0, 0.8);
     background-color: rgb(255, 255, 255);
-
-    &:hover {
-        background-color: rgba(0, 0, 0, 0.1);
-    }
+}
+#backBtn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .draggArea {

@@ -2005,10 +2005,9 @@ input[type="number"] {
 .contents {
     margin: 0 5%;
     transition: all .7s ease-in-out;
-
-    &.active {
-        margin-right: 25vw;
-    }
+}
+.contents.active {
+    margin-right: 25vw;
 }
 
 .bigBtn {
@@ -2048,36 +2047,36 @@ input[type="number"] {
     padding: 1% 0 1% 5%;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
     
-    /*アイコンの＋と×*/
-    &::after, &::before {
-        position: absolute;
-        content: '';
-        width: 15px;
-        height: 2px;
-        background-color: #333;
-        transition: .5s ease-out;
-    }
+}
+/*アイコンの＋と×*/
+.accBtn::after, .accBtn::before {
+    position: absolute;
+    content: '';
+    width: 15px;
+    height: 2px;
+    background-color: #333;
+    transition: .5s ease-out;
+}
 
-    &::before {
-        top: 48%;
-        left: 15px;
-        transform: rotate(0deg);
-    }
+.accBtn::before {
+    top: 48%;
+    left: 15px;
+    transform: rotate(0deg);
+}
 
-    &::after {
-        top: 48%;
-        left: 15px;
-        transform: rotate(90deg);
-    }
-    
-    /*　closeというクラスがついたら形状変化　*/
-    &.close::before {
-        transform: rotate(45deg);
-    }
+.accBtn::after {
+    top: 48%;
+    left: 15px;
+    transform: rotate(90deg);
+}
 
-    &.close::after {
-        transform: rotate(-45deg);
-    }
+/*　closeというクラスがついたら形状変化　*/
+.accBtn.close::before {
+    transform: rotate(45deg);
+}
+
+.accBtn.close::after {
+    transform: rotate(-45deg);
 }
 
 /* アイコン < */
@@ -2088,33 +2087,31 @@ input[type="number"] {
 	vertical-align: middle;
 	text-decoration: none;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+.accIdolBtn::before, .accIdolBtn::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    content: "";
+    vertical-align: middle;
+}
 
-    &::before, &::after {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        margin: auto;
-        content: "";
-        vertical-align: middle;
-    }
+.accIdolBtn::before {
+    left: 3px;
+    width: 5px;
+    height: 5px;
+    border-top: 2px solid rgb(43, 43, 43);
+    border-right: 2px solid rgb(43, 43, 43);
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    transition: 0.5s ease-out;
+}
 
-    &::before {
-        left: 3px;
-        width: 5px;
-        height: 5px;
-        border-top: 2px solid rgb(43, 43, 43);
-        border-right: 2px solid rgb(43, 43, 43);
-        -webkit-transform: rotate(45deg);
-        transform: rotate(45deg);
-        transition: 0.5s ease-out;
-    }
-
-    /*　closeというクラスがついたら形状変化　*/
-    &.close::before {
-        transform: rotate(135deg);
-    }
-
+/*　closeというクラスがついたら形状変化　*/
+.accIdolBtn.close::before {
+    transform: rotate(135deg);
 }
 
 /* accordion box style */
@@ -2150,13 +2147,12 @@ input[type="number"] {
     -webkit-tap-highlight-color:rgba(0,0,0,0);
     transition: all 0.2s;
 
-    &:hover {
-        opacity: 1;
-    }
-
     >img {
         height: 90px;
     }
+}
+.passiveDelBtn:hover {
+    opacity: 1;
 }
 
 .gold {
@@ -2199,9 +2195,9 @@ input[type="number"] {
     border-radius: 10px;
     cursor: pointer;
 
-    &:hover {
-        background-color: rgba(226, 226, 226, 0.3);
-    }
+}
+.btn:hover {
+    background-color: rgba(226, 226, 226, 0.3);
 }
 
 
@@ -2255,10 +2251,9 @@ input[type="number"] {
 @media screen and (max-width: 1030px) {
     .contents {
         margin: 0 1%;
-
-        &.active {
-            margin: 0 1%;
-        }
+    }
+    .contents.active {
+        margin: 0 1%;
     }
 
     ul {

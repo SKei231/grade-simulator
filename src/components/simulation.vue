@@ -1,10 +1,12 @@
 <template>
   <div id="simArea" v-if="displayBool">
-    <div style="position: relative; width: 100vw; height: 100vh;">
-        <div class="finalCheck" id="errerCheck" v-if="!correctData && !simulationRunning">
-          <h2 style="padding-bottom: 10px;">入力データに不備があります</h2>
-          <p v-for="eMessage in errerMessage">{{ eMessage }}</p>
-          <div class="bigBtn" id="backBtn" @click="close()">戻る</div>
+    <div style="position: relative;">
+        <div class="finalCheck" v-if="!correctData && !simulationRunning">
+            <h2 style="padding-bottom: 10px;">入力データに不備があります</h2>
+            <div style="overflow: scroll; height: 30vh;">
+                <p v-for="eMessage in errerMessage" style="text-align: center;">{{ eMessage }}</p>
+            </div>
+            <div class="bigBtn" id="backBtn" @click="close()">戻る</div>
         </div>
         <div class="finalCheck" v-if="correctData">
             <div v-if="!appealPriority">
@@ -13,14 +15,14 @@
                 <div style="text-align: center; padding-top: 20px;">
                   <label style="user-select: none;">試行回数：
                     <select v-model="detailSetting.count" style="width: 50px;">
-                      <option value="1">1</option>
-                      <option value="5">5</option>
-                      <option value="10">10</option>
+                        <option value="1">1</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
                     </select>
                     000 回</label>
                 </div>
                 <div style="text-align: center; padding-top: 20px;">
-                  <label style="user-select: none;"><input type="checkbox" v-model="noSet">設定を保存しない</label>
+                    <label style="user-select: none;"><input type="checkbox" v-model="noSet">設定を保存しない</label>
                 </div>
                 <div class="bigBtn" @click="play()">実行</div>
                 <div class="bigBtn" id="backBtn" @click="close()">戻る</div>
@@ -290,7 +292,7 @@ window.addEventListener('resize', watchWindowSize)
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 50%);
     width: 60%;
     margin: auto;
     padding: 30px 0;
@@ -300,15 +302,6 @@ window.addEventListener('resize', watchWindowSize)
 
     h2{
         margin-top: 0;
-        text-align: center;
-    }
-}
-
-#errerCheck {
-    margin: 5% auto;
-    height: auto;
-
-    >p {
         text-align: center;
     }
 }
